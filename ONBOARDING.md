@@ -131,7 +131,7 @@ npm run dev
 
 ## 프로젝트 구조 살펴보기
 
-전체 구조와 네이밍 규칙, 의존성 규칙은 [README.md](./README.md)의 "패키지 구조" / "Dependency Rules" / "Naming Convention" 절을 참고하세요.
+전체 구조와 네이밍 규칙, 의존성 규칙은 [docs/architecture.md](./docs/architecture.md) / [docs/coding-convention.md](./docs/coding-convention.md)를 참고하세요.
 
 요약하면:
 
