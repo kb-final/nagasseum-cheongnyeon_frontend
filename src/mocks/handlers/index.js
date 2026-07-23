@@ -1,1 +1,3 @@
-export const handlers = []
+import { authHandlers } from '@/mocks/handlers/authHandlers'
+
+export const handlers = [...authHandlers]

@@ -1,5 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import AuthLayout from '@/layouts/AuthLayout.vue'
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
+
+import { authRoutes } from '@/router/routes/auth.routes'
 
 const routes = [
   {
@@ -8,6 +11,11 @@ const routes = [
     children: [
       // 도메인별 라우트는 src/router/routes/{domain}.routes.js 에서 추가합니다.
     ],
+  },
+  {
+    path: '/',
+    component: AuthLayout,
+    children: authRoutes,
   },
 ]
 

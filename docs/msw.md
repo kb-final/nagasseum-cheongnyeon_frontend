@@ -11,7 +11,7 @@ src/mocks/
 ├── browser.js              # msw/browser의 setupWorker에 handlers를 등록하는 진입점
 ├── handlers/
 │   ├── index.js            # 도메인별 핸들러를 모아 하나의 handlers 배열로 export
-│   └── {domain}Handlers.js # 도메인별 목 API 핸들러 (loanHandlers.js 등)
+│   └── {domain}Handlers.js # 도메인별 목 API 핸들러 (authHandlers.js 등)
 └── data/                   # 핸들러가 반환할 목 데이터(fixture)
 
 public/
@@ -53,53 +53,60 @@ enableMocking().then(() => {
 
 ## 새 도메인 핸들러 추가하기
 
-1. `src/mocks/data/{domain}.js`에 목 데이터를 정의합니다.
+`src/features/auth`(카카오 로그인)에 실제로 적용된 흐름을 예시로 설명합니다.
+
+1. `src/features/{domain}/api/{domain}Api.js`에서 `httpClient`로 실제 API를 호출하는 함수를 정의합니다. MSW는 이 요청을 가로챕니다.
 
 ```js
-// src/mocks/data/loan.js
-export const loans = [
-  { id: 1, title: '전세자금대출', amount: 50000000 },
-  { id: 2, title: '청년월세지원', amount: 200000 },
-]
+// src/features/auth/api/authApi.js
+import httpClient from '@/shared/api/httpClient'
+
+export async function loginWithKakao() {
+  const { data } = await httpClient.post('/api/v1/auth/kakao')
+  return data
+}
 ```
 
-2. `src/mocks/handlers/{domain}Handlers.js`에 요청 URL과 응답을 정의합니다. `httpClient`의 `baseURL`(`VITE_API_BASE_URL`)을 기준으로 상대 경로를 매칭합니다.
+2. `src/mocks/data/{domain}.js`에 목 데이터를 정의합니다.
 
 ```js
-// src/mocks/handlers/loanHandlers.js
+// src/mocks/data/auth.js
+export const mockLoginResponse = {
+  accessToken: 'mock-access-token',
+  user: {
+    id: 1,
+    nickname: '내집마련청년',
+    profileImage: 'https://placehold.co/80x80',
+  },
+}
+```
+
+3. `src/mocks/handlers/{domain}Handlers.js`에 요청 URL과 응답을 정의합니다. `httpClient`가 실제로 요청을 보내는 주소는 `VITE_API_BASE_URL`(`http://localhost:8080`) + 경로(`/api/v1/auth/kakao`)이므로, 핸들러도 **반드시 `VITE_API_BASE_URL`을 붙인 절대 경로**로 등록해야 합니다. (이유는 아래 "주의사항"의 origin 관련 항목 참고)
+
+```js
+// src/mocks/handlers/authHandlers.js
 import { http, HttpResponse } from 'msw'
 
-import { loans } from '@/mocks/data/loan'
+import { mockLoginResponse } from '@/mocks/data/auth'
 
-export const loanHandlers = [
-  http.get('/api/loans', () => {
-    return HttpResponse.json(loans)
-  }),
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
-  http.get('/api/loans/:id', ({ params }) => {
-    const loan = loans.find((item) => item.id === Number(params.id))
-
-    if (!loan) {
-      return new HttpResponse(null, { status: 404 })
-    }
-
-    return HttpResponse.json(loan)
-  }),
-
-  http.post('/api/loans', async ({ request }) => {
-    const body = await request.json()
-    return HttpResponse.json({ id: loans.length + 1, ...body }, { status: 201 })
+export const authHandlers = [
+  http.post(`${API_BASE_URL}/api/v1/auth/kakao`, () => {
+    return HttpResponse.json(mockLoginResponse)
   }),
 ]
 ```
 
-3. `src/mocks/handlers/index.js`에 새 핸들러를 추가합니다.
+4. `src/mocks/handlers/index.js`에 새 핸들러를 추가합니다.
 
 ```js
-import { loanHandlers } from '@/mocks/handlers/loanHandlers'
+import { authHandlers } from '@/mocks/handlers/authHandlers'
 
-export const handlers = [...loanHandlers]
+export const handlers = [...authHandlers]
 ```
+
+이렇게 등록하면 `src/features/auth/store/authStore.js`의 `loginWithKakaoAccount()` → `authApi.js`의 `loginWithKakao()` → `httpClient.post(...)` 순서로 호출되고, MSW가 이를 가로채 `mockLoginResponse`를 돌려줍니다. 실제 동작은 `/login` 라우트([LoginView.vue](../src/features/auth/views/LoginView.vue))에서 확인할 수 있습니다.
 
 ---
 
@@ -113,6 +120,7 @@ export const handlers = [...loanHandlers]
 
 ## 주의사항
 
-- `.env`는 저장소에 커밋되므로, 로컬 테스트를 위해 `VITE_USE_MOCK=true`로 바꿨다면 **커밋 전에 `false`로 되돌려주세요.**
+- **핸들러 URL은 상대 경로로 등록하면 안 됩니다.** MSW는 상대 경로(`/api/loans`)를 페이지 origin(`http://localhost:5173`) 기준으로 해석합니다. 하지만 `httpClient`는 `VITE_API_BASE_URL`(`http://localhost:8080`)을 `baseURL`로 사용하므로 실제 요청은 다른 origin으로 나갑니다. 이 origin 불일치 때문에 핸들러가 매칭되지 않고, 요청이 그대로 실제 백엔드로 흘러가 `Failed to fetch` / `Network Error`가 발생합니다. 반드시 위 예시처럼 `` `${API_BASE_URL}/api/...` `` 형태의 절대 경로로 등록하세요.
+- `.env`는 저장소에 커밋되므로, 로컬 테스트를 위해 `VITE_USE_MOCK=true`를 사용하고, 실제 API 사용 시에는 `VITE_USE_MOCK=false`로 설정하세요.
 - `public/mockServiceWorker.js`는 `npx msw init public/ --save`로 생성된 파일입니다. MSW 버전을 올릴 경우 동일 명령으로 재생성하세요.
 - 목 핸들러는 실제 API 응답 스펙과 최대한 동일하게 유지해, 나중에 `VITE_USE_MOCK=false`로 전환했을 때 화면이 깨지지 않도록 합니다.
