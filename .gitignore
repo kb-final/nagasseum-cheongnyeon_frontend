@@ -17,8 +17,30 @@ dist-ssr
 !.vscode/extensions.json
 .idea
 .DS_Store
+
+# Husky
+.husky/_/
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.AppleDouble
+.LSOverride
+.directory
+.Trash-*
+
+# Test coverage
+coverage/
+
+# Lint cache
+.eslintcache
+
+# AI
+CLAUDE.md
