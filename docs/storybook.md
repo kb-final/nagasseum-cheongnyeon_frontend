@@ -130,6 +130,51 @@ a11y: {
 
 ---
 
+## Chromatic 배포
+
+[Chromatic](https://www.chromatic.com/)은 PR에 커밋을 푸시할 때마다 Storybook을 자동으로 빌드·배포해 공유 가능한 URL을 만들어주고, 이전 상태와 비교해 컴포넌트가 시각적으로 의도치 않게 바뀌었는지 diff로 보여주는 서비스입니다. `main`/`develop`에 머지되면 그 상태가 새 비교 기준(baseline)으로 갱신됩니다.
+
+### 최초 1회 설정 (수동, 저장소 관리자)
+
+Chromatic 프로젝트 토큰은 계정 연동이 필요해 코드만으로는 만들 수 없습니다. 아래를 한 번 진행해야 합니다.
+
+1. [chromatic.com](https://www.chromatic.com/)에 GitHub 계정으로 로그인하고, 이 저장소(`nagasseum-cheongnyeon_frontend`)를 프로젝트로 추가합니다.
+2. 생성된 **project token**을 복사합니다.
+3. GitHub 저장소 **Settings → Secrets and variables → Actions**에서 `CHROMATIC_PROJECT_TOKEN`이라는 이름으로 토큰을 등록합니다.
+
+이 secret이 등록되기 전까지는 `.github/workflows/chromatic.yml`의 배포 스텝이 실패합니다.
+
+### CI 동작 방식
+
+```yaml
+# .github/workflows/chromatic.yml (발췌)
+on: push
+
+jobs:
+  chromatic:
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Chromatic이 이전 커밋과 비교하려면 전체 git 히스토리가 필요합니다.
+      - run: npm ci
+      - uses: chromaui/action@latest
+        with:
+          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+```
+
+- `on: push`이기 때문에 PR 브랜치에 커밋을 푸시할 때마다(머지 전에도) 배포되고, PR에 프리뷰 URL과 시각적 diff가 자동으로 코멘트/체크로 달립니다.
+- `main`/`develop`으로 머지된 뒤 다시 실행되면 그 브랜치 상태가 새 baseline이 됩니다.
+
+### 로컬에서 수동 실행
+
+```bash
+CHROMATIC_PROJECT_TOKEN=<프로젝트 토큰> npm run chromatic
+```
+
+CI 없이 로컬에서 직접 배포/비교하고 싶을 때 사용합니다. `--exit-zero-on-changes` 옵션이 기본으로 걸려 있어(`package.json`의 `chromatic` 스크립트), 시각적 변경이 있어도 로컬 실행은 실패로 처리되지 않습니다.
+
+---
+
 ## 주의사항
 
 - `storybook-static/`은 `.gitignore`에 포함되어 있어 커밋 대상이 아닙니다. 배포가 필요하면 `npm run build-storybook`으로 매번 새로 빌드하세요.
