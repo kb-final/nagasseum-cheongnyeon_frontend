@@ -46,3 +46,6 @@ coverage/
 CLAUDE.md
 *storybook.log
 storybook-static
+
+# Git 커밋 메시지 템플릿
+.gitmessage.txt

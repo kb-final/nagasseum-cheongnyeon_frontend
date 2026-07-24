@@ -6,6 +6,18 @@
 
 ---
 
+## 추가 문서
+
+| 문서                                                     | 내용                                                 |
+| -------------------------------------------------------- | ---------------------------------------------------- |
+| [docs/workflow.md](./docs/workflow.md)                   | 브랜치 생성 → 구현 → PR → 리뷰 → merge 개발 워크플로 |
+| [docs/architecture.md](./docs/architecture.md)           | 패키지 구조, Dependency Rules                        |
+| [docs/coding-convention.md](./docs/coding-convention.md) | 파일/컴포넌트 네이밍 컨벤션                          |
+| [docs/msw.md](./docs/msw.md)                             | MSW(Mock Service Worker) 설정 및 사용법              |
+| [docs/storybook.md](./docs/storybook.md)                 | Storybook 설정, 스토리 작성 규칙, Vitest 연동        |
+
+---
+
 ## ⚠️ 필수 환경
 
 | 항목    | 버전                                                                       | 주의                                               |
@@ -43,7 +55,7 @@ open http://localhost:5173
 
 ## Git Hooks
 
-Husky + lint-staged가 설정되어 있어, 커밋 시 스테이징된 파일에 대해 자동으로 실행됩니다.
+`Husky + lint-staged`가 설정되어 있어, 커밋 시 스테이징된 파일에 대해 자동으로 실행됩니다.
 
 ```
 *.{js,jsx,ts,tsx,vue}         → eslint --fix, prettier --write
@@ -51,16 +63,5 @@ Husky + lint-staged가 설정되어 있어, 커밋 시 스테이징된 파일에
 ```
 
 `npm install` 시 `prepare` 스크립트로 자동 활성화됩니다.
-
----
-
-## 추가 문서
-
-| 문서                                                     | 내용                                          |
-| -------------------------------------------------------- | --------------------------------------------- |
-| [docs/architecture.md](./docs/architecture.md)           | 패키지 구조, Dependency Rules                 |
-| [docs/coding-convention.md](./docs/coding-convention.md) | 파일/컴포넌트 네이밍 컨벤션                   |
-| [docs/msw.md](./docs/msw.md)                             | MSW(Mock Service Worker) 설정 및 사용법       |
-| [docs/storybook.md](./docs/storybook.md)                 | Storybook 설정, 스토리 작성 규칙, Vitest 연동 |
 
 ---
