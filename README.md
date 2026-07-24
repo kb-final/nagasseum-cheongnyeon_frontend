@@ -37,6 +37,8 @@ open http://localhost:5173
 
 백엔드(`localhost:8080`)가 떠 있어야 API를 호출하는 화면이 정상 동작합니다.
 
+> Storybook(`npm run storybook`)으로 공용 컴포넌트를 확인하거나 `npm run test`를 실행하려면, 최초 1회 `npx playwright install chromium`을 실행해야 합니다. 자세한 내용은 [docs/storybook.md](./docs/storybook.md)를 참고하세요.
+
 ---
 
 ## Git Hooks
@@ -54,10 +56,11 @@ Husky + lint-staged가 설정되어 있어, 커밋 시 스테이징된 파일에
 
 ## 추가 문서
 
-| 문서                                                     | 내용                                    |
-| -------------------------------------------------------- | --------------------------------------- |
-| [docs/architecture.md](./docs/architecture.md)           | 패키지 구조, Dependency Rules           |
-| [docs/coding-convention.md](./docs/coding-convention.md) | 파일/컴포넌트 네이밍 컨벤션             |
-| [docs/msw.md](./docs/msw.md)                             | MSW(Mock Service Worker) 설정 및 사용법 |
+| 문서                                                     | 내용                                          |
+| -------------------------------------------------------- | --------------------------------------------- |
+| [docs/architecture.md](./docs/architecture.md)           | 패키지 구조, Dependency Rules                 |
+| [docs/coding-convention.md](./docs/coding-convention.md) | 파일/컴포넌트 네이밍 컨벤션                   |
+| [docs/msw.md](./docs/msw.md)                             | MSW(Mock Service Worker) 설정 및 사용법       |
+| [docs/storybook.md](./docs/storybook.md)                 | Storybook 설정, 스토리 작성 규칙, Vitest 연동 |
 
 ---

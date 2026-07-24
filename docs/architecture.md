@@ -7,6 +7,10 @@
 ## 패키지 구조
 
 ```
+.storybook/                          # Storybook 설정 — 자세한 내용은 [storybook.md](./storybook.md) 참고
+├── main.js
+└── preview.js
+
 src/
 │
 ├── features/                        # 도메인별 독립 모듈
@@ -39,6 +43,7 @@ src/
 │   │
 │   ├── components/                  # 공용 UI 컴포넌트
 │   │   ├── BaseButton.vue           # 공용 컴포넌트는 "Base"로 시작합니다.
+│   │   ├── BaseButton.stories.js    # 컴포넌트와 같은 폴더에 Storybook 스토리 파일 저장
 │   │   ├── BaseTable.vue
 │   │   ├── BaseModal.vue
 │   │   ├── BasePagination.vue

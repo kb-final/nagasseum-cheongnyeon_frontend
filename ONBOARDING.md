@@ -114,6 +114,20 @@ npm run dev
 
 ---
 
+## STEP 8. (선택) Storybook 컴포넌트 테스트 준비
+
+공용 컴포넌트(`src/shared/components`)를 Storybook으로 확인하거나 스토리 기반 테스트(`npm run test`)를 돌리려면, 최초 1회 Chromium 브라우저를 설치해야 합니다. (`node_modules`처럼 로컬에만 존재하고 git에는 커밋되지 않으므로 각자 한 번씩 실행해야 합니다)
+
+```bash
+npm run storybook               # http://localhost:6006 에서 컴포넌트 목록 확인
+npx playwright install chromium # npm run test 실행 전 최초 1회 필요
+npm run test                    # 모든 스토리를 브라우저에서 렌더링해 검증
+```
+
+자세한 내용은 [docs/storybook.md](./docs/storybook.md)를 참고하세요.
+
+---
+
 ## 커밋하기 전에 알아둘 것
 
 `git commit` 시 아래가 스테이징된 파일에 대해 **자동으로** 실행됩니다. (`.husky/pre-commit` → `lint-staged`)
@@ -189,6 +203,9 @@ src/features/loan/
 **`@/shared/...` 같은 import에 에디터에서 빨간 줄이 뜬다 (빌드는 되는데 에디터만 에러)**
 → 루트의 `jsconfig.json`이 삭제되지 않았는지 확인하고, VS Code를 재시작하세요.
 
+**`npm run test` 실행 시 브라우저를 찾을 수 없다는 에러가 난다**
+→ `npx playwright install chromium`을 실행해서 Chromium 브라우저를 설치하세요. (STEP 8 참고)
+
 ---
 
 ## 체크리스트
@@ -198,5 +215,6 @@ src/features/loan/
 - [ ] `.env`가 클론 직후 존재하는지 확인 (`VITE_API_BASE_URL=http://localhost:8080`)
 - [ ] `npm run dev`로 `localhost:5173` 접속 확인
 - [ ] VS Code 추천 확장 3종 설치 (Volar, ESLint, Prettier)
+- [ ] (선택) `npx playwright install chromium` 실행, `npm run test` 통과 확인
 
 여기까지 되면 개발 시작 준비 완료입니다.

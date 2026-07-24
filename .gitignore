@@ -44,3 +44,5 @@ coverage/
 
 # AI
 CLAUDE.md
+*storybook.log
+storybook-static
