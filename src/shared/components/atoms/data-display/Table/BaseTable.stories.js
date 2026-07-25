@@ -1,8 +1,8 @@
-import Table from './Table.vue'
+import BaseTable from './BaseTable.vue'
 
 export default {
   title: 'Atoms/Data Display/Table',
-  component: Table,
+  component: BaseTable,
   tags: ['autodocs'],
 }
 

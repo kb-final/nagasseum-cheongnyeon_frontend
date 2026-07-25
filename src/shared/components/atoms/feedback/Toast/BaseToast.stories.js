@@ -1,11 +1,11 @@
 import { ref } from 'vue'
 
 import BaseButton from '../../base/button/BaseButton.vue'
-import Toast from './Toast.vue'
+import BaseToast from './BaseToast.vue'
 
 export default {
   title: 'Atoms/Feedback/Toast',
-  component: Toast,
+  component: BaseToast,
   tags: ['autodocs'],
   argTypes: {
     variant: { control: 'select', options: ['info', 'success', 'error'] },
@@ -15,7 +15,7 @@ export default {
     duration: 3000,
   },
   render: (args) => ({
-    components: { Toast, BaseButton },
+    components: { BaseToast, BaseButton },
     setup() {
       const visible = ref(false)
       return { args, visible }
@@ -23,9 +23,9 @@ export default {
     template: `
       <div>
         <BaseButton @click="visible = true">토스트 띄우기</BaseButton>
-        <Toast v-model="visible" :variant="args.variant" :duration="args.duration">
+        <BaseToast v-model="visible" :variant="args.variant" :duration="args.duration">
           저장되었습니다.
-        </Toast>
+        </BaseToast>
       </div>
     `,
   }),

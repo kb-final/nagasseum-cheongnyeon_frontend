@@ -1,8 +1,8 @@
-import Skeleton from './Skeleton.vue'
+import BaseSkeleton from './BaseSkeleton.vue'
 
 export default {
   title: 'Atoms/Feedback/Skeleton',
-  component: Skeleton,
+  component: BaseSkeleton,
   tags: ['autodocs'],
   args: {
     width: '100%',
@@ -10,11 +10,11 @@ export default {
     radius: '8px',
   },
   render: (args) => ({
-    components: { Skeleton },
+    components: { BaseSkeleton },
     setup() {
       return { args }
     },
-    template: `<Skeleton :width="args.width" :height="args.height" :radius="args.radius" />`,
+    template: `<BaseSkeleton :width="args.width" :height="args.height" :radius="args.radius" />`,
   }),
 }
 
@@ -22,12 +22,12 @@ export const Default = {}
 
 export const CardPlaceholder = {
   render: () => ({
-    components: { Skeleton },
+    components: { BaseSkeleton },
     template: `
       <div style="display: flex; flex-direction: column; gap: 8px; width: 320px;">
-        <Skeleton height="80px" radius="16px" />
-        <Skeleton width="60%" height="14px" />
-        <Skeleton width="40%" height="14px" />
+        <BaseSkeleton height="80px" radius="16px" />
+        <BaseSkeleton width="60%" height="14px" />
+        <BaseSkeleton width="40%" height="14px" />
       </div>
     `,
   }),

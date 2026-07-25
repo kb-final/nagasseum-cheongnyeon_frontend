@@ -1,17 +1,17 @@
 import { ref } from 'vue'
 
 import BaseButton from '../../base/button/BaseButton.vue'
-import Modal from './Modal.vue'
+import BaseModal from './BaseModal.vue'
 
 export default {
   title: 'Atoms/Feedback/Modal',
-  component: Modal,
+  component: BaseModal,
   tags: ['autodocs'],
   args: {
     title: '알림',
   },
   render: (args) => ({
-    components: { Modal, BaseButton },
+    components: { BaseModal, BaseButton },
     setup() {
       const isOpen = ref(true)
       return { args, isOpen }
@@ -19,13 +19,13 @@ export default {
     template: `
       <div>
         <BaseButton @click="isOpen = true">모달 열기</BaseButton>
-        <Modal v-model="isOpen" :title="args.title">
+        <BaseModal v-model="isOpen" :title="args.title">
           <p>모달 본문 내용입니다.</p>
           <template #footer>
             <BaseButton variant="secondary" size="modal" @click="isOpen = false">취소</BaseButton>
             <BaseButton variant="primary" size="modal" @click="isOpen = false">확인</BaseButton>
           </template>
-        </Modal>
+        </BaseModal>
       </div>
     `,
   }),

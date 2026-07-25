@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 
-import BottomNav from './BottomNav.vue'
+import BaseBottomNav from './BaseBottomNav.vue'
 
 const HomeIcon = {
   template: `
@@ -47,21 +47,21 @@ const items = [
 
 export default {
   title: 'Atoms/Navigation/BottomNav',
-  component: BottomNav,
+  component: BaseBottomNav,
   tags: ['autodocs'],
   args: {
     items,
     modelValue: 0,
   },
   render: (args) => ({
-    components: { BottomNav },
+    components: { BaseBottomNav },
     setup() {
       const active = ref(args.modelValue)
       return { args, active }
     },
     template: `
       <div style="width: 360px;">
-        <BottomNav :items="args.items" v-model="active" />
+        <BaseBottomNav :items="args.items" v-model="active" />
       </div>
     `,
   }),

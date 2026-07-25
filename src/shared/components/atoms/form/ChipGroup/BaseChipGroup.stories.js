@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 
-import ChipGroup from './ChipGroup.vue'
+import BaseChipGroup from './BaseChipGroup.vue'
 
 const housingOptions = [
   { label: '아파트', value: 'apartment' },
@@ -17,7 +17,7 @@ const dealOptions = [
 
 export default {
   title: 'Atoms/Form/ChipGroup',
-  component: ChipGroup,
+  component: BaseChipGroup,
   tags: ['autodocs'],
   args: {
     label: '주거 형태',
@@ -25,14 +25,14 @@ export default {
     modelValue: 'officetel',
   },
   render: (args) => ({
-    components: { ChipGroup },
+    components: { BaseChipGroup },
     setup() {
       const value = ref(args.modelValue)
       return { args, value }
     },
     template: `
       <div style="width: 400px;">
-        <ChipGroup :label="args.label" :options="args.options" v-model="value" />
+        <BaseChipGroup :label="args.label" :options="args.options" v-model="value" />
       </div>
     `,
   }),
@@ -42,7 +42,7 @@ export const Default = {}
 
 export const FilterForm = {
   render: () => ({
-    components: { ChipGroup },
+    components: { BaseChipGroup },
     setup() {
       const housing = ref('officetel')
       const deal = ref('jeonse')
@@ -50,8 +50,8 @@ export const FilterForm = {
     },
     template: `
       <div style="width: 400px; display: flex; flex-direction: column; gap: 40px;">
-        <ChipGroup label="주거 형태" :options="housingOptions" v-model="housing" />
-        <ChipGroup label="거래 유형" :options="dealOptions" v-model="deal" />
+        <BaseChipGroup label="주거 형태" :options="housingOptions" v-model="housing" />
+        <BaseChipGroup label="거래 유형" :options="dealOptions" v-model="deal" />
       </div>
     `,
   }),

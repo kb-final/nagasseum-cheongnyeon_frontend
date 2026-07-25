@@ -23,13 +23,5 @@ export default [
   {
     ignores: ['dist/**', 'dist-ssr/**', 'node_modules/**'],
   },
-  {
-    rules: {
-      'vue/multi-word-component-names': [
-        'error',
-        { ignores: ['Modal', 'Table', 'Pagination', 'Alert', 'Skeleton', 'Toast', 'Breadcrumb'] },
-      ],
-    },
-  },
   ...storybook.configs['flat/recommended'],
 ]
