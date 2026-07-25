@@ -1,11 +1,11 @@
 import { ref, watch } from 'vue'
 import { fn } from 'storybook/test'
 
-import BasePagination from './BasePagination.vue'
+import Pagination from './Pagination.vue'
 
 export default {
-  title: 'Shared/BasePagination',
-  component: BasePagination,
+  title: 'Atoms/Navigation/Pagination',
+  component: Pagination,
   tags: ['autodocs'],
   args: {
     page: 1,
@@ -13,7 +13,7 @@ export default {
     'onUpdate:page': fn(),
   },
   render: (args) => ({
-    components: { BasePagination },
+    components: { Pagination },
     setup() {
       const page = ref(args.page)
 
@@ -31,7 +31,7 @@ export default {
 
       return { args, page, handleUpdate }
     },
-    template: `<BasePagination :page="page" :total-pages="args.totalPages" @update:page="handleUpdate" />`,
+    template: `<Pagination :page="page" :total-pages="args.totalPages" @update:page="handleUpdate" />`,
   }),
 }
 

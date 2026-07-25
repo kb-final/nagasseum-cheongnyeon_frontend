@@ -4,16 +4,18 @@ import { fn } from 'storybook/test'
 import BaseInput from './BaseInput.vue'
 
 export default {
-  title: 'Shared/BaseInput',
+  title: 'Atoms/Base/Input',
   component: BaseInput,
   tags: ['autodocs'],
   argTypes: {
     type: { control: 'select', options: ['text', 'password', 'number', 'email'] },
+    size: { control: 'select', options: ['default', 'sm'] },
   },
   args: {
     modelValue: '',
     type: 'text',
     placeholder: '입력해주세요',
+    size: 'default',
     'onUpdate:modelValue': fn(),
   },
   render: (args) => ({
@@ -33,6 +35,7 @@ export default {
         :model-value="value"
         :type="args.type"
         :placeholder="args.placeholder"
+        :size="args.size"
         @update:model-value="handleUpdate"
       />
     `,
@@ -47,4 +50,8 @@ export const WithValue = {
 
 export const Password = {
   args: { type: 'password', placeholder: '비밀번호' },
+}
+
+export const Small = {
+  args: { size: 'sm', placeholder: '나이' },
 }
