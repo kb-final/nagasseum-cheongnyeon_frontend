@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 
-import BaseButton from '@/shared/components/BaseButton.vue'
+import BaseButton from '@/shared/components/atoms/base/button/BaseButton.vue'
 
 import { useAuthStore } from '@/features/auth/store/authStore'
 
@@ -32,11 +32,16 @@ async function handleKakaoLogin() {
     </div>
 
     <p v-if="authStore.user" class="login-view__result">
-      {{ authStore.user.nickname }}님, 환영합니다! (MSW 목 응답)
+      {{ authStore.user.nickname }}님, 환영합니다!
     </p>
 
     <div class="login-view__action">
-      <BaseButton :disabled="isLoading" @click="handleKakaoLogin">
+      <BaseButton
+        class="login-view__kakao-button"
+        size="lg"
+        :disabled="isLoading"
+        @click="handleKakaoLogin"
+      >
         {{ isLoading ? '로그인 중...' : '카카오로 3초만에 시작하기' }}
       </BaseButton>
       <p v-if="errorMessage" class="login-view__error">{{ errorMessage }}</p>
@@ -101,14 +106,6 @@ async function handleKakaoLogin() {
   margin-top: auto;
 }
 
-.login-view__action :deep(.base-button) {
-  width: 100%;
-  padding: 14px;
-  font-weight: 700;
-  background: #fee500;
-  color: #191919;
-}
-
 .login-view__error {
   font-size: 13px;
   color: #e03131;
@@ -117,5 +114,10 @@ async function handleKakaoLogin() {
 .login-view__terms {
   font-size: 12px;
   color: var(--muted, #8a8a8f);
+}
+
+.login-view :deep(.login-view__kakao-button) {
+  background: var(--color-kakao-bg, #fee500);
+  color: var(--color-kakao-text, #191600);
 }
 </style>
