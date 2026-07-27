@@ -42,9 +42,14 @@ defineEmits(['update:modelValue'])
 
 .base-modal {
   background: var(--bg, #fff);
-  border-radius: 8px;
+  border-radius: 22px;
   padding: 24px;
   min-width: 320px;
   max-width: 90vw;
+}
+
+.base-modal__footer {
+  display: flex;
+  gap: 10px;
 }
 </style>

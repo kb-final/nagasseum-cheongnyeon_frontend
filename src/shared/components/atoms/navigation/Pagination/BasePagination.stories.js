@@ -4,7 +4,7 @@ import { fn } from 'storybook/test'
 import BasePagination from './BasePagination.vue'
 
 export default {
-  title: 'Shared/BasePagination',
+  title: 'Atoms/Navigation/Pagination',
   component: BasePagination,
   tags: ['autodocs'],
   args: {

@@ -3,6 +3,7 @@ defineProps({
   modelValue: { type: [String, Number], default: '' },
   type: { type: String, default: 'text' },
   placeholder: { type: String, default: '' },
+  size: { type: String, default: 'default' },
 })
 
 defineEmits(['update:modelValue'])
@@ -14,16 +15,24 @@ defineEmits(['update:modelValue'])
     :value="modelValue"
     :placeholder="placeholder"
     class="base-input"
+    :class="`base-input--${size}`"
     @input="$emit('update:modelValue', $event.target.value)"
   />
 </template>
 
 <style scoped>
 .base-input {
-  width: 100%;
   padding: 8px 12px;
   border: 1px solid var(--border, #e5e4e7);
   border-radius: 6px;
   box-sizing: border-box;
+}
+
+.base-input--default {
+  width: 100%;
+}
+
+.base-input--sm {
+  width: 120px;
 }
 </style>

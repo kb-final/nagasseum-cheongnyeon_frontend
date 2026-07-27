@@ -1,7 +1,7 @@
 import BaseTable from './BaseTable.vue'
 
 export default {
-  title: 'Shared/BaseTable',
+  title: 'Atoms/Data Display/Table',
   component: BaseTable,
   tags: ['autodocs'],
 }

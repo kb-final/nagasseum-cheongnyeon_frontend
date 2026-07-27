@@ -1,3 +1,7 @@
+import '../src/assets/styles/main.css'
+
+import { INITIAL_VIEWPORTS } from 'storybook/viewport'
+
 /** @type { import('@storybook/vue3-vite').Preview } */
 const preview = {
   parameters: {
@@ -14,6 +18,14 @@ const preview = {
       // 'off' - skip a11y checks entirely
       test: 'todo',
     },
+
+    viewport: {
+      options: INITIAL_VIEWPORTS,
+    },
+  },
+
+  initialGlobals: {
+    viewport: { value: 'iphone12' },
   },
 }
 
