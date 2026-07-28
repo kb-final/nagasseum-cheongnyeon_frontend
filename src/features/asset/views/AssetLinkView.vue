@@ -60,6 +60,8 @@ async function loadInstitutions() {
 
 function handleNext() {
   if (!canSubmit.value) return
+  const selected = institutions.value.filter((institution) => isSelected(institution.id))
+  assetStore.setSelectedInstitutions(selected)
   router.push({ name: 'asset-auth' })
 }
 

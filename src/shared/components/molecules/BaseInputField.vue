@@ -32,6 +32,7 @@ defineEmits(['update:modelValue'])
       <span v-if="maxLength" class="base-input-field__counter">
         {{ String(modelValue).length }}/{{ maxLength }}
       </span>
+      <slot name="suffix" />
     </div>
     <p v-if="helperText" class="base-input-field__helper">{{ helperText }}</p>
   </div>

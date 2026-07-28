@@ -6,7 +6,7 @@ import { authRoutes } from '@/router/routes/auth.routes'
 import { assetRoutes } from '@/router/routes/asset.routes'
 import { useAuthStore } from '@/features/auth'
 
-const AUTH_REQUIRED_ROUTE_NAMES = ['basic-info', 'asset-link']
+const AUTH_REQUIRED_ROUTE_NAMES = ['basic-info', 'asset-link', 'asset-auth']
 
 const routes = [
   {
