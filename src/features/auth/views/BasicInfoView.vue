@@ -9,12 +9,11 @@ import BaseToggle from '@/shared/components/atoms/form/Toggle/BaseToggle.vue'
 import BaseBreadcrumb from '@/shared/components/atoms/navigation/Breadcrumb/BaseBreadcrumb.vue'
 import BaseInputField from '@/shared/components/molecules/BaseInputField.vue'
 import AppHeader from '@/shared/components/molecules/AppHeader.vue'
+import { ONBOARDING_STEPS } from '@/shared/constants/onboardingSteps'
 
 import { useAuthStore } from '@/features/auth/store/authStore'
 
 const NICKNAME_MAX_LENGTH = 12
-
-const steps = [{ label: '로그인' }, { label: '내 정보 설정' }, { label: '자산 연동' }]
 
 const incomeBracketOptions = [
   { value: 1, label: '1분위', sublabel: '하위 10%' },
@@ -65,7 +64,7 @@ async function handleNext() {
 <template>
   <div class="basic-info-view">
     <AppHeader title="등반 준비" :show-back="false" />
-    <BaseBreadcrumb class="basic-info-view__steps" :steps="steps" :current="2" />
+    <BaseBreadcrumb class="basic-info-view__steps" :steps="ONBOARDING_STEPS" :current="2" />
 
     <div class="basic-info-view__body">
       <div class="basic-info-view__intro">
