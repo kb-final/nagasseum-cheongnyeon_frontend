@@ -3,6 +3,7 @@ import AuthLayout from '@/layouts/AuthLayout.vue'
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
 
 import { authRoutes } from '@/router/routes/auth.routes'
+import { assetRoutes } from '@/router/routes/asset.routes'
 
 const routes = [
   {
@@ -15,7 +16,7 @@ const routes = [
   {
     path: '/',
     component: AuthLayout,
-    children: authRoutes,
+    children: [...authRoutes, ...assetRoutes],
   },
 ]
 
