@@ -1,7 +1,7 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 
-import { loginWithKakao } from '@/features/auth/api/authApi'
+import { loginWithKakao, updateBasicInfo } from '@/features/auth/api/authApi'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref(null)
@@ -13,5 +13,11 @@ export const useAuthStore = defineStore('auth', () => {
     accessToken.value = response.accessToken
   }
 
-  return { user, accessToken, loginWithKakaoAccount }
+  async function submitBasicInfo(basicInfo) {
+    const response = await updateBasicInfo(user.value.id, basicInfo)
+    user.value = response.user
+    return response
+  }
+
+  return { user, accessToken, loginWithKakaoAccount, submitBasicInfo }
 })

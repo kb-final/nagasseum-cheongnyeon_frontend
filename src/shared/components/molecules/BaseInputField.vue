@@ -8,6 +8,8 @@ defineProps({
   required: { type: Boolean, default: false },
   type: { type: String, default: 'text' },
   placeholder: { type: String, default: '' },
+  helperText: { type: String, default: '' },
+  maxLength: { type: Number, default: 0 },
 })
 
 defineEmits(['update:modelValue'])
@@ -19,12 +21,19 @@ defineEmits(['update:modelValue'])
       <span class="base-input-field__label">{{ label }}</span>
       <BaseFieldBadge :required="required" />
     </div>
-    <BaseInput
-      :model-value="modelValue"
-      :type="type"
-      :placeholder="placeholder"
-      @update:model-value="$emit('update:modelValue', $event)"
-    />
+    <div class="base-input-field__input-row">
+      <BaseInput
+        :model-value="modelValue"
+        :type="type"
+        :placeholder="placeholder"
+        :maxlength="maxLength || undefined"
+        @update:model-value="$emit('update:modelValue', $event)"
+      />
+      <span v-if="maxLength" class="base-input-field__counter">
+        {{ String(modelValue).length }}/{{ maxLength }}
+      </span>
+    </div>
+    <p v-if="helperText" class="base-input-field__helper">{{ helperText }}</p>
   </div>
 </template>
 
@@ -43,5 +52,25 @@ defineEmits(['update:modelValue'])
 .base-input-field__label {
   color: var(--text-h, #ffffff);
   font-weight: 500;
+}
+
+.base-input-field__input-row {
+  position: relative;
+}
+
+.base-input-field__counter {
+  position: absolute;
+  top: 50%;
+  right: 16px;
+  transform: translateY(-50%);
+  font-size: 12.4px;
+  color: #565c57;
+  pointer-events: none;
+}
+
+.base-input-field__helper {
+  margin: 8px 0 0;
+  font-size: 11.1px;
+  color: var(--text, #6e756f);
 }
 </style>
