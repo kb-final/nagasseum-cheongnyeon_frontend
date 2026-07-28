@@ -28,12 +28,12 @@ const incomeBracketOptions = [
 const router = useRouter()
 const authStore = useAuthStore()
 
-const nickname = ref('')
-const incomeBracket = ref(null)
+const nickname = ref(authStore.user?.nickname ?? '')
+const incomeBracket = ref(authStore.user?.incomeBracket ?? null)
 const notifications = reactive({
-  altitudeAlert: true,
-  policyDeadlineAlert: true,
-  peerComparison: false,
+  altitudeAlert: authStore.user?.notifications?.altitudeAlert ?? true,
+  policyDeadlineAlert: authStore.user?.notifications?.policyDeadlineAlert ?? true,
+  peerComparison: authStore.user?.notifications?.peerComparison ?? false,
 })
 
 const isSubmitting = ref(false)
