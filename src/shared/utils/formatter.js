@@ -9,3 +9,7 @@ export function formatDate(date, locale = 'ko-KR') {
 export function formatCurrency(amount, locale = 'ko-KR', currency = 'KRW') {
   return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(amount)
 }
+
+export function formatManwon(amount, locale = 'ko-KR') {
+  return `${Math.round(amount / 10000).toLocaleString(locale)}만원`
+}
