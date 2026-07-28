@@ -4,6 +4,8 @@ import { useRouter } from 'vue-router'
 
 import BaseButton from '@/shared/components/atoms/base/button/BaseButton.vue'
 import BaseCard from '@/shared/components/atoms/base/card/BaseCard.vue'
+import BaseAlert from '@/shared/components/atoms/feedback/Alert/BaseAlert.vue'
+import BaseToast from '@/shared/components/atoms/feedback/Toast/BaseToast.vue'
 import BaseBreadcrumb from '@/shared/components/atoms/navigation/Breadcrumb/BaseBreadcrumb.vue'
 import BaseInputField from '@/shared/components/molecules/BaseInputField.vue'
 import AppHeader from '@/shared/components/molecules/AppHeader.vue'
@@ -22,6 +24,8 @@ const birthDate = ref('')
 const isPasswordVisible = ref(false)
 const isSubmitting = ref(false)
 const errorMessage = ref('')
+const showSuccessToast = ref(false)
+const successMessage = ref('')
 
 const passwordFieldType = computed(() => (isPasswordVisible.value ? 'text' : 'password'))
 
@@ -46,6 +50,8 @@ async function handleSubmit() {
   isSubmitting.value = true
   errorMessage.value = ''
 
+  const institutionName = assetStore.currentInstitution.name
+
   try {
     await assetStore.authenticateCurrentInstitution({
       id: bankId.value,
@@ -54,9 +60,11 @@ async function handleSubmit() {
     })
 
     if (assetStore.currentInstitution) {
+      successMessage.value = `${institutionName} 연동 완료`
+      showSuccessToast.value = true
       resetForm()
     } else {
-      router.push({ name: 'home' })
+      router.push({ name: 'asset-syncing' })
     }
   } catch (error) {
     errorMessage.value =
@@ -171,11 +179,13 @@ onMounted(() => {
     </div>
 
     <div class="asset-auth-view__footer">
-      <p v-if="errorMessage" class="asset-auth-view__error">{{ errorMessage }}</p>
+      <BaseAlert v-if="errorMessage" variant="error">{{ errorMessage }}</BaseAlert>
       <BaseButton size="lg" :disabled="!canSubmit" @click="handleSubmit">
         {{ isSubmitting ? '인증 중...' : '연동하고 자산 조회하기' }}
       </BaseButton>
     </div>
+
+    <BaseToast v-model="showSuccessToast" variant="success">{{ successMessage }}</BaseToast>
   </div>
 </template>
 
@@ -277,11 +287,5 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   gap: 12px;
-}
-
-.asset-auth-view__error {
-  margin: 0;
-  font-size: 13px;
-  color: #e03131;
 }
 </style>

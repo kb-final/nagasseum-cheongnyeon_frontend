@@ -1,4 +1,4 @@
-import { AssetLinkView, AssetAuthView } from '@/features/asset'
+import { AssetLinkView, AssetAuthView, AssetSyncingView } from '@/features/asset'
 
 export const assetRoutes = [
   {
@@ -10,5 +10,10 @@ export const assetRoutes = [
     path: 'asset-auth',
     name: 'asset-auth',
     component: AssetAuthView,
+  },
+  {
+    path: 'asset-syncing',
+    name: 'asset-syncing',
+    component: AssetSyncingView,
   },
 ]
