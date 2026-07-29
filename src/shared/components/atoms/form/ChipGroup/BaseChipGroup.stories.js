@@ -23,6 +23,7 @@ export default {
     label: '주거 형태',
     options: housingOptions,
     modelValue: 'officetel',
+    size: 'default',
   },
   render: (args) => ({
     components: { BaseChipGroup },
@@ -32,13 +33,19 @@ export default {
     },
     template: `
       <div style="width: 400px;">
-        <BaseChipGroup :label="args.label" :options="args.options" v-model="value" />
+        <BaseChipGroup :label="args.label" :options="args.options" :size="args.size" v-model="value" />
       </div>
     `,
   }),
 }
 
 export const Default = {}
+
+export const Small = {
+  args: {
+    size: 'sm',
+  },
+}
 
 export const FilterForm = {
   render: () => ({
