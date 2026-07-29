@@ -4,6 +4,7 @@ import DefaultLayout from '@/layouts/DefaultLayout.vue'
 import MobileLayout from '@/layouts/MobileLayout.vue'
 
 import { authRoutes } from '@/router/routes/auth.routes'
+import { compareRoutes } from '@/router/routes/compare.routes'
 import { homeRoutes } from '@/router/routes/home.routes'
 import { placeholderRoutes } from '@/router/routes/placeholder.routes'
 
@@ -21,6 +22,7 @@ const routes = [
     component: DefaultLayout,
     children: [
       // 도메인별 라우트는 src/router/routes/{domain}.routes.js 에서 추가합니다.
+      ...compareRoutes,
     ],
   },
   {
