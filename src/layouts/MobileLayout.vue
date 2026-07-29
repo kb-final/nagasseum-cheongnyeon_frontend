@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
+import MobileContainer from '@/shared/components/molecules/MobileContainer.vue'
 import BaseBottomNav from '@/shared/components/atoms/navigation/BottomNav/BaseBottomNav.vue'
 import {
   HomeIcon,
@@ -30,7 +31,7 @@ function handleTabChange(index) {
 </script>
 
 <template>
-  <div class="mobile-layout">
+  <MobileContainer full-height>
     <main class="mobile-layout__content">
       <RouterView />
     </main>
@@ -41,19 +42,10 @@ function handleTabChange(index) {
         @update:model-value="handleTabChange"
       />
     </nav>
-  </div>
+  </MobileContainer>
 </template>
 
 <style scoped>
-.mobile-layout {
-  position: relative;
-  width: 100%;
-  max-width: 400px;
-  min-height: 100vh;
-  margin: 0 auto;
-  background: var(--bg, #111111);
-}
-
 .mobile-layout__content {
   box-sizing: border-box;
   min-height: 100vh;

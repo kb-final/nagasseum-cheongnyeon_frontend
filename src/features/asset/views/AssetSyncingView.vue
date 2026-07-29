@@ -38,7 +38,6 @@ onUnmounted(() => {
   justify-content: center;
   gap: 20px;
   width: 100%;
-  max-width: 390px;
   min-height: 600px;
   padding: 64px 24px;
   text-align: center;
