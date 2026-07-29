@@ -1,0 +1,134 @@
+<script setup>
+/** 게이지는 10칸이고 한 칸이 10%다. 목표 유형 분포 카드와 같은 눈금이다. */
+const SEGMENT_COUNT = 10
+
+defineProps({
+  regions: { type: Array, required: true }, // [{ rank, regionName, ratio }]
+})
+
+const filledCount = (ratio) => Math.round((ratio / 100) * SEGMENT_COUNT)
+</script>
+
+<template>
+  <div class="card">
+    <p class="card__title">인기 목표 지역 순위 · TOP 3</p>
+    <div class="region-list">
+      <div v-for="region in regions" :key="region.rank" class="region-row">
+        <span class="region-row__rank" :class="`region-row__rank--${region.rank}`">
+          {{ region.rank }}
+        </span>
+        <span class="region-row__name">{{ region.regionName }}</span>
+        <span
+          class="region-row__track"
+          :class="{ 'region-row__track--top': region.rank === 1 }"
+          aria-hidden="true"
+        >
+          <span
+            v-for="n in SEGMENT_COUNT"
+            :key="n"
+            class="region-row__segment"
+            :class="{ 'region-row__segment--on': n <= filledCount(region.ratio) }"
+          ></span>
+        </span>
+        <span class="region-row__value">{{ region.ratio }}%</span>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+/* 폰트 크기는 rem이 아닌 px로 고정한다.
+   루트가 18px/16px로 바뀌면 픽셀 폰트가 그리드에서 어긋나 뭉개진다. */
+.card {
+  /* 이 카드에서만 쓰는 색 */
+  --mint: #cdedd3;
+  --ink: #10130f;
+  --forest: #1d6b3f;
+  --forest-soft: #7fae89;
+  --segment: #a9c9b0;
+  --rank-1: #ffd939;
+  --rank-2: #d9dcc0;
+  --rank-3: #c9a26b;
+
+  border-radius: 20px;
+  padding: 16px;
+  background: var(--mint);
+  color: var(--ink);
+  /* 루트의 145%는 18px 기준으로 계산된 26.1px이 그대로 상속된다.
+     단위 없는 값으로 덮어써야 각 요소가 제 폰트 크기로 줄 높이를 계산한다. */
+  line-height: 1.45;
+}
+
+.card__title {
+  margin: 0;
+  font-size: 14px;
+}
+
+.region-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 12px;
+}
+
+/* 지역명 칸을 고정해야 행마다 게이지 시작 위치가 맞는다. */
+.region-row {
+  display: grid;
+  grid-template-columns: 24px 76px 1fr auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.region-row__rank {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  font-size: 12px;
+}
+
+.region-row__rank--1 {
+  background: var(--rank-1);
+}
+
+.region-row__rank--2 {
+  background: var(--rank-2);
+}
+
+.region-row__rank--3 {
+  background: var(--rank-3);
+}
+
+.region-row__name {
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.region-row__track {
+  display: flex;
+  gap: 3px;
+}
+
+.region-row__segment {
+  flex: 1;
+  height: 9px;
+  border-radius: 3px;
+  background: var(--segment);
+}
+
+.region-row__segment--on {
+  background: var(--forest-soft);
+}
+
+.region-row__track--top .region-row__segment--on {
+  background: var(--forest);
+}
+
+.region-row__value {
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+</style>
