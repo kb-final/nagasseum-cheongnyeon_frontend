@@ -139,7 +139,6 @@ async function handleNext() {
   flex-direction: column;
   gap: 24px;
   width: 100%;
-  max-width: 390px;
   padding: 16px 24px 24px;
 }
 
