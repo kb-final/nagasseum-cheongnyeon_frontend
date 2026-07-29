@@ -3,6 +3,8 @@ import { computed, onMounted, ref, watch } from 'vue'
 
 import { formatManwon } from '@/shared/utils/formatter'
 
+import { useAuthStore } from '@/features/auth'
+
 import { getGoalComparison } from '@/features/compare/api/compareApi'
 import AchievementHistogramCard from '@/features/compare/components/AchievementHistogramCard.vue'
 import CohortConditionCard from '@/features/compare/components/CohortConditionCard.vue'
@@ -19,10 +21,10 @@ import lockImage from '@/features/compare/assets/lock.png'
 const assetRange = ref(10_000_000)
 const ageRange = ref(2)
 
-// '또래 비교 데이터 제공' 약관 동의 여부. 회원가입·마이페이지에서 켜고 끄는 값이다.
-// TODO: 회원 정보 API가 나오면 그 값으로 교체 (지금은 잠금 화면 확인용으로 여기서만 제어)
-const hasCompareConsent = ref(true)
-// const hasCompareConsent = ref(false)
+// '또래 비교 데이터 제공' 약관 동의 여부. 회원가입·마이페이지 토글에서 정해진다.
+// 값을 모르면 동의 안 한 것으로 본다. 개인정보라 열어두는 쪽으로 기울면 안 된다.
+const authStore = useAuthStore()
+const hasCompareConsent = computed(() => authStore.user?.notifications?.peerComparison ?? false)
 
 const status = ref('loading') // loading | ready | insufficient | no-snapshot | no-consent | error
 const comparison = ref(null)
@@ -74,7 +76,8 @@ async function fetchComparison() {
   }
 }
 
-watch([assetRange, ageRange], fetchComparison)
+// 마이페이지에서 동의를 켜고 돌아왔을 때도 다시 불러온다.
+watch([assetRange, ageRange, hasCompareConsent], fetchComparison)
 
 onMounted(fetchComparison)
 </script>
@@ -186,13 +189,11 @@ onMounted(fetchComparison)
 </template>
 
 <style scoped>
+/* 폭·좌우 여백은 MobileLayout이 잡는다. 여기서 또 주면 이중으로 들어간다. */
 .compare-view {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  max-width: 420px;
-  margin: 0 auto;
-  padding-bottom: 16px;
   /* 루트의 145%는 18px 기준으로 계산된 26.1px이 그대로 상속된다.
      단위 없는 값으로 덮어써야 각 요소가 제 폰트 크기로 줄 높이를 계산한다. */
   line-height: 1.45;
@@ -203,7 +204,7 @@ onMounted(fetchComparison)
   flex-direction: column;
   align-items: center;
   gap: 3px;
-  padding: 8px 20px 6px;
+  padding: 8px 0 6px;
   text-align: center;
 }
 
@@ -224,7 +225,6 @@ onMounted(fetchComparison)
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 0 16px;
 }
 
 .compare-view__notice {
