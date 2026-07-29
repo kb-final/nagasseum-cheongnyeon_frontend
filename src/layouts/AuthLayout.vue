@@ -1,8 +1,12 @@
-<script setup></script>
+<script setup>
+import MobileContainer from '@/shared/components/molecules/MobileContainer.vue'
+</script>
 
 <template>
   <div class="auth-layout">
-    <RouterView />
+    <MobileContainer>
+      <RouterView />
+    </MobileContainer>
   </div>
 </template>
 

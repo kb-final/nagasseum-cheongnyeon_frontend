@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 
+import MobileContainer from '@/shared/components/molecules/MobileContainer.vue'
 import { formatManwon } from '@/shared/utils/formatter'
 
 import { useAuthStore } from '@/features/auth'
@@ -83,7 +84,7 @@ onMounted(fetchComparison)
 </script>
 
 <template>
-  <div class="compare-view">
+  <MobileContainer class="compare-view">
     <header class="compare-view__header">
       <h1>또래 비교</h1>
       <p v-if="snapshotLabel">집계 기준 {{ snapshotLabel }} · 매월 1일 갱신</p>
@@ -185,7 +186,7 @@ onMounted(fetchComparison)
       @apply="applyCohort"
       @close="isEditOpen = false"
     />
-  </div>
+  </MobileContainer>
 </template>
 
 <style scoped>
