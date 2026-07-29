@@ -69,6 +69,11 @@ defineEmits(['click'])
   color: #e3ffe8;
 }
 
+.base-button--dark {
+  background: var(--color-mint-deep, #16281c);
+  color: var(--color-card-highlight, #f7ffd1);
+}
+
 .base-button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
