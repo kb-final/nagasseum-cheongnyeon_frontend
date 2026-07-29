@@ -12,8 +12,12 @@ const props = defineProps({
   cohortRangeMax: { type: Number, required: true },
 })
 
-/** 700000 -> '70'. 시안이 '70~90만원'처럼 단위를 한 번만 붙여서 숫자만 만든다. */
-const manwon = (won) => (won / 10000).toLocaleString()
+/**
+ * 700000 -> '70'. 숫자만 만든다.
+ * 공용 formatManwon은 '70만원'처럼 단위까지 붙여서, '70~90만원'이나 '150만+' 형태를 만들 수 없다.
+ * 반올림 방식은 공용 함수와 맞춰둔다.
+ */
+const manwon = (won) => Math.round(won / 10000).toLocaleString()
 
 const fillPct = computed(() => Math.min(100, (props.myMonthlySaving / TRACK_MAX) * 100))
 </script>
