@@ -14,10 +14,10 @@ import {
 const route = useRoute()
 const router = useRouter()
 
-// 비교/정책/마이 화면은 아직 라우트가 없어서 클릭해도 빈 화면만 뜬다(추후 도메인 추가 시 자연스럽게 연결됨)
+// 정책/마이 화면은 아직 라우트가 없어서 클릭해도 빈 화면만 뜬다(추후 도메인 추가 시 자연스럽게 연결됨)
 const navItems = [
   { label: '홈', icon: HomeIcon, to: '/home' },
-  { label: '비교', icon: CompareIcon, to: '/goal' },
+  { label: '비교', icon: CompareIcon, to: '/compare' },
   { label: '정책', icon: PolicyIcon, to: '/policy' },
   { label: '마이', icon: MyIcon, to: '/my' },
 ]
