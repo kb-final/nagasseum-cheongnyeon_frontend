@@ -9,7 +9,17 @@ import { compareRoutes } from '@/router/routes/compare.routes'
 import { homeRoutes } from '@/router/routes/home.routes'
 import { placeholderRoutes } from '@/router/routes/placeholder.routes'
 
-const AUTH_REQUIRED_ROUTE_NAMES = ['basic-info', 'asset-link', 'asset-auth', 'asset-syncing']
+const AUTH_REQUIRED_ROUTE_NAMES = [
+  'basic-info',
+  'asset-link',
+  'asset-auth',
+  'asset-syncing',
+  'home',
+  'compare',
+]
+
+// 로컬 개발 전용. 각 화면을 로그인 없이 바로 확인하기 위한 우회이며, 프로덕션 빌드에서는 반드시 꺼져 있어야 한다.
+const SKIP_AUTH_GUARD = import.meta.env.VITE_SKIP_AUTH_GUARD === 'true'
 
 const routes = [
   {
@@ -30,6 +40,7 @@ const router = createRouter({
 })
 
 router.beforeEach((to) => {
+  if (SKIP_AUTH_GUARD) return true
   if (!AUTH_REQUIRED_ROUTE_NAMES.includes(to.name)) return true
 
   const authStore = useAuthStore()
