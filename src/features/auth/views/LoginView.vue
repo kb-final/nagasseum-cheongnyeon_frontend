@@ -1,10 +1,14 @@
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 
 import BaseButton from '@/shared/components/atoms/base/button/BaseButton.vue'
 
+import kakaoIcon from '@/assets/images/kakao-icon.png'
+
 import { useAuthStore } from '@/features/auth/store/authStore'
 
+const router = useRouter()
 const authStore = useAuthStore()
 const isLoading = ref(false)
 const errorMessage = ref('')
@@ -15,6 +19,7 @@ async function handleKakaoLogin() {
 
   try {
     await authStore.loginWithKakaoAccount()
+    router.push({ name: 'basic-info' })
   } catch {
     errorMessage.value = '로그인에 실패했습니다. 잠시 후 다시 시도해주세요.'
   } finally {
@@ -27,13 +32,9 @@ async function handleKakaoLogin() {
   <div class="login-view">
     <div class="login-view__intro">
       <div class="login-view__logo">🏠</div>
-      <h1 class="login-view__title">내집마련 청년</h1>
-      <p class="login-view__subtitle">내 집 마련까지, 한 걸음씩</p>
+      <h1 class="login-view__title">나갔음 청년</h1>
+      <p class="login-view__subtitle">내 집 정상까지, 한 걸음씩</p>
     </div>
-
-    <p v-if="authStore.user" class="login-view__result">
-      {{ authStore.user.nickname }}님, 환영합니다!
-    </p>
 
     <div class="login-view__action">
       <BaseButton
@@ -42,7 +43,8 @@ async function handleKakaoLogin() {
         :disabled="isLoading"
         @click="handleKakaoLogin"
       >
-        {{ isLoading ? '로그인 중...' : '카카오로 3초만에 시작하기' }}
+        <img class="login-view__kakao-icon" :src="kakaoIcon" alt="" />
+        {{ isLoading ? '로그인 중...' : '카카오로 5초만에 시작하기' }}
       </BaseButton>
       <p v-if="errorMessage" class="login-view__error">{{ errorMessage }}</p>
       <p class="login-view__terms">가입 시 이용약관 및 개인정보처리방침에 동의합니다</p>
@@ -92,11 +94,6 @@ async function handleKakaoLogin() {
   color: var(--muted, #8a8a8f);
 }
 
-.login-view__result {
-  font-size: 14px;
-  color: var(--accent, #aa3bff);
-}
-
 .login-view__action {
   display: flex;
   flex-direction: column;
@@ -116,8 +113,15 @@ async function handleKakaoLogin() {
   color: var(--muted, #8a8a8f);
 }
 
-.login-view :deep(.login-view__kakao-button) {
+.login-view__kakao-button {
+  gap: 8px;
   background: var(--color-kakao-bg, #fee500);
   color: var(--color-kakao-text, #191600);
+}
+
+.login-view__kakao-icon {
+  display: block;
+  width: 20px;
+  height: 20px;
 }
 </style>
