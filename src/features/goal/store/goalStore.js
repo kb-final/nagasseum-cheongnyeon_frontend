@@ -1,12 +1,15 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 
-import { postGoalDiagnosis } from '@/features/goal/api/goalApi'
+import { postGoalDiagnosis, postGoal } from '@/features/goal/api/goalApi'
 
 export const useGoalStore = defineStore('goal', () => {
-  const diagnosisResult = ref(null) // 진단 결과(달성 가능한 목표 옵션 배열)
+  const diagnosisResult = ref(null) // 진단 결과 { budget, results }
   const isSubmitting = ref(false)
   const error = ref(null)
+
+  const isSaving = ref(false)
+  const saveError = ref(null)
 
   async function submitDiagnosis(payload) {
     isSubmitting.value = true
@@ -21,5 +24,27 @@ export const useGoalStore = defineStore('goal', () => {
     }
   }
 
-  return { diagnosisResult, isSubmitting, error, submitDiagnosis }
+  async function saveGoal(payload) {
+    isSaving.value = true
+    saveError.value = null
+
+    try {
+      return await postGoal(payload)
+    } catch (e) {
+      saveError.value = e
+      return null
+    } finally {
+      isSaving.value = false
+    }
+  }
+
+  return {
+    diagnosisResult,
+    isSubmitting,
+    error,
+    submitDiagnosis,
+    isSaving,
+    saveError,
+    saveGoal,
+  }
 })

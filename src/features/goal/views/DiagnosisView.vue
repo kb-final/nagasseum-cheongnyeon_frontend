@@ -1,18 +1,41 @@
 <script setup>
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 import AppHeader from '@/shared/components/molecules/AppHeader.vue'
 
 import HousingGoalDiagnosisForm from '@/features/goal/components/HousingGoalDiagnosisForm.vue'
+import DiagnosisResultModal from '@/features/goal/components/DiagnosisResultModal.vue'
 import { useGoalStore } from '@/features/goal/store/goalStore'
 
 const router = useRouter()
 const goalStore = useGoalStore()
 
-function onSubmitted() {
-  // TODO(후속 작업): 진단 결과 옵션 목록 화면이 만들어지면 해당 라우트로 이동시킨다.
-  // 결과 화면 전까지는 store에 담긴 diagnosisResult를 콘솔로 확인한다.
-  console.log('진단 결과:', goalStore.diagnosisResult)
+const isResultOpen = ref(false)
+const conditionSummary = ref('')
+const lastDiagnosisPayload = ref(null)
+
+function onSubmitted({ conditionSummary: summary, payload }) {
+  if (goalStore.error) return
+
+  conditionSummary.value = summary
+  lastDiagnosisPayload.value = payload
+  isResultOpen.value = true
+}
+
+async function onConfirm() {
+  // 목표 설정 시점 중앙값을 targetAmount/targetRentMiddleAmount로 함께 저장한다 (goal ERD 참고)
+  const median = goalStore.diagnosisResult?.results?.[0]?.marketStats?.median
+  const saved = await goalStore.saveGoal({
+    ...lastDiagnosisPayload.value,
+    targetAmount: median,
+    targetRentMiddleAmount: median,
+  })
+
+  if (saved) {
+    isResultOpen.value = false
+    router.push({ name: 'home' })
+  }
 }
 </script>
 
@@ -23,6 +46,13 @@ function onSubmitted() {
       <HousingGoalDiagnosisForm @submitted="onSubmitted" />
       <p v-if="goalStore.error" class="diagnosis-view__error">진단 결과를 불러오지 못했어요.</p>
     </div>
+
+    <DiagnosisResultModal
+      v-model="isResultOpen"
+      :condition-summary="conditionSummary"
+      :result="goalStore.diagnosisResult"
+      @confirm="onConfirm"
+    />
   </div>
 </template>
 

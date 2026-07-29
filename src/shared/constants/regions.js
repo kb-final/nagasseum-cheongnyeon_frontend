@@ -98,3 +98,21 @@ export const GUGUN_BY_SIDO = {
   48: [],
   50: [],
 }
+
+// 구/군 코드로 "시/도 구/군" 라벨을 찾는다 (진단 결과 팝업의 조건 요약줄 등에 사용)
+export function getRegionLabel(gugunCode) {
+  for (const sido of SIDO_LIST) {
+    const gugun = GUGUN_BY_SIDO[sido.code]?.find((item) => item.code === gugunCode)
+    if (gugun) return `${sido.name} ${gugun.name}`
+  }
+  return ''
+}
+
+// 구/군 코드로 { sidoName, sigunguName }을 각각 찾는다 (진단 mock 응답의 region 필드 구성용)
+export function findRegionBySigunguCode(gugunCode) {
+  for (const sido of SIDO_LIST) {
+    const gugun = GUGUN_BY_SIDO[sido.code]?.find((item) => item.code === gugunCode)
+    if (gugun) return { sidoName: sido.name, sigunguName: gugun.name, sidoCode: sido.code }
+  }
+  return null
+}
