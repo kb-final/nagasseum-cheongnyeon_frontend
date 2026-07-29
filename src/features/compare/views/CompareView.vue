@@ -17,10 +17,30 @@ import SavingRangeCard from '@/features/compare/components/SavingRangeCard.vue'
 
 import lockImage from '@/features/compare/assets/lock.png'
 
-// 코호트 비교 범위. 사용자가 '수정'에서 바꿀 수 있어야 해서 상수가 아닌 상태로 둔다.
-// TODO: 서버에 사용자별 코호트 설정을 저장하는 테이블이 생기면 그 값으로 초기화
-const assetRange = ref(10_000_000)
-const ageRange = ref(2)
+const DEFAULT_ASSET_RANGE = 10_000_000
+const DEFAULT_AGE_RANGE = 2
+
+/**
+ * 코호트 비교 범위는 사용자 데이터가 아니라 화면 필터라서 서버에 저장하지 않는다.
+ * 브라우저에만 남겨두고, 없거나 깨졌으면 기본값으로 돌아간다.
+ */
+const COHORT_STORAGE_KEY = 'compare-cohort-range'
+
+function loadCohortRange() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(COHORT_STORAGE_KEY))
+    return {
+      assetRange: Number(saved?.assetRange) || DEFAULT_ASSET_RANGE,
+      ageRange: Number(saved?.ageRange) || DEFAULT_AGE_RANGE,
+    }
+  } catch {
+    return { assetRange: DEFAULT_ASSET_RANGE, ageRange: DEFAULT_AGE_RANGE }
+  }
+}
+
+const savedRange = loadCohortRange()
+const assetRange = ref(savedRange.assetRange)
+const ageRange = ref(savedRange.ageRange)
 
 // '또래 비교 데이터 제공' 약관 동의 여부. 회원가입·마이페이지 토글에서 정해진다.
 // 값을 모르면 동의 안 한 것으로 본다. 개인정보라 열어두는 쪽으로 기울면 안 된다.
@@ -36,6 +56,10 @@ function applyCohort({ assetRange: nextAsset, ageRange: nextAge }) {
   // 값이 바뀌면 아래 watch가 재조회한다.
   assetRange.value = nextAsset
   ageRange.value = nextAge
+  localStorage.setItem(
+    COHORT_STORAGE_KEY,
+    JSON.stringify({ assetRange: nextAsset, ageRange: nextAge }),
+  )
 }
 
 /** 응답의 snapshotYm('2026-07')을 '2026.07.01'로 바꾼다. 집계는 매월 1일 기준이다. */
@@ -190,7 +214,7 @@ onMounted(fetchComparison)
 </template>
 
 <style scoped>
-/* 폭·좌우 여백은 MobileLayout이 잡는다. 여기서 또 주면 이중으로 들어간다. */
+/* 폭·좌우 여백은 MobileContainer가 잡는다. 여기서 또 주면 이중으로 들어간다. */
 .compare-view {
   display: flex;
   flex-direction: column;
