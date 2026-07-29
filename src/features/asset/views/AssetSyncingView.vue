@@ -9,11 +9,7 @@ let redirectTimer = null
 
 onMounted(() => {
   redirectTimer = setTimeout(() => {
-    try {
-      router.push({ name: 'home' })
-    } catch {
-      // TODO: home 라우트가 추가되면 제거. vue-router가 미등록 라우트 이름에 동기적으로 예외를 던짐
-    }
+    router.push({ name: 'home' })
   }, SYNC_DISPLAY_DURATION_MS)
 })
 
