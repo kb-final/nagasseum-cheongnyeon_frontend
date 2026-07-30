@@ -1,7 +1,6 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 
-import MobileContainer from '@/shared/components/molecules/MobileContainer.vue'
 import { formatManwon } from '@/shared/utils/formatter'
 
 import { useAuthStore } from '@/features/auth'
@@ -68,6 +67,18 @@ const snapshotLabel = computed(() => {
   return digits.length >= 6 ? `${digits.slice(0, 4)}.${digits.slice(4, 6)}.01` : ''
 })
 
+/**
+ * 집계 기준일이 오래됐는지. 기능명세서 예외 흐름:
+ *   "배치 지연 → 마지막 집계 기준일 표시 / 집계 기준일 2주 초과 → 기준일 라벨 표시"
+ */
+const STALE_DAYS = 14
+const isSnapshotStale = computed(() => {
+  const digits = String(comparison.value?.snapshotYm ?? '').replace(/\D/g, '')
+  if (digits.length < 6) return false
+  const base = new Date(Number(digits.slice(0, 4)), Number(digits.slice(4, 6)) - 1, 1)
+  return (Date.now() - base.getTime()) / 86_400_000 > STALE_DAYS
+})
+
 async function fetchComparison() {
   // 어차피 거절당할 요청이므로 보내지 않는다.
   if (!hasCompareConsent.value) {
@@ -89,7 +100,6 @@ async function fetchComparison() {
     comparison.value = body.data
     status.value = 'ready'
   } catch (error) {
-    // TODO: 백엔드 완성 후 COMPARISON_NO_SNAPSHOT 응답 형태 확인해 분기 보정
     if (error.response?.status === 404) {
       status.value = 'no-snapshot'
     } else if (error.response?.status === 403) {
@@ -108,10 +118,13 @@ onMounted(fetchComparison)
 </script>
 
 <template>
-  <MobileContainer class="compare-view">
+  <div class="compare-view">
     <header class="compare-view__header">
       <h1>또래 비교</h1>
       <p v-if="snapshotLabel">집계 기준 {{ snapshotLabel }} · 매월 1일 갱신</p>
+      <span v-if="isSnapshotStale" class="compare-view__stale">
+        {{ snapshotLabel }} 기준 · 2주 이상 지난 집계
+      </span>
     </header>
 
     <div class="compare-view__body">
@@ -124,15 +137,15 @@ onMounted(fetchComparison)
       <CompareLockedCard v-else-if="status === 'no-consent'" />
 
       <div v-else-if="status === 'no-snapshot'" class="state-card">
-        <span class="state-card__eyebrow">404 · COMPARISON_NO_SNAPSHOT</span>
+        <span class="state-card__eyebrow">목표 미설정</span>
         <p class="state-card__title">아직 비교할 내 목표가 없어요</p>
         <p class="state-card__body">목표를 설정하면 이번 달 집계부터 또래와 비교해서 보여드려요.</p>
         <RouterLink class="state-card__cta" to="/">목표 설정하러 가기</RouterLink>
       </div>
 
       <div v-else-if="status === 'insufficient'" class="state-card">
-        <span class="state-card__eyebrow">200 · sufficient: false</span>
-        <p class="state-card__title">비교할 또래가 충분하지 않아요</p>
+        <span class="state-card__eyebrow">집계 대기</span>
+        <p class="state-card__title">아직 비교 데이터가 부족합니다</p>
         <p class="state-card__body">
           같은 자산·나이 범위의 또래가 {{ comparison.cohort.cohortSize }}명뿐이에요. 최소
           {{ comparison.cohort.minimumRequired }}명이 모이면 정확한 비교 결과를 보여드릴게요.
@@ -210,11 +223,11 @@ onMounted(fetchComparison)
       @apply="applyCohort"
       @close="isEditOpen = false"
     />
-  </MobileContainer>
+  </div>
 </template>
 
 <style scoped>
-/* 폭·좌우 여백은 MobileContainer가 잡는다. 여기서 또 주면 이중으로 들어간다. */
+/* 폭·좌우 여백은 MobileLayout이 잡는다. 여기서 또 주면 이중으로 들어간다. */
 .compare-view {
   display: flex;
   flex-direction: column;
@@ -244,6 +257,17 @@ onMounted(fetchComparison)
   margin: 0;
   font-size: 11.5px;
   color: var(--text);
+}
+
+/* 집계가 2주 넘게 묵었을 때만 붙는 라벨 */
+.compare-view__stale {
+  display: inline-flex;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: rgba(255, 217, 57, 0.16);
+  color: #ffd939;
+  font-size: 10.5px;
+  font-weight: 600;
 }
 
 .compare-view__body {
