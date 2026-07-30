@@ -7,6 +7,7 @@ import { assetRoutes } from '@/router/routes/asset.routes'
 import { useAuthStore } from '@/features/auth'
 import { compareRoutes } from '@/router/routes/compare.routes'
 import { homeRoutes } from '@/router/routes/home.routes'
+import { goalRoutes } from '@/router/routes/goal.routes'
 import { placeholderRoutes } from '@/router/routes/placeholder.routes'
 
 const AUTH_REQUIRED_ROUTE_NAMES = [
@@ -25,7 +26,7 @@ const routes = [
   {
     path: '/',
     component: MobileLayout,
-    children: [...homeRoutes, ...compareRoutes, ...placeholderRoutes],
+    children: [...homeRoutes, ...goalRoutes, ...compareRoutes, ...placeholderRoutes],
   },
   {
     path: '/',

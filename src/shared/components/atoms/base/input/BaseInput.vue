@@ -35,4 +35,14 @@ defineEmits(['update:modelValue'])
 .base-input--sm {
   width: 120px;
 }
+
+.base-input::-webkit-outer-spin-button,
+.base-input::-webkit-inner-spin-button {
+  margin: 0;
+  appearance: none;
+}
+
+.base-input[type='number'] {
+  appearance: textfield;
+}
 </style>

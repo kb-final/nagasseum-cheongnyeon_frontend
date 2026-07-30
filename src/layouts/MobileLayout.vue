@@ -23,6 +23,7 @@ const navItems = [
 ]
 
 const activeIndex = computed(() => navItems.findIndex((item) => route.path.startsWith(item.to)))
+const showNav = computed(() => route.path !== '/' && route.name !== 'diagnosis')
 
 function handleTabChange(index) {
   const target = navItems[index].to
@@ -32,10 +33,10 @@ function handleTabChange(index) {
 
 <template>
   <MobileContainer full-height>
-    <main class="mobile-layout__content">
+    <main class="mobile-layout__content" :class="{ 'mobile-layout__content--no-nav': !showNav }">
       <RouterView />
     </main>
-    <nav v-if="route.path !== '/'" class="mobile-layout__nav">
+    <nav v-if="showNav" class="mobile-layout__nav">
       <BaseBottomNav
         :items="navItems"
         :model-value="activeIndex"
@@ -50,6 +51,10 @@ function handleTabChange(index) {
   box-sizing: border-box;
   min-height: 100vh;
   padding: 16px 16px 96px;
+}
+
+.mobile-layout__content--no-nav {
+  padding-bottom: 16px;
 }
 
 .mobile-layout__nav {

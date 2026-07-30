@@ -14,6 +14,4 @@ export const placeholderRoutes = [
   { path: 'goal', name: 'goal', component: comingSoon('비교 화면은 준비 중이에요') },
   { path: 'policy', name: 'policy', component: comingSoon('정책 화면은 준비 중이에요') },
   { path: 'my', name: 'my', component: comingSoon('마이 화면은 준비 중이에요') },
-  // 진단 화면은 이번 스코프 밖이라, "+ 목표 설정하기" 버튼이 이동할 자리만 마련해 둔다
-  { path: 'diagnosis', name: 'diagnosis', component: comingSoon('진단 화면은 준비 중이에요') },
 ]
