@@ -19,7 +19,7 @@ const draftAge = ref(props.ageRange)
 
 const manwon = (won) => (won / 10000).toLocaleString()
 
-/** 채워진 트랙 길이. input 배경 그라데이션의 경계로 쓴다. */
+/** 채워진 트랙 길이. 손잡이 중심 위치와 같은 값이다. */
 const percent = (value, { min, max }) => `${((value - min) / (max - min)) * 100}%`
 
 const assetPct = computed(() => percent(draftAsset.value, ASSET))
@@ -49,16 +49,18 @@ function apply() {
           <span>자산 범위</span>
           <b>±{{ manwon(draftAsset) }}만원</b>
         </div>
-        <input
-          v-model.number="draftAsset"
-          class="field__slider"
-          type="range"
-          :min="ASSET.min"
-          :max="ASSET.max"
-          :step="ASSET.step"
-          :style="{ '--pct': assetPct }"
-          aria-label="자산 범위"
-        />
+        <div class="slider" :style="{ '--pct': assetPct }">
+          <div class="slider__track"></div>
+          <input
+            v-model.number="draftAsset"
+            class="slider__input"
+            type="range"
+            :min="ASSET.min"
+            :max="ASSET.max"
+            :step="ASSET.step"
+            aria-label="자산 범위"
+          />
+        </div>
         <div class="field__scale">
           <span>{{ manwon(ASSET.min) }}만</span>
           <span>{{ manwon(ASSET.max) }}만</span>
@@ -70,16 +72,18 @@ function apply() {
           <span>나이 범위</span>
           <b>±{{ draftAge }}세</b>
         </div>
-        <input
-          v-model.number="draftAge"
-          class="field__slider"
-          type="range"
-          :min="AGE.min"
-          :max="AGE.max"
-          :step="AGE.step"
-          :style="{ '--pct': agePct }"
-          aria-label="나이 범위"
-        />
+        <div class="slider" :style="{ '--pct': agePct }">
+          <div class="slider__track"></div>
+          <input
+            v-model.number="draftAge"
+            class="slider__input"
+            type="range"
+            :min="AGE.min"
+            :max="AGE.max"
+            :step="AGE.step"
+            aria-label="나이 범위"
+          />
+        </div>
         <div class="field__scale">
           <span>{{ AGE.min }}세</span>
           <span>{{ AGE.max }}세</span>
@@ -168,43 +172,64 @@ function apply() {
   color: var(--ink-muted);
 }
 
-/* 네이티브 range를 쓰면 키보드·터치 조작이 공짜로 따라온다.
-   트랙은 배경 그라데이션으로, 손잡이는 캐릭터 이미지로 갈아끼운다. */
-.field__slider {
+/* 네이티브 range는 손잡이를 트랙 안쪽에 가둔다. 최솟값일 때 손잡이의 '왼쪽 끝'이
+   트랙 시작점에 맞춰지므로, 손잡이 중심은 늘 반폭만큼 안쪽에 머문다.
+   그래서 트랙은 따로 그리고, input만 좌우로 손잡이 폭만큼 넓혀 밖으로 뺀다.
+   이러면 손잡이 중심이 트랙의 양 끝까지 정확히 도달한다. */
+.slider {
+  --thumb-size: 24px;
+
+  position: relative;
+  height: var(--thumb-size);
+  margin-top: 6px;
+}
+
+.slider__track {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  transform: translateY(-50%);
+  background: linear-gradient(to right, var(--track-fill) 0 var(--pct), var(--track) var(--pct));
+}
+
+.slider__input {
   -webkit-appearance: none;
   appearance: none;
-  display: block;
-  width: 100%;
-  height: 24px;
-  margin: 6px 0 0;
-  background: linear-gradient(to right, var(--track-fill) 0 var(--pct), var(--track) var(--pct))
-    center / 100% 3px no-repeat;
+  position: absolute;
+  top: 0;
+  left: calc(var(--thumb-size) / -2);
+  width: calc(100% + var(--thumb-size));
+  height: var(--thumb-size);
+  margin: 0;
+  background: transparent;
   cursor: pointer;
 }
 
 /* 트랙 높이를 손잡이와 같게 잡아야 손잡이가 세로 중앙에 온다. */
-.field__slider::-webkit-slider-runnable-track {
-  height: 24px;
+.slider__input::-webkit-slider-runnable-track {
+  height: var(--thumb-size);
   background: transparent;
 }
 
-.field__slider::-moz-range-track {
-  height: 24px;
+.slider__input::-moz-range-track {
+  height: var(--thumb-size);
   background: transparent;
 }
 
-.field__slider::-webkit-slider-thumb {
+.slider__input::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 24px;
-  height: 24px;
+  width: var(--thumb-size);
+  height: var(--thumb-size);
   border: 0;
   background: var(--thumb) center / contain no-repeat;
   image-rendering: pixelated;
 }
 
-.field__slider::-moz-range-thumb {
-  width: 24px;
-  height: 24px;
+.slider__input::-moz-range-thumb {
+  width: var(--thumb-size);
+  height: var(--thumb-size);
   border: 0;
   background: var(--thumb) center / contain no-repeat;
   image-rendering: pixelated;
