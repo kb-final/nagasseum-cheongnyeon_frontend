@@ -10,6 +10,7 @@ import BaseBreadcrumb from '@/shared/components/atoms/navigation/Breadcrumb/Base
 import BaseInputField from '@/shared/components/molecules/BaseInputField.vue'
 import AppHeader from '@/shared/components/molecules/AppHeader.vue'
 import { ONBOARDING_STEPS } from '@/shared/constants/onboardingSteps'
+import { loadAuthSession } from '@/shared/utils/authSession'
 
 import { useAssetStore } from '@/features/asset/store/assetStore'
 
@@ -18,9 +19,11 @@ const BIRTH_DATE_LENGTH = 6
 const router = useRouter()
 const assetStore = useAssetStore()
 
+const savedBirthDate = loadAuthSession().user?.birthDate ?? ''
+
 const bankId = ref('')
 const password = ref('')
-const birthDate = ref('')
+const birthDate = ref(savedBirthDate)
 const isPasswordVisible = ref(false)
 const isSubmitting = ref(false)
 const errorMessage = ref('')
@@ -40,7 +43,7 @@ const canSubmit = computed(
 function resetForm() {
   bankId.value = ''
   password.value = ''
-  birthDate.value = ''
+  birthDate.value = savedBirthDate
   isPasswordVisible.value = false
 }
 
