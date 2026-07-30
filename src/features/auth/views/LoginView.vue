@@ -60,7 +60,6 @@ async function handleKakaoLogin() {
   justify-content: space-between;
   gap: 48px;
   width: 100%;
-  max-width: 360px;
   min-height: 600px;
   padding: 64px 24px;
 }

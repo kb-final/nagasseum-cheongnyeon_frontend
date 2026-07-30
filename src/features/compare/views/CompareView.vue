@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 
+import MobileContainer from '@/shared/components/molecules/MobileContainer.vue'
 import { formatManwon } from '@/shared/utils/formatter'
 
 import { getGoalComparison } from '@/features/compare/api/compareApi'
@@ -80,7 +81,7 @@ onMounted(fetchComparison)
 </script>
 
 <template>
-  <div class="compare-view">
+  <MobileContainer class="compare-view">
     <header class="compare-view__header">
       <h1>또래 비교</h1>
       <p v-if="snapshotLabel">집계 기준 {{ snapshotLabel }} · 매월 1일 갱신</p>
@@ -182,7 +183,7 @@ onMounted(fetchComparison)
       @apply="applyCohort"
       @close="isEditOpen = false"
     />
-  </div>
+  </MobileContainer>
 </template>
 
 <style scoped>
@@ -190,8 +191,6 @@ onMounted(fetchComparison)
   display: flex;
   flex-direction: column;
   gap: 10px;
-  max-width: 420px;
-  margin: 0 auto;
   padding-bottom: 16px;
   /* 루트의 145%는 18px 기준으로 계산된 26.1px이 그대로 상속된다.
      단위 없는 값으로 덮어써야 각 요소가 제 폰트 크기로 줄 높이를 계산한다. */
