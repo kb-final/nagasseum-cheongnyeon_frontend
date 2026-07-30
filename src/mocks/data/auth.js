@@ -1,17 +1,35 @@
-export const mockLoginResponse = {
-  accessToken: 'mock-access-token',
-  user: {
-    id: 1,
-    profileImage: 'https://placehold.co/80x80',
+export const mockKakaoSignupRequiredResponse = {
+  success: true,
+  data: {
+    status: 'SIGNUP_REQUIRED',
+    accessToken: null,
+    refreshToken: null,
+    memberId: null,
+    kakaoId: '1234567890',
+    kakaoNickname: '김OO',
   },
+  error: null,
 }
 
-export function createMockBasicInfoResponse(memberId, basicInfo) {
-  return {
-    user: {
-      id: Number(memberId),
-      ...basicInfo,
-      profileImage: 'https://placehold.co/80x80',
-    },
-  }
+export const mockKakaoLoginResponse = {
+  success: true,
+  data: {
+    status: 'LOGIN',
+    accessToken: 'mock-access-token',
+    refreshToken: 'mock-refresh-token',
+    memberId: 1,
+    kakaoId: null,
+    kakaoNickname: null,
+  },
+  error: null,
+}
+
+export const mockKakaoSignupResponse = {
+  success: true,
+  data: {
+    accessToken: 'mock-access-token',
+    refreshToken: 'mock-refresh-token',
+    memberId: 1,
+  },
+  error: null,
 }
