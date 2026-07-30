@@ -26,7 +26,7 @@ const routes = [
   {
     path: '/',
     component: MobileLayout,
-    children: [...homeRoutes, ...gaolRoutes, ...compareRoutes, ...placeholderRoutes],
+    children: [...homeRoutes, ...goalRoutes, ...compareRoutes, ...placeholderRoutes],
   },
   {
     path: '/',
