@@ -11,3 +11,8 @@ export async function signupWithKakao(signupInfo) {
   const { data } = await httpClient.post('/api/v1/oauth/kakao/signup', signupInfo)
   return data.data
 }
+
+export async function refreshAccessToken(refreshToken) {
+  const { data } = await httpClient.post('/api/v1/auth/refresh', { refreshToken })
+  return data.data
+}

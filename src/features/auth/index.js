@@ -3,3 +3,4 @@ export { default as CallbackLoginView } from '@/features/auth/views/CallbackLogi
 export { default as CallbackSignupView } from '@/features/auth/views/CallbackSignupView.vue'
 export { default as BasicInfoView } from '@/features/auth/views/BasicInfoView.vue'
 export { useAuthStore } from '@/features/auth/store/authStore'
+export { registerAuthRefreshInterceptor } from '@/features/auth/api/authRefreshInterceptor'

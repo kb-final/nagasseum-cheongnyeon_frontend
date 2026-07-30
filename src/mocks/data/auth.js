@@ -33,3 +33,22 @@ export const mockKakaoSignupResponse = {
   },
   error: null,
 }
+
+export const mockRefreshResponse = {
+  success: true,
+  data: {
+    accessToken: 'mock-access-token-refreshed',
+    refreshToken: 'mock-refresh-token-refreshed',
+    memberId: 1,
+  },
+  error: null,
+}
+
+export const mockRefreshInvalidResponse = {
+  success: false,
+  data: null,
+  error: {
+    code: 'AUTH_001',
+    message: '유효하지 않은 토큰입니다.',
+  },
+}

@@ -11,3 +11,7 @@ export function loadAuthSession() {
 export function saveAuthSession(session) {
   sessionStorage.setItem(STORAGE_KEY, JSON.stringify(session))
 }
+
+export function clearAuthSession() {
+  sessionStorage.removeItem(STORAGE_KEY)
+}
