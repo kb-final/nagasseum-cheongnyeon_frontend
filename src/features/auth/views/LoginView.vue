@@ -1,30 +1,16 @@
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-
 import BaseButton from '@/shared/components/atoms/base/button/BaseButton.vue'
 
 import kakaoIcon from '@/assets/images/kakao-icon.png'
 
-import { useAuthStore } from '@/features/auth/store/authStore'
+function handleKakaoLogin() {
+  const params = new URLSearchParams({
+    response_type: 'code',
+    client_id: import.meta.env.VITE_KAKAO_CLIENT_ID,
+    redirect_uri: import.meta.env.VITE_KAKAO_REDIRECT_URI,
+  })
 
-const router = useRouter()
-const authStore = useAuthStore()
-const isLoading = ref(false)
-const errorMessage = ref('')
-
-async function handleKakaoLogin() {
-  isLoading.value = true
-  errorMessage.value = ''
-
-  try {
-    await authStore.loginWithKakaoAccount()
-    router.push({ name: 'basic-info' })
-  } catch {
-    errorMessage.value = '로그인에 실패했습니다. 잠시 후 다시 시도해주세요.'
-  } finally {
-    isLoading.value = false
-  }
+  window.location.href = `https://kauth.kakao.com/oauth/authorize?${params.toString()}`
 }
 </script>
 
@@ -37,16 +23,10 @@ async function handleKakaoLogin() {
     </div>
 
     <div class="login-view__action">
-      <BaseButton
-        class="login-view__kakao-button"
-        size="lg"
-        :disabled="isLoading"
-        @click="handleKakaoLogin"
-      >
+      <BaseButton class="login-view__kakao-button" size="lg" @click="handleKakaoLogin">
         <img class="login-view__kakao-icon" :src="kakaoIcon" alt="" />
-        {{ isLoading ? '로그인 중...' : '카카오로 5초만에 시작하기' }}
+        카카오로 5초만에 시작하기
       </BaseButton>
-      <p v-if="errorMessage" class="login-view__error">{{ errorMessage }}</p>
       <p class="login-view__terms">가입 시 이용약관 및 개인정보처리방침에 동의합니다</p>
     </div>
   </div>
@@ -100,11 +80,6 @@ async function handleKakaoLogin() {
   gap: 12px;
   width: 100%;
   margin-top: auto;
-}
-
-.login-view__error {
-  font-size: 13px;
-  color: #e03131;
 }
 
 .login-view__terms {
