@@ -1,11 +1,18 @@
 import httpClient from '@/shared/api/httpClient'
 
-export async function loginWithKakao() {
-  const { data } = await httpClient.post('/api/v1/auth/kakao')
-  return data
+export async function getKakaoCallback(code) {
+  const { data } = await httpClient.get('/api/v1/oauth/kakao/callback', {
+    params: { code },
+  })
+  return data.data
 }
 
-export async function updateBasicInfo(memberId, basicInfo) {
-  const { data } = await httpClient.patch(`/api/v1/members/${memberId}`, basicInfo)
-  return data
+export async function signupWithKakao(signupInfo) {
+  const { data } = await httpClient.post('/api/v1/oauth/kakao/signup', signupInfo)
+  return data.data
+}
+
+export async function refreshAccessToken(refreshToken) {
+  const { data } = await httpClient.post('/api/v1/auth/refresh', { refreshToken })
+  return data.data
 }

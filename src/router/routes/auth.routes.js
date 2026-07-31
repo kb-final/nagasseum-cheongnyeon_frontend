@@ -1,10 +1,20 @@
-import { LoginView, BasicInfoView } from '@/features/auth'
+import { LoginView, CallbackLoginView, CallbackSignupView, BasicInfoView } from '@/features/auth'
 
 export const authRoutes = [
   {
     path: 'login',
     name: 'login',
     component: LoginView,
+  },
+  {
+    path: 'callback',
+    name: 'callback-login',
+    component: CallbackLoginView,
+  },
+  {
+    path: 'callback/signup',
+    name: 'callback-signup',
+    component: CallbackSignupView,
   },
   {
     path: 'basic-info',
