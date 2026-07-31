@@ -8,7 +8,6 @@ import BaseFieldBadge from '@/shared/components/atoms/base/badge/BaseFieldBadge.
 import BaseInputField from '@/shared/components/molecules/BaseInputField.vue'
 import BaseOptionCardGroup from '@/shared/components/atoms/form/OptionCardGroup/BaseOptionCardGroup.vue'
 
-import { useToast } from '@/shared/composables/useToast'
 import { useMemberStore } from '@/features/member/store/memberStore'
 
 const incomeBracketOptions = [
@@ -22,7 +21,6 @@ const incomeBracketOptions = [
 
 const router = useRouter()
 const memberStore = useMemberStore()
-const { show: showToast } = useToast()
 
 const nickname = ref('')
 const incomeBracket = ref(null)
@@ -40,7 +38,6 @@ async function handleSave() {
   })
   if (memberStore.error) return
 
-  showToast('회원정보가 수정되었습니다', { type: 'success' })
   router.back()
 }
 </script>
