@@ -29,7 +29,10 @@ defineEmits(['back'])
     </button>
     <span v-else class="app-header__spacer" />
     <h1 class="app-header__title">{{ title }}</h1>
-    <span class="app-header__spacer" />
+    <!-- 우측 액션(예: "수정하기")이 없으면 제목이 가운데 오도록 spacer 크기를 유지한다 -->
+    <div class="app-header__action">
+      <slot name="action" />
+    </div>
   </header>
 </template>
 
@@ -64,6 +67,14 @@ defineEmits(['back'])
 
 .app-header__spacer {
   width: 24px;
+  height: 24px;
+}
+
+.app-header__action {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 24px;
   height: 24px;
 }
 </style>

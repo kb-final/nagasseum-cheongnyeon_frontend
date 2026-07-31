@@ -183,3 +183,38 @@ export function buildMockDiagnosisResult(payload) {
 
 // POST /api/v1/goals mock 저장 응답 — 실제 DB 저장 없이 성공 응답만 흉내낸다.
 export const mockGoalSaveResponse = { goalId: 1 }
+
+// GET /api/v1/goals/{goalId}/detail 응답 mock ("목표 달성 상세 조회" API 명세 기준).
+// 저축 기록이 3건 미만이면 forecasts에서 RECENT_AVERAGE가, 0건이면 FIXED 외 항목이 모두 빠진다.
+export const mockGoalDetail = {
+  goalId: 1,
+  goalType: 'HOUSING',
+  status: 'ACTIVE',
+  housing: {
+    title: '강남구 오피스텔 전세',
+    regionName: '강남구',
+    housingType: '오피스텔',
+    dealType: '전세',
+    areaMin: 10,
+    areaMax: 20,
+    depositMin: 300000000,
+    depositMax: 600000000,
+  },
+  targetDate: '2028-09-30',
+  progress: {
+    targetAmount: 360000000,
+    currentAmount: 347000000,
+    remainingAmount: 13000000,
+    achievementRate: 96.4,
+  },
+  savingStatus: {
+    fixedSaving: 500000,
+    recentAverageSaving: 620000,
+    latestSaving: 700000,
+  },
+  forecasts: [
+    { basis: 'FIXED', monthlySaving: 500000, expectedDate: '2028-09-30', monthsDiff: 0 },
+    { basis: 'RECENT_AVERAGE', monthlySaving: 620000, expectedDate: '2028-04-30', monthsDiff: 5 },
+    { basis: 'LATEST', monthlySaving: 700000, expectedDate: '2028-02-29', monthsDiff: 7 },
+  ],
+}

@@ -8,6 +8,12 @@ export async function postGoalDiagnosis(payload) {
   return data.data
 }
 
+// 목표 상세 화면 데이터 (목표 정보 · 달성 현황 · 저축 현황 · 예상 달성 시점)
+export async function fetchGoalDetail(goalId) {
+  const { data } = await httpClient.get(`/api/v1/goals/${goalId}/detail`)
+  return data.data
+}
+
 // 진단 결과 팝업에서 "이 목표로 설정" 선택 시 목표를 저장한다.
 export async function postGoal(payload) {
   const { data } = await httpClient.post('/api/v1/goals', payload)

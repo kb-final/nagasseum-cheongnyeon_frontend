@@ -19,6 +19,12 @@ export function formatWon(amount, locale = 'ko-KR') {
   return `${new Intl.NumberFormat(locale).format(amount)}원`
 }
 
+// "2028-09-30" -> "2028년 9월" (일자는 의미가 없고 연월만 보여주는 목표 시점/달성 시점 표기용)
+export function formatYearMonthKo(date) {
+  const d = new Date(date)
+  return `${d.getFullYear()}년 ${d.getMonth() + 1}월`
+}
+
 // "9.3억" 형태로 축약 표기 (억 단위 미만은 소수 첫째 자리까지, 불필요한 0은 생략)
 export function formatEok(amount) {
   const eok = Number((amount / 100000000).toFixed(1))
