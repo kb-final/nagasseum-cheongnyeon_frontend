@@ -1,9 +1,9 @@
 import { ref, watch } from 'vue'
 import { defineStore } from 'pinia'
 
-import { loadAuthSession, saveAuthSession } from '@/shared/utils/authSession'
+import { loadAuthSession, saveAuthSession, clearAuthSession } from '@/shared/utils/authSession'
 
-import { signupWithKakao } from '@/features/auth/api/authApi'
+import { signupWithKakao, logout as logoutRequest } from '@/features/auth/api/authApi'
 
 export const useAuthStore = defineStore('auth', () => {
   const session = loadAuthSession()
@@ -55,6 +55,17 @@ export const useAuthStore = defineStore('auth', () => {
     pendingSignup.value = null
   }
 
+  async function logout() {
+    try {
+      await logoutRequest()
+    } finally {
+      user.value = null
+      accessToken.value = null
+      refreshToken.value = null
+      clearAuthSession()
+    }
+  }
+
   return {
     user,
     accessToken,
@@ -63,5 +74,6 @@ export const useAuthStore = defineStore('auth', () => {
     setPendingSignup,
     loginWithKakaoSession,
     completeKakaoSignup,
+    logout,
   }
 })

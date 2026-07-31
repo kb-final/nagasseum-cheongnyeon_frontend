@@ -16,3 +16,7 @@ export async function refreshAccessToken(refreshToken) {
   const { data } = await httpClient.post('/api/v1/auth/refresh', { refreshToken })
   return data.data
 }
+
+export async function logout() {
+  await httpClient.post('/api/v1/auth/logout')
+}

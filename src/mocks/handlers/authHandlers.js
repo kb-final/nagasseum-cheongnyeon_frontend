@@ -6,6 +6,7 @@ import {
   mockKakaoSignupResponse,
   mockRefreshResponse,
   mockRefreshInvalidResponse,
+  mockLogoutResponse,
 } from '@/mocks/data/auth'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
@@ -32,5 +33,8 @@ export const authHandlers = [
       return HttpResponse.json(mockRefreshInvalidResponse, { status: 401 })
     }
     return HttpResponse.json(mockRefreshResponse)
+  }),
+  http.post(`${API_BASE_URL}/api/v1/auth/logout`, () => {
+    return HttpResponse.json(mockLogoutResponse)
   }),
 ]
