@@ -5,6 +5,7 @@ const props = defineProps({
   modelValue: { type: Boolean, default: false },
   variant: { type: String, default: 'info' },
   duration: { type: Number, default: 3000 },
+  position: { type: String, default: 'bottom' },
 })
 
 const emit = defineEmits(['update:modelValue'])
@@ -24,7 +25,7 @@ watch(
 
 <template>
   <Teleport to="body">
-    <div v-if="modelValue" class="toast" :class="`toast--${variant}`">
+    <div v-if="modelValue" class="toast" :class="[`toast--${variant}`, `toast--${position}`]">
       <slot />
     </div>
   </Teleport>
@@ -34,8 +35,6 @@ watch(
 .toast {
   position: fixed;
   left: 50%;
-  bottom: 32px;
-  transform: translateX(-50%);
   padding: 12px 20px;
   border-radius: 12px;
   font-size: 14px;
@@ -43,6 +42,16 @@ watch(
   z-index: 1100;
   background: #2a2a2a;
   color: #e3ffe8;
+}
+
+.toast--bottom {
+  bottom: 32px;
+  transform: translateX(-50%);
+}
+
+.toast--center {
+  top: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .toast--success {

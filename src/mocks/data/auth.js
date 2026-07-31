@@ -52,3 +52,9 @@ export const mockRefreshInvalidResponse = {
     message: '유효하지 않은 토큰입니다.',
   },
 }
+
+export const mockLogoutResponse = {
+  success: true,
+  data: null,
+  error: null,
+}

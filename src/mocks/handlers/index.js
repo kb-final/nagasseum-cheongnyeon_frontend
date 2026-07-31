@@ -4,6 +4,7 @@ import { compareHandlers } from '@/mocks/handlers/compareHandlers'
 import { homeHandlers } from '@/mocks/handlers/homeHandlers'
 import { dashboardExtrasHandlers } from '@/mocks/handlers/dashboardExtrasHandlers'
 import { goalHandlers } from '@/mocks/handlers/goalHandlers'
+import { memberHandlers } from '@/mocks/handlers/memberHandlers'
 
 export const handlers = [
   ...authHandlers,
@@ -12,4 +13,5 @@ export const handlers = [
   ...homeHandlers,
   ...dashboardExtrasHandlers,
   ...goalHandlers,
+  ...memberHandlers,
 ]
