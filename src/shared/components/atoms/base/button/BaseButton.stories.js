@@ -7,7 +7,7 @@ export default {
   component: BaseButton,
   tags: ['autodocs'],
   argTypes: {
-    variant: { control: 'select', options: ['primary', 'secondary', 'dark'] },
+    variant: { control: 'select', options: ['primary', 'secondary', 'dark', 'highlight'] },
     size: { control: 'select', options: ['modal', 'md', 'lg'] },
     type: { control: 'select', options: ['button', 'submit', 'reset'] },
   },
@@ -42,6 +42,10 @@ export const Secondary = {
 
 export const Dark = {
   args: { variant: 'dark', label: '목표 수정하기' },
+}
+
+export const Highlight = {
+  args: { variant: 'highlight', label: '월 저축액 변경하기' },
 }
 
 export const Medium = {

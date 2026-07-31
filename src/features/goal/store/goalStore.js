@@ -1,7 +1,7 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 
-import { postGoalDiagnosis, postGoal } from '@/features/goal/api/goalApi'
+import { postGoalDiagnosis, postGoal, fetchGoalDetail } from '@/features/goal/api/goalApi'
 
 export const useGoalStore = defineStore('goal', () => {
   const diagnosisResult = ref(null) // 진단 결과 { budget, results }
@@ -10,6 +10,10 @@ export const useGoalStore = defineStore('goal', () => {
 
   const isSaving = ref(false)
   const saveError = ref(null)
+
+  const goalDetail = ref(null) // 목표 상세 조회 결과 { housing, progress, savingStatus, forecasts, ... }
+  const isLoadingDetail = ref(false)
+  const detailError = ref(null)
 
   async function submitDiagnosis(payload) {
     isSubmitting.value = true
@@ -38,6 +42,20 @@ export const useGoalStore = defineStore('goal', () => {
     }
   }
 
+  async function loadGoalDetail(goalId) {
+    isLoadingDetail.value = true
+    detailError.value = null
+
+    try {
+      goalDetail.value = await fetchGoalDetail(goalId)
+    } catch (e) {
+      detailError.value = e
+      goalDetail.value = null
+    } finally {
+      isLoadingDetail.value = false
+    }
+  }
+
   return {
     diagnosisResult,
     isSubmitting,
@@ -46,5 +64,9 @@ export const useGoalStore = defineStore('goal', () => {
     isSaving,
     saveError,
     saveGoal,
+    goalDetail,
+    isLoadingDetail,
+    detailError,
+    loadGoalDetail,
   }
 })

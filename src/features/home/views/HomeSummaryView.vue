@@ -29,7 +29,7 @@ onMounted(() => {
         v-if="homeStore.summary.goal"
         :climb="homeStore.summary.climb"
         :goal="homeStore.summary.goal"
-        @view-goal="router.push('/goal')"
+        @view-goal="router.push(`/goals/${homeStore.summary.goal.id}`)"
       />
       <EmptyGoalCard v-else @create-goal="router.push('/diagnosis')" />
       <TotalAssetCard
