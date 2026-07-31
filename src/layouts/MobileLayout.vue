@@ -14,7 +14,7 @@ import {
 const route = useRoute()
 const router = useRouter()
 
-// 정책/마이 화면은 아직 라우트가 없어서 클릭해도 빈 화면만 뜬다(추후 도메인 추가 시 자연스럽게 연결됨)
+// 정책 화면은 아직 라우트가 없어서 클릭해도 빈 화면만 뜬다(추후 도메인 추가 시 자연스럽게 연결됨)
 const navItems = [
   { label: '홈', icon: HomeIcon, to: '/home' },
   { label: '비교', icon: CompareIcon, to: '/compare' },
@@ -22,8 +22,10 @@ const navItems = [
   { label: '마이', icon: MyIcon, to: '/my' },
 ]
 
+const HIDDEN_NAV_ROUTE_NAMES = ['diagnosis', 'edit-info']
+
 const activeIndex = computed(() => navItems.findIndex((item) => route.path.startsWith(item.to)))
-const showNav = computed(() => route.path !== '/' && route.name !== 'diagnosis')
+const showNav = computed(() => route.path !== '/' && !HIDDEN_NAV_ROUTE_NAMES.includes(route.name))
 
 function handleTabChange(index) {
   const target = navItems[index].to
