@@ -43,7 +43,6 @@ export const mockCompareSuccess = {
       cohortRangeMax: 900000,
     },
   },
-  message: null,
   error: null,
 }
 
@@ -65,6 +64,5 @@ export const mockCompareInsufficient = {
     popularRegions: null,
     savingRange: null,
   },
-  message: '비교할 또래가 충분하지 않습니다',
   error: null,
 }
