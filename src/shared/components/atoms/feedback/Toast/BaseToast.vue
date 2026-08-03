@@ -54,6 +54,15 @@ watch(
   transform: translate(-50%, -50%);
 }
 
+/* 화면 상단 헤더 바로 아래에 걸치는 알림 배너 */
+.toast--top {
+  top: 68px;
+  width: calc(100% - 32px);
+  max-width: 368px;
+  transform: translateX(-50%);
+  text-align: center;
+}
+
 .toast--success {
   background: var(--color-mint-strong, #c1e8c8);
   color: var(--color-mint-deep, #16281c);

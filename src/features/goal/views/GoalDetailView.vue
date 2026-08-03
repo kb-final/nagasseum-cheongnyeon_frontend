@@ -6,7 +6,8 @@ import AppHeader from '@/shared/components/molecules/AppHeader.vue'
 import BaseBadge from '@/shared/components/atoms/base/badge/BaseBadge.vue'
 import BaseButton from '@/shared/components/atoms/base/button/BaseButton.vue'
 import BaseSkeleton from '@/shared/components/atoms/feedback/Skeleton/BaseSkeleton.vue'
-import { formatEok, formatYearMonthKo } from '@/shared/utils/formatter'
+import { formatEok, formatManwon, formatYearMonthKo } from '@/shared/utils/formatter'
+import { useToast } from '@/shared/composables/useToast'
 
 import GoalProgressCard from '@/features/goal/components/GoalProgressCard.vue'
 import SavingForecastCard from '@/features/goal/components/SavingForecastCard.vue'
@@ -19,6 +20,7 @@ const props = defineProps({
 
 const router = useRouter()
 const goalStore = useGoalStore()
+const toast = useToast()
 
 const detail = computed(() => goalStore.goalDetail)
 
@@ -53,13 +55,18 @@ function goToEditGoal() {
 
 const isSavingModalOpen = ref(false)
 
-// 저축 계획을 바꾸면 달성 현황이 통째로 달라지므로, 상세 화면에 남지 않고 홈으로 돌려보낸다.
+// 저축 계획을 바꾸면 상세 화면에 그대로 머무르면서, 바뀐 값으로 화면을 다시 불러오고
+// 상단에 변경 완료 알림을 띄운다.
 async function onSubmitMonthlySaving(monthlySaving) {
   const updated = await goalStore.updateMonthlySaving(props.goalId, monthlySaving)
   if (!updated) return
 
   isSavingModalOpen.value = false
-  router.push({ name: 'home' })
+  await goalStore.loadGoalDetail(props.goalId)
+  toast.show(`월 저축 계획이 ${formatManwon(monthlySaving)}으로 변경되었어요.`, {
+    type: 'success',
+    position: 'top',
+  })
 }
 </script>
 
