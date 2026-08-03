@@ -30,6 +30,11 @@ const SKIP_AUTH_GUARD = import.meta.env.VITE_SKIP_AUTH_GUARD === 'true'
 const routes = [
   {
     path: '/',
+    component: AuthLayout,
+    children: [...authRoutes, ...assetRoutes],
+  },
+  {
+    path: '/',
     component: MobileLayout,
     children: [
       ...homeRoutes,
@@ -39,11 +44,6 @@ const routes = [
       ...assetDetailRoutes,
       ...placeholderRoutes,
     ],
-  },
-  {
-    path: '/',
-    component: AuthLayout,
-    children: [...authRoutes, ...assetRoutes],
   },
 ]
 
