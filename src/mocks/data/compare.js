@@ -11,8 +11,7 @@ export const mockCompareSuccess = {
       topDealType: 'JEONSE',
       items: [
         { dealType: 'JEONSE', label: '전세', ratio: 73.0, rank: 1 },
-        { dealType: 'WOLSE', label: '월세', ratio: 20.0, rank: 2 },
-        { dealType: 'ETC', label: '기타', ratio: 7.0, rank: 3 },
+        { dealType: 'WOLSE', label: '월세', ratio: 27.0, rank: 2 },
       ],
     },
     averageTargetAmount: 24000000,
