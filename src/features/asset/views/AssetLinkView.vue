@@ -70,7 +70,7 @@ onMounted(loadInstitutions)
 
 <template>
   <div class="asset-link-view">
-    <AppHeader title="자산 연동" @back="router.back()" />
+    <AppHeader title="자산 연동" :show-back="false" />
     <BaseBreadcrumb class="asset-link-view__steps" :steps="ONBOARDING_STEPS" :current="3" />
 
     <div class="asset-link-view__body">
