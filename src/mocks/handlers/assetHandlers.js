@@ -27,6 +27,6 @@ export const assetHandlers = [
   }),
   http.post(`${API_BASE_URL}/api/v1/assets/manual`, async ({ request }) => {
     const body = await request.json()
-    return HttpResponse.json(createMockManualAssetResponse(body))
+    return HttpResponse.json(createMockManualAssetResponse(body), { status: 201 })
   }),
 ]

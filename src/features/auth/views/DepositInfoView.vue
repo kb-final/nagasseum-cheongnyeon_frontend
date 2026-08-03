@@ -9,8 +9,10 @@ import AppHeader from '@/shared/components/molecules/AppHeader.vue'
 import { ONBOARDING_STEPS } from '@/shared/constants/onboardingSteps'
 
 import { createManualDepositAsset } from '@/features/auth/api/authApi'
+import { useAuthStore } from '@/features/auth/store/authStore'
 
 const router = useRouter()
+const authStore = useAuthStore()
 
 const amount = ref('')
 const isSubmitting = ref(false)
@@ -25,7 +27,10 @@ async function handleNext() {
   errorMessage.value = ''
 
   try {
-    await createManualDepositAsset({ amount: Number(amount.value) })
+    await createManualDepositAsset({
+      memberId: authStore.user?.id,
+      amount: Number(amount.value),
+    })
     router.push({ name: 'asset-link' })
   } catch (error) {
     errorMessage.value =

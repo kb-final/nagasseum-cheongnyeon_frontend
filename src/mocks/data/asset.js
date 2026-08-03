@@ -51,10 +51,11 @@ export function createMockConnectionResponse(organizationCode) {
   }
 }
 
-export function createMockManualAssetResponse({ assetType, amount, description }) {
+export function createMockManualAssetResponse({ assetType, amount }) {
+  const now = new Date().toISOString()
   return {
     success: true,
-    data: { id: 1, assetType, amount, description: description ?? null },
+    data: { id: 1, assetType, amount, createdAt: now, updatedAt: now },
     error: null,
   }
 }
