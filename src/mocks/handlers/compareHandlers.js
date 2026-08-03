@@ -18,7 +18,7 @@ function fakeCohortSize(assetRange, ageRange) {
 }
 
 export const compareHandlers = [
-  http.get(`${API_BASE_URL}/api/v1/goals/comparison`, ({ request }) => {
+  http.get(`${API_BASE_URL}/api/v1/comparison`, ({ request }) => {
     const params = new URL(request.url).searchParams
 
     // 실제 서버도 집계에 사용한 기준을 그대로 돌려준다. 목도 같은 모양을 유지한다.
