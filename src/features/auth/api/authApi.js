@@ -1,6 +1,31 @@
 import httpClient from '@/shared/api/httpClient'
 
-export async function loginWithKakao() {
-  const { data } = await httpClient.post('/api/v1/auth/kakao')
-  return data
+export async function getKakaoCallback(code) {
+  const { data } = await httpClient.get('/api/v1/oauth/kakao/callback', {
+    params: { code },
+  })
+  return data.data
+}
+
+export async function signupWithKakao(signupInfo) {
+  const { data } = await httpClient.post('/api/v1/oauth/kakao/signup', signupInfo)
+  return data.data
+}
+
+export async function refreshAccessToken(refreshToken) {
+  const { data } = await httpClient.post('/api/v1/auth/refresh', { refreshToken })
+  return data.data
+}
+
+export async function logout() {
+  await httpClient.post('/api/v1/auth/logout')
+}
+
+export async function createManualDepositAsset({ memberId, amount }) {
+  const { data } = await httpClient.post(
+    '/api/v1/assets/manual',
+    { assetType: 'DEPOSIT', amount },
+    { params: { memberId } },
+  )
+  return data.data
 }
