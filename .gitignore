@@ -47,6 +47,8 @@ CLAUDE.md
 AGENTS.md
 *storybook.log
 storybook-static
+## AI가 생성한 PR 검토를 위한 md파일
+pr.md
 
 # Git 커밋 메시지 템플릿
 .gitmessage.txt

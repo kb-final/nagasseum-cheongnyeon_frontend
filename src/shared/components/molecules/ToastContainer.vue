@@ -11,7 +11,7 @@ const { toasts } = useToast()
     :key="toast.id"
     :model-value="true"
     :variant="toast.type"
-    position="center"
+    :position="toast.position ?? 'center'"
   >
     {{ toast.message }}
   </BaseToast>

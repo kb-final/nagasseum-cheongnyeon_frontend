@@ -1,15 +1,17 @@
 <script setup>
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 import AppHeader from '@/shared/components/molecules/AppHeader.vue'
 import BaseBadge from '@/shared/components/atoms/base/badge/BaseBadge.vue'
 import BaseButton from '@/shared/components/atoms/base/button/BaseButton.vue'
 import BaseSkeleton from '@/shared/components/atoms/feedback/Skeleton/BaseSkeleton.vue'
-import { formatEok, formatYearMonthKo } from '@/shared/utils/formatter'
+import { formatEok, formatManwon, formatYearMonthKo } from '@/shared/utils/formatter'
+import { useToast } from '@/shared/composables/useToast'
 
 import GoalProgressCard from '@/features/goal/components/GoalProgressCard.vue'
 import SavingForecastCard from '@/features/goal/components/SavingForecastCard.vue'
+import MonthlySavingEditModal from '@/features/goal/components/MonthlySavingEditModal.vue'
 import { useGoalStore } from '@/features/goal/store/goalStore'
 
 const props = defineProps({
@@ -18,6 +20,7 @@ const props = defineProps({
 
 const router = useRouter()
 const goalStore = useGoalStore()
+const toast = useToast()
 
 const detail = computed(() => goalStore.goalDetail)
 
@@ -44,10 +47,26 @@ onMounted(() => {
   goalStore.loadGoalDetail(props.goalId)
 })
 
-// 목표 수정/월 저축액 변경은 UC-12(진단 폼)를 재사용하는 것이 기획 상 흐름이다.
+// 목표 수정은 UC-12(진단 폼)를 재사용하는 것이 기획 상 흐름이다.
 // 값이 채워진 전용 수정 폼은 별도 작업으로 분리되어 있어, 지금은 진단 화면으로 보낸다.
 function goToEditGoal() {
   router.push({ name: 'diagnosis' })
+}
+
+const isSavingModalOpen = ref(false)
+
+// 저축 계획을 바꾸면 상세 화면에 그대로 머무르면서, 바뀐 값으로 화면을 다시 불러오고
+// 상단에 변경 완료 알림을 띄운다.
+async function onSubmitMonthlySaving(monthlySaving) {
+  const updated = await goalStore.updateMonthlySaving(props.goalId, monthlySaving)
+  if (!updated) return
+
+  isSavingModalOpen.value = false
+  await goalStore.loadGoalDetail(props.goalId)
+  toast.show(`월 저축 계획이 ${formatManwon(monthlySaving)}으로 변경되었어요.`, {
+    type: 'success',
+    position: 'top',
+  })
 }
 </script>
 
@@ -81,10 +100,21 @@ function goToEditGoal() {
         :saving-status="detail.savingStatus"
         :forecasts="detail.forecasts"
         :target-date="detail.targetDate"
-        @change-saving="goToEditGoal"
+        @change-saving="isSavingModalOpen = true"
       />
 
       <BaseButton variant="primary" @click="goToEditGoal">목표 수정하기</BaseButton>
+
+      <p v-if="goalStore.updateError" class="goal-detail-view__error">
+        월 저축 계획을 수정하지 못했어요.
+      </p>
+
+      <MonthlySavingEditModal
+        v-model="isSavingModalOpen"
+        :detail="detail"
+        :is-submitting="goalStore.isUpdating"
+        @submit="onSubmitMonthlySaving"
+      />
     </template>
 
     <div v-else-if="goalStore.isLoadingDetail" class="goal-detail-view__skeleton">

@@ -6,9 +6,9 @@ const state = reactive({
 
 let nextId = 0
 
-function show(message, { type = 'info', duration = 3000 } = {}) {
+function show(message, { type = 'info', duration = 3000, position = 'center' } = {}) {
   const id = nextId++
-  state.toasts.push({ id, message, type })
+  state.toasts.push({ id, message, type, position })
 
   setTimeout(() => remove(id), duration)
 }
