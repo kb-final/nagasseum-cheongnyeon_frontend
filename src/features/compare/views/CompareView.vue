@@ -3,7 +3,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 
 import { formatManwon } from '@/shared/utils/formatter'
 
-import { useAuthStore } from '@/features/auth'
+import { useMemberStore } from '@/features/member/store/memberStore'
 
 import { getGoalComparison } from '@/features/compare/api/compareApi'
 import AchievementHistogramCard from '@/features/compare/components/AchievementHistogramCard.vue'
@@ -43,8 +43,8 @@ const ageRange = ref(savedRange.ageRange)
 
 // '또래 비교 데이터 제공' 약관 동의 여부. 회원가입·마이페이지 토글에서 정해진다.
 // 값을 모르면 동의 안 한 것으로 본다. 개인정보라 열어두는 쪽으로 기울면 안 된다.
-const authStore = useAuthStore()
-const hasCompareConsent = computed(() => authStore.user?.notifications?.peerComparison ?? false)
+const memberStore = useMemberStore()
+const hasCompareConsent = computed(() => memberStore.profile?.compareDataAgreed ?? false)
 
 const status = ref('loading') // loading | ready | insufficient | no-snapshot | no-consent | error
 const comparison = ref(null)
@@ -111,10 +111,21 @@ async function fetchComparison() {
   }
 }
 
-// 마이페이지에서 동의를 켜고 돌아왔을 때도 다시 불러온다.
-watch([assetRange, ageRange, hasCompareConsent], fetchComparison)
+// 비교 범위를 바꾸면 다시 불러온다.
+// 동의 여부는 여기서 보지 않는다. 이 화면은 keep-alive가 아니라서 마이페이지에서
+// 동의를 켜고 돌아오면 어차피 새로 mount되고, 아래 onMounted가 최신 프로필로 다시 조회한다.
+// 여기에 hasCompareConsent를 같이 걸면 프로필이 도착하는 순간 watch와 onMounted가
+// 함께 발동해 같은 요청이 두 번 나간다.
+watch([assetRange, ageRange], fetchComparison)
 
-onMounted(fetchComparison)
+onMounted(async () => {
+  // 새로고침으로 들어오면 프로필이 비어 있어 동의 여부를 알 수 없다.
+  // 마이페이지를 거쳐 왔다면 이미 채워져 있으므로 다시 부르지 않는다.
+  if (!memberStore.profile) {
+    await memberStore.fetchProfile()
+  }
+  fetchComparison()
+})
 </script>
 
 <template>
