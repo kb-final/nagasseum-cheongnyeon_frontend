@@ -26,7 +26,8 @@ onMounted(() => {
       <AssetTotalCard
         :total-assets="assetStore.assetDetail.totalAssets"
         :synced-at="assetStore.assetDetail.syncedAt"
-        @refresh="assetStore.fetchAssetDetail"
+        :is-refreshing="assetStore.isSyncing"
+        @refresh="assetStore.syncAndRefreshAssetDetail"
       />
 
       <AssetCategorySection

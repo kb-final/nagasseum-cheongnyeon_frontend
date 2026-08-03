@@ -2,7 +2,7 @@ import { http, HttpResponse } from 'msw'
 
 import {
   createMockConnectionResponse,
-  mockAssetDetailResponse,
+  mockAssetAccountsResponse,
   mockConnectionFailureResponse,
   mockOrganizationsResponse,
 } from '@/mocks/data/asset'
@@ -16,8 +16,11 @@ export const assetHandlers = [
   http.get(`${API_BASE_URL}/api/v1/assets/organizations`, () => {
     return HttpResponse.json(mockOrganizationsResponse)
   }),
-  http.get(`${API_BASE_URL}/api/v1/assets/detail`, () => {
-    return HttpResponse.json({ success: true, data: mockAssetDetailResponse, error: null })
+  http.get(`${API_BASE_URL}/api/v1/assets/accounts/:memberId`, () => {
+    return HttpResponse.json({ success: true, data: mockAssetAccountsResponse, error: null })
+  }),
+  http.post(`${API_BASE_URL}/api/v1/assets/sync`, () => {
+    return HttpResponse.json({ success: true, data: null, error: null })
   }),
   http.post(`${API_BASE_URL}/api/v1/assets/connections`, async ({ request }) => {
     const body = await request.json()

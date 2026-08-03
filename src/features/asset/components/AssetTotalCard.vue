@@ -7,13 +7,16 @@ import { formatWon } from '@/shared/utils/formatter'
 
 const props = defineProps({
   totalAssets: { type: Number, required: true },
-  syncedAt: { type: String, required: true },
+  syncedAt: { type: String, default: null },
+  isRefreshing: { type: Boolean, default: false },
 })
 
 defineEmits(['refresh'])
 
 // 오늘이면 "오늘 HH:mm", 아니면 "MM.DD HH:mm"으로 표시
 const syncedAtLabel = computed(() => {
+  if (!props.syncedAt) return null
+
   const synced = new Date(props.syncedAt)
   const now = new Date()
   const time = synced.toLocaleTimeString('ko-KR', {
@@ -31,12 +34,19 @@ const syncedAtLabel = computed(() => {
   <BaseCard class="asset-total-card">
     <div class="asset-total-card__top">
       <span class="asset-total-card__label">총 자산</span>
-      <BaseButton variant="dark" class="asset-total-card__refresh-btn" @click="$emit('refresh')">
-        ↻ 갱신
+      <BaseButton
+        variant="dark"
+        class="asset-total-card__refresh-btn"
+        :disabled="isRefreshing"
+        @click="$emit('refresh')"
+      >
+        {{ isRefreshing ? '갱신 중…' : '↻ 갱신' }}
       </BaseButton>
     </div>
     <p class="asset-total-card__amount">{{ formatWon(totalAssets) }}</p>
-    <span class="asset-total-card__synced">마지막 갱신 · {{ syncedAtLabel }}</span>
+    <span v-if="syncedAtLabel" class="asset-total-card__synced"
+      >마지막 갱신 · {{ syncedAtLabel }}</span
+    >
   </BaseCard>
 </template>
 

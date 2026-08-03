@@ -7,7 +7,7 @@ defineProps({
 </script>
 
 <template>
-  <div class="asset-account-card" :class="{ 'asset-account-card--highlight': account.highlight }">
+  <div class="asset-account-card">
     <div class="asset-account-card__info">
       <p class="asset-account-card__name">{{ account.name }}</p>
       <p class="asset-account-card__sub">{{ account.subLabel }}</p>
@@ -25,10 +25,6 @@ defineProps({
   padding: 16px;
   border-radius: 16px;
   background: var(--color-mint-pale, #cdedd3);
-}
-
-.asset-account-card--highlight {
-  background: var(--color-card-highlight, #f7ffd1);
 }
 
 .asset-account-card__info {
