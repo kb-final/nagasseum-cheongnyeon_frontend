@@ -5,6 +5,11 @@ export async function getAssetOrganizations() {
   return data
 }
 
+export async function getAssetDetail() {
+  const { data } = await httpClient.get('/api/v1/assets/detail')
+  return data
+}
+
 const LOGIN_TYPE_ID = 'ID'
 
 // RSA 공개키 도입 전 평문으로 전송

@@ -3,7 +3,7 @@ import AuthLayout from '@/layouts/AuthLayout.vue'
 import MobileLayout from '@/layouts/MobileLayout.vue'
 
 import { authRoutes } from '@/router/routes/auth.routes'
-import { assetRoutes } from '@/router/routes/asset.routes'
+import { assetRoutes, assetDetailRoutes } from '@/router/routes/asset.routes'
 import { useAuthStore } from '@/features/auth'
 import { compareRoutes } from '@/router/routes/compare.routes'
 import { homeRoutes } from '@/router/routes/home.routes'
@@ -17,6 +17,7 @@ const AUTH_REQUIRED_ROUTE_NAMES = [
   'asset-auth',
   'asset-syncing',
   'asset-link-additional',
+  'asset-detail',
   'home',
   'compare',
   'my',
@@ -35,6 +36,7 @@ const routes = [
       ...goalRoutes,
       ...compareRoutes,
       ...memberRoutes,
+      ...assetDetailRoutes,
       ...placeholderRoutes,
     ],
   },
