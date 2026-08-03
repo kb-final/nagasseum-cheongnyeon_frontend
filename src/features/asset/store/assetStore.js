@@ -5,10 +5,15 @@ import { loadAuthSession } from '@/shared/utils/authSession'
 import { formatYearMonthDot } from '@/shared/utils/formatter'
 
 import {
+  createManualAsset,
+  deleteManualAsset,
   getAssetAccounts,
   getAssetOrganizations,
+  getAssetSummary,
+  getManualAssets,
   linkAssetConnection,
   syncAssets,
+  updateManualAsset,
 } from '@/features/asset/api/assetApi'
 
 const ACCOUNT_TYPE_LABELS = {
@@ -27,6 +32,10 @@ const ASSET_CATEGORY_LABELS = {
 }
 
 const ASSET_CATEGORY_ORDER = ['현금성자산', '예적금', '투자자산', '청약', '기타']
+
+const MANUAL_ASSET_TYPE_LABELS = {
+  DEPOSIT: '현재 거주 보증금',
+}
 
 function buildAssetAccountViewModel(account, institutionName) {
   const typeLabel =
@@ -54,15 +63,22 @@ function buildLoanAccountViewModel(loan, institutionName) {
   }
 }
 
+function buildManualAssetViewModel(asset) {
+  return {
+    id: `manual-${asset.id}`,
+    name: MANUAL_ASSET_TYPE_LABELS[asset.assetType] ?? asset.assetType,
+    subLabel: '직접 등록',
+    amount: asset.amount,
+  }
+}
+
 function transformAssetAccountsResponse(institutions) {
   const categoryMap = new Map()
   const loans = []
-  let totalAssets = 0
 
   for (const institution of institutions) {
     for (const account of institution.assetAccounts) {
       const viewModel = buildAssetAccountViewModel(account, institution.institutionName)
-      totalAssets += viewModel.amount
 
       const categoryKey = account.assetCategory
       if (!categoryMap.has(categoryKey)) {
@@ -92,7 +108,7 @@ function transformAssetAccountsResponse(institutions) {
     return orderA - orderB
   })
 
-  return { totalAssets, categories, loans }
+  return { categories, loans }
 }
 
 export const useAssetStore = defineStore('asset', () => {
@@ -132,10 +148,18 @@ export const useAssetStore = defineStore('asset', () => {
 
     try {
       const { user } = loadAuthSession()
-      const response = await getAssetAccounts(user.id)
+      const memberId = user.id
+      const [accountsResponse, summaryResponse, manualAssetsResponse] = await Promise.all([
+        getAssetAccounts(memberId),
+        getAssetSummary(memberId),
+        getManualAssets(memberId),
+      ])
+
       assetDetail.value = {
-        ...transformAssetAccountsResponse(response.data.institutions),
-        syncedAt: null,
+        ...transformAssetAccountsResponse(accountsResponse.data.institutions),
+        totalAssets: summaryResponse.data.totalAssets,
+        syncedAt: summaryResponse.data.syncedAt,
+        manualAssets: manualAssetsResponse.data.map(buildManualAssetViewModel),
       }
     } catch (e) {
       detailError.value = e
@@ -155,6 +179,24 @@ export const useAssetStore = defineStore('asset', () => {
     }
   }
 
+  async function addManualAsset(payload) {
+    const { user } = loadAuthSession()
+    await createManualAsset(user.id, payload)
+    await fetchAssetDetail()
+  }
+
+  async function editManualAsset(id, payload) {
+    const { user } = loadAuthSession()
+    await updateManualAsset(id, user.id, payload)
+    await fetchAssetDetail()
+  }
+
+  async function removeManualAsset(id) {
+    const { user } = loadAuthSession()
+    await deleteManualAsset(id, user.id)
+    await fetchAssetDetail()
+  }
+
   return {
     organizations,
     isLoaded,
@@ -169,5 +211,8 @@ export const useAssetStore = defineStore('asset', () => {
     detailError,
     fetchAssetDetail,
     syncAndRefreshAssetDetail,
+    addManualAsset,
+    editManualAsset,
+    removeManualAsset,
   }
 })

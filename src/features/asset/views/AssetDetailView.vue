@@ -38,6 +38,20 @@ onMounted(() => {
         :accounts="category.accounts"
       />
 
+      <section
+        v-if="assetStore.assetDetail.manualAssets.length > 0"
+        class="asset-detail-view__manual"
+      >
+        <span class="asset-detail-view__manual-label">직접 등록한 자산</span>
+        <div class="asset-detail-view__manual-list">
+          <AssetAccountCard
+            v-for="asset in assetStore.assetDetail.manualAssets"
+            :key="asset.id"
+            :account="asset"
+          />
+        </div>
+      </section>
+
       <section class="asset-detail-view__loans">
         <span class="asset-detail-view__loans-label">대출</span>
         <div class="asset-detail-view__loans-list">
@@ -75,7 +89,20 @@ onMounted(() => {
   gap: 20px;
 }
 
+.asset-detail-view__manual,
 .asset-detail-view__loans {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.asset-detail-view__manual-label {
+  padding: 0 2px;
+  font-size: 13px;
+  color: #7fa398;
+}
+
+.asset-detail-view__manual-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
