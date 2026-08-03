@@ -36,6 +36,7 @@ import lockedImage from '@/features/compare/assets/locked.png'
   /* 이 화면에서만 쓰는 색 */
   --badge: #ffd939;
   --on-pale: #556057;
+  --on-pale-strong: #2d3a30;
 
   /* 잠금 일러스트 전용 색 */
   --art-face: #2b312c;
@@ -84,11 +85,12 @@ import lockedImage from '@/features/compare/assets/locked.png'
   width: 54px;
 }
 
-/* 원 테두리를 파고드는 배지. 바깥 여백은 배경색으로 원을 파낸 것처럼 보이게 한다. */
+/* 원 밖으로 살짝 걸치는 배지. 테두리는 배경색이라 원을 파낸 것처럼 보인다.
+   부모(.locked__art)에 overflow를 주면 튀어나온 부분이 잘리니 주의. */
 .locked__lock {
   position: absolute;
-  top: 73px;
-  left: 73px;
+  top: 84px;
+  left: 84px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -100,7 +102,6 @@ import lockedImage from '@/features/compare/assets/locked.png'
   box-sizing: border-box;
 }
 
-/* 원본이 11px이라 등배로 키워야 픽셀이 고르게 나온다. */
 .locked__lock img {
   width: 17px;
   height: 17px;
@@ -145,12 +146,14 @@ import lockedImage from '@/features/compare/assets/locked.png'
   color: var(--on-pale);
 }
 
+/* 본문보다 한 톤 진하게. 네모 점은 currentColor라 같이 따라온다. */
 .locked__info-title {
   display: flex;
   align-items: center;
   gap: 6px;
   margin: 0 0 8px;
   font-size: 12px;
+  color: var(--on-pale-strong);
 }
 
 .locked__dot {
