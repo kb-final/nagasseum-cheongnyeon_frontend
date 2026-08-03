@@ -12,6 +12,7 @@ import { memberRoutes } from '@/router/routes/member.routes'
 import { placeholderRoutes } from '@/router/routes/placeholder.routes'
 
 const AUTH_REQUIRED_ROUTE_NAMES = [
+  'deposit-info',
   'asset-link',
   'asset-auth',
   'asset-syncing',

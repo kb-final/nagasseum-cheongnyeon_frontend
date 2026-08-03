@@ -1,4 +1,10 @@
-import { LoginView, CallbackLoginView, CallbackSignupView, BasicInfoView } from '@/features/auth'
+import {
+  LoginView,
+  CallbackLoginView,
+  CallbackSignupView,
+  BasicInfoView,
+  DepositInfoView,
+} from '@/features/auth'
 
 export const authRoutes = [
   {
@@ -20,5 +26,10 @@ export const authRoutes = [
     path: 'basic-info',
     name: 'basic-info',
     component: BasicInfoView,
+  },
+  {
+    path: 'deposit-info',
+    name: 'deposit-info',
+    component: DepositInfoView,
   },
 ]

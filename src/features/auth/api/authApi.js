@@ -20,3 +20,12 @@ export async function refreshAccessToken(refreshToken) {
 export async function logout() {
   await httpClient.post('/api/v1/auth/logout')
 }
+
+export async function createManualDepositAsset({ memberId, amount }) {
+  const { data } = await httpClient.post(
+    '/api/v1/assets/manual',
+    { assetType: 'DEPOSIT', amount },
+    { params: { memberId } },
+  )
+  return data.data
+}

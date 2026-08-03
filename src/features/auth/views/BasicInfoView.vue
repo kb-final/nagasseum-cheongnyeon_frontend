@@ -58,7 +58,7 @@ async function handleNext() {
         { agreementType: 'COMPARE_DATA', agreed: compareDataAgreed.value },
       ],
     })
-    router.push({ name: 'asset-link' })
+    router.push({ name: 'deposit-info' })
   } catch (error) {
     errorMessage.value =
       error.response?.data?.error?.message ?? '가입에 실패했습니다. 잠시 후 다시 시도해주세요.'
@@ -120,7 +120,7 @@ async function handleNext() {
       <div class="basic-info-view__footer">
         <p v-if="errorMessage" class="basic-info-view__error">{{ errorMessage }}</p>
         <BaseButton size="lg" :disabled="!canSubmit" @click="handleNext">
-          {{ isSubmitting ? '가입 중...' : '다음 · 자산 연동하기' }}
+          {{ isSubmitting ? '가입 중...' : '다음' }}
         </BaseButton>
       </div>
     </template>
