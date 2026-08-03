@@ -4,7 +4,12 @@ import lockedImage from '@/features/compare/assets/locked.png'
 
 <template>
   <section class="locked">
-    <img class="locked__art" :src="lockedImage" alt="" />
+    <div class="locked__art">
+      <span class="locked__line"></span>
+      <span class="locked__line"></span>
+      <span class="locked__line"></span>
+      <span class="locked__lock"><img :src="lockedImage" alt="" /></span>
+    </div>
 
     <span class="locked__badge">LOCKED</span>
     <h2 class="locked__title">아직 비교할 수 없어요</h2>
@@ -32,6 +37,12 @@ import lockedImage from '@/features/compare/assets/locked.png'
   --badge: #ffd939;
   --on-pale: #556057;
 
+  /* 잠금 일러스트 전용 색 */
+  --art-face: #2b312c;
+  --art-line: #7f8a7d;
+  --art-lock: #9fd8ab;
+  --art-gap: #111511;
+
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -42,9 +53,57 @@ import lockedImage from '@/features/compare/assets/locked.png'
   line-height: 1.45;
 }
 
+/* 바깥 원만 둥글다. 안쪽 막대는 각지게 둔다. */
 .locked__art {
+  position: relative;
   width: 120px;
   height: 120px;
+  border-radius: 50%;
+  background: var(--art-face);
+}
+
+.locked__line {
+  position: absolute;
+  left: 30px;
+  height: 10px;
+  background: var(--art-line);
+}
+
+.locked__line:nth-of-type(1) {
+  top: 40px;
+  width: 60px;
+}
+
+.locked__line:nth-of-type(2) {
+  top: 58px;
+  width: 46px;
+}
+
+.locked__line:nth-of-type(3) {
+  top: 76px;
+  width: 54px;
+}
+
+/* 원 테두리를 파고드는 배지. 바깥 여백은 배경색으로 원을 파낸 것처럼 보이게 한다. */
+.locked__lock {
+  position: absolute;
+  top: 73px;
+  left: 73px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 4px solid var(--art-gap);
+  background: var(--art-lock);
+  box-sizing: border-box;
+}
+
+/* 원본이 11px이라 등배로 키워야 픽셀이 고르게 나온다. */
+.locked__lock img {
+  width: 17px;
+  height: 17px;
   image-rendering: pixelated;
 }
 
