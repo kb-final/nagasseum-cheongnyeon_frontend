@@ -193,8 +193,8 @@ export const mockGoalDetail = {
   housing: {
     title: '강남구 오피스텔 전세',
     regionName: '강남구',
-    housingType: '오피스텔',
-    dealType: '전세',
+    housingType: 'OFFICETEL',
+    dealType: 'JEONSE',
     areaMin: 10,
     areaMax: 20,
     depositMin: 300000000,
@@ -217,4 +217,37 @@ export const mockGoalDetail = {
     { basis: 'RECENT_AVERAGE', monthlySaving: 620000, expectedDate: '2028-04-30', monthsDiff: 5 },
     { basis: 'LATEST', monthlySaving: 700000, expectedDate: '2028-02-29', monthsDiff: 7 },
   ],
+}
+
+// GET /api/v1/goals/{goalId} 응답 mock ("목표 조회" API 명세 기준).
+// 수정 폼 재현용이라 지역은 이름이 아니라 코드 배열로 내려온다.
+export const mockGoal = {
+  goalId: 1,
+  goalType: 'HOUSING',
+  status: 'ACTIVE',
+  targetAmount: mockGoalDetail.progress.targetAmount,
+  targetDate: mockGoalDetail.targetDate,
+  monthlySaving: mockGoalDetail.savingStatus.fixedSaving,
+  housing: {
+    regions: ['11680'],
+    housingTypes: [mockGoalDetail.housing.housingType],
+    dealTypes: [mockGoalDetail.housing.dealType],
+    areaMin: mockGoalDetail.housing.areaMin,
+    areaMax: mockGoalDetail.housing.areaMax,
+    depositMin: mockGoalDetail.housing.depositMin,
+    depositMax: mockGoalDetail.housing.depositMax,
+    monthlyRentMin: null,
+    monthlyRentMax: null,
+  },
+}
+
+// PUT /api/v1/goals/{goalId} 는 아직 백엔드 구현 전이라, 목 핸들러가 위 두 fixture의 월 저축액을
+// 메모리에서 갱신해 준다. 수정 직후 화면 이동 시 바뀐 값이 보이게 하려는 것이며,
+// 브라우저를 새로고침하면 모듈이 다시 로드되어 초기값으로 돌아온다.
+export function applyMockGoalUpdate({ monthlySaving }) {
+  mockGoal.monthlySaving = monthlySaving
+  mockGoalDetail.savingStatus.fixedSaving = monthlySaving
+
+  const fixedForecast = mockGoalDetail.forecasts.find((forecast) => forecast.basis === 'FIXED')
+  if (fixedForecast) fixedForecast.monthlySaving = monthlySaving
 }
