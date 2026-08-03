@@ -51,6 +51,14 @@ export function createMockConnectionResponse(organizationCode) {
   }
 }
 
+export function createMockManualAssetResponse({ assetType, amount, description }) {
+  return {
+    success: true,
+    data: { id: 1, assetType, amount, description: description ?? null },
+    error: null,
+  }
+}
+
 export const mockConnectionFailureResponse = {
   success: false,
   error: {

@@ -2,6 +2,7 @@ import { http, HttpResponse } from 'msw'
 
 import {
   createMockConnectionResponse,
+  createMockManualAssetResponse,
   mockConnectionFailureResponse,
   mockOrganizationsResponse,
 } from '@/mocks/data/asset'
@@ -23,5 +24,9 @@ export const assetHandlers = [
     }
 
     return HttpResponse.json(createMockConnectionResponse(body.organizationCode))
+  }),
+  http.post(`${API_BASE_URL}/api/v1/assets/manual`, async ({ request }) => {
+    const body = await request.json()
+    return HttpResponse.json(createMockManualAssetResponse(body))
   }),
 ]
