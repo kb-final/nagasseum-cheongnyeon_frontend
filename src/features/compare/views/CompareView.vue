@@ -111,8 +111,12 @@ async function fetchComparison() {
   }
 }
 
-// 마이페이지에서 동의를 켜고 돌아왔을 때도 다시 불러온다.
-watch([assetRange, ageRange, hasCompareConsent], fetchComparison)
+// 비교 범위를 바꾸면 다시 불러온다.
+// 동의 여부는 여기서 보지 않는다. 이 화면은 keep-alive가 아니라서 마이페이지에서
+// 동의를 켜고 돌아오면 어차피 새로 mount되고, 아래 onMounted가 최신 프로필로 다시 조회한다.
+// 여기에 hasCompareConsent를 같이 걸면 프로필이 도착하는 순간 watch와 onMounted가
+// 함께 발동해 같은 요청이 두 번 나간다.
+watch([assetRange, ageRange], fetchComparison)
 
 onMounted(async () => {
   // 새로고침으로 들어오면 프로필이 비어 있어 동의 여부를 알 수 없다.
