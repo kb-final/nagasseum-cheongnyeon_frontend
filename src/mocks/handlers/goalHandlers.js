@@ -6,6 +6,7 @@ import {
   mockGoalDetail,
   mockGoal,
   applyMockGoalUpdate,
+  mockSavingSimulations,
 } from '@/mocks/data/goal'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
@@ -23,6 +24,47 @@ export const goalHandlers = [
   http.post(`${API_BASE_URL}/api/v1/goals`, async ({ request }) => {
     await request.json()
     return HttpResponse.json({ success: true, data: mockGoalSaveResponse, error: null })
+  }),
+
+  http.get(`${API_BASE_URL}/api/v1/goals/:goalId/simulations/monthly-saving`, ({ request }) => {
+    const monthlySaving = Number(new URL(request.url).searchParams.get('monthlySaving'))
+
+    if (!Number.isFinite(monthlySaving) || monthlySaving <= 0) {
+      return HttpResponse.json(
+        {
+          success: false,
+          data: null,
+          message: null,
+          error: { code: 'GOAL_INVALID_INPUT', message: '월 저축액은 0보다 커야 합니다.' },
+        },
+        { status: 400 },
+      )
+    }
+
+    const simulation = mockSavingSimulations[monthlySaving]
+
+    // 목 데이터가 없는 금액. 실제 API가 붙으면 임의 금액도 모두 계산되므로 이 분기는 사라진다.
+    if (!simulation) {
+      return HttpResponse.json(
+        {
+          success: false,
+          data: null,
+          message: null,
+          error: {
+            code: 'SIMULATION_MOCK_NOT_FOUND',
+            message: `목 데이터가 준비된 금액이 아닙니다. (준비된 금액: ${Object.keys(mockSavingSimulations).join(', ')})`,
+          },
+        },
+        { status: 404 },
+      )
+    }
+
+    return HttpResponse.json({
+      success: true,
+      data: simulation,
+      message: '월 저축액 변경 시 예상 달성 시점 조회 성공',
+      error: null,
+    })
   }),
 
   // 주의: `/goals/active`, `/goals/home-summary`(homeHandlers)와 경로 모양이 겹친다.

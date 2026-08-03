@@ -1,11 +1,13 @@
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 
 import BaseModal from '@/shared/components/atoms/feedback/Modal/BaseModal.vue'
 import BaseButton from '@/shared/components/atoms/base/button/BaseButton.vue'
 import BaseChipGroup from '@/shared/components/atoms/form/ChipGroup/BaseChipGroup.vue'
 import BaseInput from '@/shared/components/atoms/base/input/BaseInput.vue'
 import { formatManwon, formatYearMonthKo } from '@/shared/utils/formatter'
+
+import { useGoalStore } from '@/features/goal/store/goalStore'
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
@@ -15,6 +17,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:modelValue', 'submit'])
+
+const goalStore = useGoalStore()
 
 const CUSTOM = 'CUSTOM'
 
@@ -42,7 +46,11 @@ const customInput = ref('')
 watch(
   () => props.modelValue,
   (isOpen) => {
-    if (!isOpen) return
+    if (!isOpen) {
+      goalStore.clearSavingSimulation()
+      return
+    }
+
     selected.value = recommendedAmounts.value[0] ?? CUSTOM
     customInput.value = ''
   },
@@ -58,40 +66,45 @@ function onCustomInput(value) {
   customInput.value = digits ? Number(digits).toLocaleString('ko-KR') : ''
 }
 
-// 남은 금액을 월 저축액으로 나눈 개월 수. 백엔드 forecasts와 같은 계산식이라,
-// 추천 금액을 고를 때는 응답 값을 그대로 쓰고 직접 입력한 금액만 여기서 계산한다.
-function monthsToGoal(monthlySaving) {
-  if (!monthlySaving) return null
-  return Math.ceil(props.detail.progress.remainingAmount / monthlySaving)
-}
-
-function addMonths(monthsAhead) {
-  const date = new Date()
-  date.setMonth(date.getMonth() + monthsAhead)
-  return date
-}
-
 const fixedForecast = computed(
   () => props.detail.forecasts.find((forecast) => forecast.basis === 'FIXED') ?? null,
 )
 
+const isCustom = computed(() => selected.value === CUSTOM)
+
+// 금액이 바뀌면 이전 시뮬레이션 결과는 더 이상 그 금액의 결과가 아니므로 지운다.
+// (다시 보려면 [시뮬레이션 돌리기]를 눌러야 한다)
+watch(amount, () => {
+  goalStore.clearSavingSimulation()
+})
+
+onBeforeUnmount(() => {
+  goalStore.clearSavingSimulation()
+})
+
+function runSimulation() {
+  goalStore.loadSavingSimulation(props.detail.goalId, amount.value)
+}
+
+// 추천 금액 = 상세 조회 forecasts, 직접 입력 = 시뮬레이션 API 응답. 필드 구조가 같아 그대로 쓴다.
+const forecast = computed(() => {
+  if (!amount.value) return null
+  if (isCustom.value) return goalStore.savingSimulation
+
+  return props.detail.forecasts.find((item) => item.monthlySaving === amount.value) ?? null
+})
+
 const preview = computed(() => {
-  if (!amount.value || !fixedForecast.value?.expectedDate) return null
-
-  const matched = props.detail.forecasts.find(
-    (forecast) => forecast.monthlySaving === amount.value && forecast.expectedDate,
-  )
-
-  const months = monthsToGoal(amount.value)
-  const fixedMonths = monthsToGoal(props.detail.savingStatus.fixedSaving)
+  if (!forecast.value || !fixedForecast.value?.expectedDate) return null
 
   return {
-    amount: amount.value,
+    amount: forecast.value.monthlySaving,
     currentDate: formatYearMonthKo(fixedForecast.value.expectedDate),
-    expectedDate: matched
-      ? formatYearMonthKo(matched.expectedDate)
-      : formatYearMonthKo(addMonths(months)),
-    monthsDiff: matched ? matched.monthsDiff : fixedMonths - months,
+    // 남은 금액이 0이면 expectedDate가 null로 온다(이미 달성)
+    expectedDate: forecast.value.expectedDate
+      ? formatYearMonthKo(forecast.value.expectedDate)
+      : null,
+    monthsDiff: forecast.value.monthsDiff,
   }
 })
 
@@ -129,18 +142,51 @@ function close() {
         <span class="saving-edit__custom-unit">원</span>
       </div>
 
-      <div v-if="preview" class="saving-edit__preview">
-        <p class="saving-edit__preview-line">월 {{ formatManwon(preview.amount) }}으로 변경하면</p>
-        <p class="saving-edit__preview-line">예상 달성일이 {{ preview.currentDate }}에서</p>
-        <p class="saving-edit__preview-line saving-edit__preview-line--accent">
-          <template v-if="preview.monthsDiff > 0">
-            {{ preview.expectedDate }}로 {{ preview.monthsDiff }}개월 앞당겨져요.
+      <div v-if="preview || isCustom" class="saving-edit__preview">
+        <template v-if="preview">
+          <p class="saving-edit__preview-line">
+            월 {{ formatManwon(preview.amount) }}으로 변경하면
+          </p>
+          <template v-if="preview.expectedDate">
+            <p class="saving-edit__preview-line">예상 달성일이 {{ preview.currentDate }}에서</p>
+            <p class="saving-edit__preview-line saving-edit__preview-line--accent">
+              <template v-if="preview.monthsDiff > 0">
+                {{ preview.expectedDate }}로 {{ preview.monthsDiff }}개월 앞당겨져요.
+              </template>
+              <template v-else-if="preview.monthsDiff < 0">
+                {{ preview.expectedDate }}로 {{ -preview.monthsDiff }}개월 늦어져요.
+              </template>
+              <template v-else-if="preview.monthsDiff === 0">
+                {{ preview.expectedDate }}로 그대로예요.
+              </template>
+              <template v-else> {{ preview.expectedDate }}에 달성할 것으로 예상돼요. </template>
+            </p>
           </template>
-          <template v-else-if="preview.monthsDiff < 0">
-            {{ preview.expectedDate }}로 {{ -preview.monthsDiff }}개월 늦어져요.
-          </template>
-          <template v-else> {{ preview.expectedDate }}로 그대로예요. </template>
+          <p v-else class="saving-edit__preview-line saving-edit__preview-line--accent">
+            이미 목표 금액을 모았어요.
+          </p>
+        </template>
+
+        <p v-else-if="goalStore.simulationError" class="saving-edit__preview-placeholder">
+          예상 달성일을 계산하지 못했어요.
         </p>
+        <p v-else class="saving-edit__preview-placeholder">
+          금액을 입력하고 예상 달성일을 확인해보세요.
+        </p>
+
+        <!-- 직접 입력한 금액은 이 버튼을 눌렀을 때만 서버에 계산을 요청한다.
+             결과가 나오면 버튼은 감추고, 금액을 바꾸면 결과가 지워지면서 다시 나타난다 -->
+        <div v-if="isCustom && !preview" class="saving-edit__simulate">
+          <BaseButton
+            class="saving-edit__simulate-button"
+            variant="highlight"
+            size="md"
+            :disabled="!amount || goalStore.isSimulating"
+            @click="runSimulation"
+          >
+            {{ goalStore.isSimulating ? '계산 중...' : '시뮬레이션 돌리기' }}
+          </BaseButton>
+        </div>
       </div>
 
       <p class="saving-edit__note">
@@ -249,6 +295,27 @@ function close() {
 
 .saving-edit__preview-line--accent {
   color: #7fe3a0;
+}
+
+.saving-edit__preview-placeholder {
+  margin: 0;
+  color: #888888;
+  font-size: 12px;
+}
+
+.saving-edit__simulate {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.saving-edit__simulate-button {
+  width: auto;
+  height: 34px;
+  padding: 0 16px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .saving-edit__note {

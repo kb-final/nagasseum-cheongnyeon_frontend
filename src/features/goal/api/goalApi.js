@@ -21,6 +21,15 @@ export async function fetchGoal(goalId) {
   return data.data
 }
 
+// 월 저축액을 특정 금액으로 바꿨다고 가정했을 때의 예상 달성 시점 (저장하지 않고 계산만 한다).
+// 응답은 목표 달성 상세 조회의 forecasts[] 항목과 동일한 형태 { basis, monthlySaving, expectedDate, monthsDiff }
+export async function fetchMonthlySavingSimulation(goalId, monthlySaving) {
+  const { data } = await httpClient.get(`/api/v1/goals/${goalId}/simulations/monthly-saving`, {
+    params: { monthlySaving },
+  })
+  return data.data
+}
+
 // 목표 수정. 부분 수정(PATCH)이 아니라 전체 교체(PUT)라 목표/주거 조건 전체를 함께 보내야 한다.
 export async function putGoal(goalId, payload) {
   const { data } = await httpClient.put(`/api/v1/goals/${goalId}`, payload)

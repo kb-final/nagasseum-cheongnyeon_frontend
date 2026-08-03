@@ -241,6 +241,14 @@ export const mockGoal = {
   },
 }
 
+// GET /api/v1/goals/{goalId}/simulations/monthly-saving 응답 mock.
+// 예상 달성 시점 계산은 백엔드 몫이므로 목에서도 계산하지 않고 고정 응답만 둔다.
+// 여기 없는 금액은 준비된 목 데이터가 없다는 뜻이며, 실제 API가 붙으면 임의 금액도 모두 계산된다.
+// 필드는 목표 달성 상세 조회의 forecasts[] 항목과 동일한 형태.
+export const mockSavingSimulations = {
+  550000: { basis: 'CUSTOM', monthlySaving: 550000, expectedDate: '2028-07-31', monthsDiff: 2 },
+}
+
 // PUT /api/v1/goals/{goalId} 는 아직 백엔드 구현 전이라, 목 핸들러가 위 두 fixture의 월 저축액을
 // 메모리에서 갱신해 준다. 수정 직후 화면 이동 시 바뀐 값이 보이게 하려는 것이며,
 // 브라우저를 새로고침하면 모듈이 다시 로드되어 초기값으로 돌아온다.
