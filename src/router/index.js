@@ -2,6 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import AuthLayout from '@/layouts/AuthLayout.vue'
 import MobileLayout from '@/layouts/MobileLayout.vue'
 
+import NotFoundView from '@/shared/components/NotFoundView.vue'
+
 import { authRoutes } from '@/router/routes/auth.routes'
 import { assetRoutes, assetDetailRoutes } from '@/router/routes/asset.routes'
 import { useAuthStore } from '@/features/auth'
@@ -44,6 +46,11 @@ const routes = [
       ...assetDetailRoutes,
       ...placeholderRoutes,
     ],
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'not-found',
+    component: NotFoundView,
   },
 ]
 
