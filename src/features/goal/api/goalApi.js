@@ -62,7 +62,8 @@ export async function putGoal(goalId, payload) {
 }
 
 // 진단 결과 팝업에서 "이 목표로 설정" 선택 시 목표를 저장한다.
-export async function postGoal(payload) {
-  const { data } = await httpClient.post('/api/v1/goals', payload)
+// payload는 호출부(DiagnosisView.vue)에서 진단 응답 필드로 이미 백엔드 DTO 모양으로 만들어서 넘긴다.
+export async function postGoal(memberId, payload) {
+  const { data } = await httpClient.post('/api/v1/goals', payload, { params: { memberId } })
   return data.data
 }

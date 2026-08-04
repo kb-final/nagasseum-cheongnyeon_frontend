@@ -11,6 +11,7 @@ const props = defineProps({
   modelValue: { type: Boolean, default: false },
   conditionSummary: { type: String, default: '' },
   result: { type: Object, default: null }, // goalStore.diagnosisResult 그대로 (평탄한 진단 응답 객체)
+  isSaving: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['update:modelValue', 'confirm'])
@@ -168,6 +169,7 @@ const conditionAdjustments = computed(() => {
           class="diagnosis-result__footer-btn"
           variant="primary"
           size="modal"
+          :disabled="isSaving"
           @click="emit('confirm')"
         >
           이 목표로 설정

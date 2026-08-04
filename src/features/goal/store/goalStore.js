@@ -53,9 +53,10 @@ export const useGoalStore = defineStore('goal', () => {
     saveError.value = null
 
     try {
-      return await postGoal(payload)
+      const memberId = useAuthStore().user?.id
+      return await postGoal(memberId, payload)
     } catch (e) {
-      saveError.value = e
+      saveError.value = e.response?.data?.error ?? e
       return null
     } finally {
       isSaving.value = false
