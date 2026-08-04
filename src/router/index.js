@@ -61,9 +61,11 @@ const router = createRouter({
 
 router.beforeEach((to) => {
   if (SKIP_AUTH_GUARD) return true
-  if (!AUTH_REQUIRED_ROUTE_NAMES.includes(to.name)) return true
 
   const authStore = useAuthStore()
+
+  if (to.name === 'login' && authStore.user) return { name: 'home' }
+  if (!AUTH_REQUIRED_ROUTE_NAMES.includes(to.name)) return true
   if (!authStore.user) return { name: 'login' }
 
   return true
