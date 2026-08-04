@@ -13,9 +13,4 @@ function comingSoon(message) {
 export const placeholderRoutes = [
   { path: 'goal', name: 'goal', component: comingSoon('비교 화면은 준비 중이에요') },
   { path: 'policy', name: 'policy', component: comingSoon('정책 화면은 준비 중이에요') },
-  {
-    path: 'my/asset-link',
-    name: 'asset-link-additional',
-    component: comingSoon('추가 자산 연동 화면은 준비 중이에요'),
-  },
 ]

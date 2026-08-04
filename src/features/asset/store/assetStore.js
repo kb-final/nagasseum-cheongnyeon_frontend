@@ -6,15 +6,22 @@ import { formatYearMonthDot } from '@/shared/utils/formatter'
 
 import {
   createManualAsset,
+  deleteAssetConnection,
   deleteManualAsset,
   getAssetAccounts,
   getAssetOrganizations,
   getAssetSummary,
+  getConnectedAssetOrganizations,
   getManualAssets,
   linkAssetConnection,
   syncAssets,
   updateManualAsset,
 } from '@/features/asset/api/assetApi'
+
+export const FLOW_CONTEXT = {
+  ONBOARDING: 'onboarding',
+  ADDITIONAL: 'additional',
+}
 
 const ACCOUNT_TYPE_LABELS = {
   DEPOSIT: '자유입출금',
@@ -124,6 +131,10 @@ export const useAssetStore = defineStore('asset', () => {
   const isSyncing = ref(false)
   const detailError = ref(null)
 
+  const connections = ref([])
+  const isConnectionsLoaded = ref(false)
+  const flowContext = ref(FLOW_CONTEXT.ONBOARDING)
+
   async function fetchOrganizations({ force = false } = {}) {
     if (isLoaded.value && !force) return organizations.value
 
@@ -139,10 +150,51 @@ export const useAssetStore = defineStore('asset', () => {
 
   const currentInstitution = computed(() => selectedInstitutions.value[0] ?? null)
 
+  function patchOrganizationConnected(organizationCode, isConnected) {
+    const organization = organizations.value.find(
+      (item) => item.organizationCode === organizationCode,
+    )
+    if (organization) organization.isConnected = isConnected
+  }
+
   async function authenticateCurrentInstitution(credentials) {
     const institution = currentInstitution.value
-    await linkAssetConnection({ organizationCode: institution.id, ...credentials })
+    const response = await linkAssetConnection({ organizationCode: institution.id, ...credentials })
     selectedInstitutions.value = selectedInstitutions.value.slice(1)
+
+    patchOrganizationConnected(institution.id, true)
+    if (!connections.value.some((item) => item.organizationCode === institution.id)) {
+      connections.value = [
+        ...connections.value,
+        {
+          organizationCode: response.data.organizationCode,
+          organizationName: response.data.organizationName,
+          businessType: institution.businessType,
+          connectedAt: new Date().toISOString(),
+        },
+      ]
+    }
+  }
+
+  async function fetchConnections({ force = false } = {}) {
+    if (isConnectionsLoaded.value && !force) return connections.value
+
+    const response = await getConnectedAssetOrganizations()
+    connections.value = response.data
+    isConnectionsLoaded.value = true
+    return connections.value
+  }
+
+  async function removeConnection(organizationCode) {
+    await deleteAssetConnection(organizationCode)
+    connections.value = connections.value.filter(
+      (item) => item.organizationCode !== organizationCode,
+    )
+    patchOrganizationConnected(organizationCode, false)
+  }
+
+  function setFlowContext(context) {
+    flowContext.value = context
   }
 
   async function fetchAssetDetail() {
@@ -201,9 +253,15 @@ export const useAssetStore = defineStore('asset', () => {
     isLoaded,
     selectedInstitutions,
     currentInstitution,
+    connections,
+    isConnectionsLoaded,
+    flowContext,
     fetchOrganizations,
     setSelectedInstitutions,
     authenticateCurrentInstitution,
+    fetchConnections,
+    removeConnection,
+    setFlowContext,
     assetDetail,
     isLoadingDetail,
     isSyncing,

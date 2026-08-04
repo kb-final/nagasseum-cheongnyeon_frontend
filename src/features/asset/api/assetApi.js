@@ -24,7 +24,7 @@ export async function getAssetSummary(memberId) {
 }
 
 // 연동 기관 목록 조회: 현재 사용자에게 연동된 금융기관 목록을 조회
-export async function getAssetConnections() {
+export async function getConnectedAssetOrganizations() {
   const { data } = await httpClient.get('/api/v1/assets/connections')
   return data
 }

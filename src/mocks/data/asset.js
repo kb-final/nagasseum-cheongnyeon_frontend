@@ -6,30 +6,48 @@ export const mockOrganizationsResponse = {
       organizationName: 'KB국민은행',
       businessType: 'BK',
       supportedLoginTypes: ['ID', 'CERTIFICATE'],
+      isConnected: true,
     },
     {
       organizationCode: '0088',
       organizationName: '신한은행',
       businessType: 'BK',
       supportedLoginTypes: ['ID', 'CERTIFICATE'],
+      isConnected: false,
     },
     {
       organizationCode: '0020',
       organizationName: '우리은행',
       businessType: 'BK',
       supportedLoginTypes: ['ID', 'CERTIFICATE'],
+      isConnected: false,
     },
     {
       organizationCode: '0081',
       organizationName: '하나은행',
       businessType: 'BK',
       supportedLoginTypes: ['ID', 'CERTIFICATE'],
+      isConnected: false,
     },
     {
       organizationCode: '0089',
       organizationName: 'IBK기업은행',
       businessType: 'BK',
       supportedLoginTypes: ['ID', 'CERTIFICATE'],
+      isConnected: false,
+    },
+  ],
+  error: null,
+}
+
+export const mockConnectionsResponse = {
+  success: true,
+  data: [
+    {
+      organizationCode: '0004',
+      organizationName: 'KB국민은행',
+      businessType: 'BK',
+      connectedAt: '2026-07-23T10:00:00',
     },
   ],
   error: null,
@@ -39,6 +57,17 @@ export function createMockConnectionResponse(organizationCode) {
   const organization = mockOrganizationsResponse.data.find(
     (item) => item.organizationCode === organizationCode,
   )
+
+  if (organization) organization.isConnected = true
+
+  if (!mockConnectionsResponse.data.some((item) => item.organizationCode === organizationCode)) {
+    mockConnectionsResponse.data.push({
+      organizationCode,
+      organizationName: organization?.organizationName ?? '',
+      businessType: organization?.businessType ?? '',
+      connectedAt: new Date().toISOString(),
+    })
+  }
 
   return {
     success: true,
@@ -51,11 +80,35 @@ export function createMockConnectionResponse(organizationCode) {
   }
 }
 
-export function createMockManualAssetResponse({ assetType, amount }) {
-  const now = new Date().toISOString()
+export function deleteMockConnection(organizationCode) {
+  const index = mockConnectionsResponse.data.findIndex(
+    (item) => item.organizationCode === organizationCode,
+  )
+
+  if (index === -1) {
+    return {
+      success: false,
+      error: {
+        code: 'ASSET_ORGANIZATION_NOT_CONNECTED',
+        message: '연동되지 않은 기관입니다.',
+        fields: null,
+      },
+    }
+  }
+
+  const [removed] = mockConnectionsResponse.data.splice(index, 1)
+
+  const organization = mockOrganizationsResponse.data.find(
+    (item) => item.organizationCode === organizationCode,
+  )
+  if (organization) organization.isConnected = false
+
   return {
     success: true,
-    data: { id: 1, assetType, amount, createdAt: now, updatedAt: now },
+    data: {
+      organizationCode: removed.organizationCode,
+      organizationName: removed.organizationName,
+    },
     error: null,
   }
 }
@@ -65,50 +118,6 @@ export const mockConnectionFailureResponse = {
   error: {
     code: 'ASSET_CODEF_AUTH_FAILED',
     message: '기관 인증에 실패했습니다.',
-    fields: null,
-  },
-}
-
-// 노션 "연동 기관 목록 조회"(GET /api/v1/assets/connections) 응답 형태.
-export const mockAssetConnectionsResponse = {
-  success: true,
-  data: [
-    {
-      organizationCode: '0004',
-      organizationName: 'KB국민은행',
-      businessType: 'BK',
-      connectedAt: '2026-06-15T10:00:00+09:00',
-    },
-    {
-      organizationCode: '0088',
-      organizationName: '신한은행',
-      businessType: 'BK',
-      connectedAt: '2026-07-02T09:30:00+09:00',
-    },
-  ],
-  error: null,
-}
-
-export function createMockConnectionDeleteResponse(organizationCode) {
-  const organization = mockAssetConnectionsResponse.data.find(
-    (item) => item.organizationCode === organizationCode,
-  )
-
-  return {
-    success: true,
-    data: {
-      organizationCode,
-      organizationName: organization?.organizationName ?? '',
-    },
-    error: null,
-  }
-}
-
-export const mockConnectionNotFoundResponse = {
-  success: false,
-  error: {
-    code: 'ASSET_ORGANIZATION_NOT_CONNECTED',
-    message: '연동되지 않은 기관입니다.',
     fields: null,
   },
 }

@@ -1,13 +1,12 @@
 import { http, HttpResponse } from 'msw'
 
 import {
-  createMockConnectionDeleteResponse,
   createMockConnectionResponse,
+  deleteMockConnection,
   mockAssetAccountsResponse,
-  mockAssetConnectionsResponse,
   mockAssetSummaryResponse,
   mockConnectionFailureResponse,
-  mockConnectionNotFoundResponse,
+  mockConnectionsResponse,
   mockManualAssetNotFoundResponse,
   mockManualAssetsResponse,
   mockOrganizationsResponse,
@@ -29,6 +28,16 @@ export const assetHandlers = [
   http.post(`${API_BASE_URL}/api/v1/assets/sync`, () => {
     return HttpResponse.json({ success: true, data: null, error: null })
   }),
+  http.get(`${API_BASE_URL}/api/v1/assets/connections`, () => {
+    return HttpResponse.json(mockConnectionsResponse)
+  }),
+  http.delete(
+    `${API_BASE_URL}/api/v1/assets/connections/organizations/:organizationCode`,
+    ({ params }) => {
+      const result = deleteMockConnection(params.organizationCode)
+      return HttpResponse.json(result, { status: result.success ? 200 : 400 })
+    },
+  ),
   http.post(`${API_BASE_URL}/api/v1/assets/connections`, async ({ request }) => {
     const body = await request.json()
 
@@ -41,22 +50,6 @@ export const assetHandlers = [
   http.get(`${API_BASE_URL}/api/v1/assets/summary/:memberId`, () => {
     return HttpResponse.json({ success: true, data: mockAssetSummaryResponse, error: null })
   }),
-  http.get(`${API_BASE_URL}/api/v1/assets/connections`, () => {
-    return HttpResponse.json(mockAssetConnectionsResponse)
-  }),
-  http.delete(
-    `${API_BASE_URL}/api/v1/assets/connections/organizations/:organizationCode`,
-    ({ params }) => {
-      const isConnected = mockAssetConnectionsResponse.data.some(
-        (item) => item.organizationCode === params.organizationCode,
-      )
-      if (!isConnected) {
-        return HttpResponse.json(mockConnectionNotFoundResponse, { status: 404 })
-      }
-
-      return HttpResponse.json(createMockConnectionDeleteResponse(params.organizationCode))
-    },
-  ),
   http.get(`${API_BASE_URL}/api/v1/assets/manual/:memberId`, () => {
     return HttpResponse.json({ success: true, data: mockManualAssetsResponse, error: null })
   }),

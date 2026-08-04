@@ -22,7 +22,7 @@ const navItems = [
   { label: '마이', icon: MyIcon, to: '/my' },
 ]
 
-const HIDDEN_NAV_ROUTE_NAMES = ['diagnosis', 'edit-info']
+const HIDDEN_NAV_ROUTE_NAMES = ['diagnosis', 'edit-info', 'asset-link-additional']
 
 const activeIndex = computed(() => navItems.findIndex((item) => route.path.startsWith(item.to)))
 const showNav = computed(() => route.path !== '/' && !HIDDEN_NAV_ROUTE_NAMES.includes(route.name))
