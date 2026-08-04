@@ -10,14 +10,14 @@ import BudgetPercentileGauge from '@/features/goal/components/BudgetPercentileGa
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
   conditionSummary: { type: String, default: '' },
-  result: { type: Object, default: null }, // goalStore.diagnosisResult 그대로: { budget, results }
+  result: { type: Object, default: null }, // goalStore.diagnosisResult 그대로 (평탄한 진단 응답 객체)
 })
 
 const emit = defineEmits(['update:modelValue', 'confirm'])
 
-const resultItem = computed(() => props.result?.results?.[0] ?? null)
+const resultItem = computed(() => props.result ?? null)
 const marketStats = computed(() => resultItem.value?.marketStats ?? null)
-const isSufficient = computed(() => resultItem.value?.status === 'SUFFICIENT')
+const isSufficient = computed(() => resultItem.value?.status === 'ACHIEVABLE')
 const shortfall = computed(() => resultItem.value?.shortfall ?? 0)
 
 function formatYearMonth(ym) {
@@ -25,45 +25,58 @@ function formatYearMonth(ym) {
   return `${year}년 ${Number(month)}월`
 }
 
-// adjustmentSuggestions의 type별로 카드에 보여줄 라벨/값 텍스트를 만든다
-function formatSuggestion(item) {
-  switch (item.type) {
-    case 'INCREASE_SAVINGS':
-      return {
-        type: item.type,
-        label: '월 저축 조정',
-        value: `+${formatManwon(item.deltaMonthlySavings)}
-         → ${formatManwon(item.newMonthlySavings)}`,
-      }
-    case 'EXTEND_TIMELINE':
-      return {
-        type: item.type,
-        label: '목표 시점 조정',
-        value: `+${item.deltaMonths}개월 → ${formatYearMonth(item.newTargetDate)}`,
-      }
-    case 'REDUCE_SIZE':
-      return {
-        type: item.type,
-        label: '평수 조정',
-        value: `${item.deltaSizeMax}평 → ${item.newSizeMax}평`,
-      }
-    case 'NEARBY_REGION':
-      return {
-        type: item.type,
-        label: '인근 지역으로 이동',
-        value: item.suggestedRegions?.length ? item.suggestedRegions.join(', ') : '중앙값 낮은 곳',
-      }
-    default:
-      return { type: item.type, label: '', value: '' }
-  }
-}
+// adjustmentSuggestions는 배열이 아니라 { increaseSavings, extendPeriod, reduceSize } 고정 필드로 온다.
+// 각 필드가 있을 때만 해당 카드를 만든다.
+const planAdjustments = computed(() => {
+  const suggestions = resultItem.value?.adjustmentSuggestions
+  if (!suggestions) return []
 
-const planAdjustments = computed(() =>
-  (resultItem.value?.adjustmentSuggestions?.planAdjustments ?? []).map(formatSuggestion),
-)
-const conditionAdjustments = computed(() =>
-  (resultItem.value?.adjustmentSuggestions?.conditionAdjustments ?? []).map(formatSuggestion),
-)
+  const items = []
+  const increaseSavings = suggestions.increaseSavings
+  // 두 값이 모두 null이면 제안할 게 없다는 뜻이므로 카드를 만들지 않는다.
+  if (
+    increaseSavings &&
+    !(
+      increaseSavings.additionalMonthlySavings == null &&
+      increaseSavings.adjustedMonthlySavings == null
+    )
+  ) {
+    const { additionalMonthlySavings, adjustedMonthlySavings } = increaseSavings
+    items.push({
+      key: 'increaseSavings',
+      label: '월 저축 조정',
+      value: `+${formatManwon(additionalMonthlySavings)}\n→ ${formatManwon(adjustedMonthlySavings)}`,
+    })
+  }
+
+  const extendPeriod = suggestions.extendPeriod
+  if (
+    extendPeriod &&
+    !(extendPeriod.additionalMonths == null && extendPeriod.adjustedTargetDate == null)
+  ) {
+    const { additionalMonths, adjustedTargetDate } = extendPeriod
+    items.push({
+      key: 'extendPeriod',
+      label: '목표 시점 조정',
+      value: `+${additionalMonths}개월\n→ ${formatYearMonth(adjustedTargetDate)}`,
+    })
+  }
+  return items
+})
+
+const conditionAdjustments = computed(() => {
+  const reduceSize = resultItem.value?.adjustmentSuggestions?.reduceSize
+  // 두 값이 모두 null이면 제안할 게 없다는 뜻이므로 카드/그룹 라벨 자체를 만들지 않는다.
+  if (!reduceSize || (reduceSize.deltaSizeMax == null && reduceSize.newSizeMax == null)) return []
+
+  return [
+    {
+      key: 'reduceSize',
+      label: '평수 조정',
+      value: `${reduceSize.deltaSizeMax}평\n→ ${reduceSize.newSizeMax}평`,
+    },
+  ]
+})
 </script>
 
 <template>
@@ -117,21 +130,29 @@ const conditionAdjustments = computed(() =>
           도달해요.
         </p>
 
-        <p class="diagnosis-result__group-label">내 계획 조절</p>
-        <div class="diagnosis-result__cards">
-          <div v-for="item in planAdjustments" :key="item.type" class="diagnosis-result__card">
-            <p class="diagnosis-result__card-label">{{ item.label }}</p>
-            <p class="diagnosis-result__card-value">{{ item.value }}</p>
+        <template v-if="planAdjustments.length">
+          <p class="diagnosis-result__group-label">내 계획 조절</p>
+          <div class="diagnosis-result__cards">
+            <div v-for="item in planAdjustments" :key="item.key" class="diagnosis-result__card">
+              <p class="diagnosis-result__card-label">{{ item.label }}</p>
+              <p class="diagnosis-result__card-value">{{ item.value }}</p>
+            </div>
           </div>
-        </div>
+        </template>
 
-        <p class="diagnosis-result__group-label">집 조건 조절</p>
-        <div class="diagnosis-result__cards">
-          <div v-for="item in conditionAdjustments" :key="item.type" class="diagnosis-result__card">
-            <p class="diagnosis-result__card-label">{{ item.label }}</p>
-            <p class="diagnosis-result__card-value">{{ item.value }}</p>
+        <template v-if="conditionAdjustments.length">
+          <p class="diagnosis-result__group-label">집 조건 조절</p>
+          <div class="diagnosis-result__cards">
+            <div
+              v-for="item in conditionAdjustments"
+              :key="item.key"
+              class="diagnosis-result__card"
+            >
+              <p class="diagnosis-result__card-label">{{ item.label }}</p>
+              <p class="diagnosis-result__card-value">{{ item.value }}</p>
+            </div>
           </div>
-        </div>
+        </template>
       </div>
 
       <div class="diagnosis-result__actions">
@@ -269,6 +290,7 @@ const conditionAdjustments = computed(() =>
   color: #1f2b25;
   font-size: 13px;
   font-weight: 700;
+  white-space: pre-line;
 }
 
 /* 버튼을 footer 슬롯 대신 스크롤되는 본문 맨 아래에 배치한다 */

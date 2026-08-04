@@ -44,7 +44,9 @@ async function onConfirm() {
     <AppHeader title="목표 진단하기" @back="router.back()" />
     <div class="diagnosis-view__content">
       <HousingGoalDiagnosisForm @submitted="onSubmitted" />
-      <p v-if="goalStore.error" class="diagnosis-view__error">진단 결과를 불러오지 못했어요.</p>
+      <p v-if="goalStore.error" class="diagnosis-view__error">
+        {{ goalStore.error?.message ?? '진단 결과를 불러오지 못했어요.' }}
+      </p>
     </div>
 
     <DiagnosisResultModal
