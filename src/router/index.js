@@ -2,8 +2,10 @@ import { createRouter, createWebHistory } from 'vue-router'
 import AuthLayout from '@/layouts/AuthLayout.vue'
 import MobileLayout from '@/layouts/MobileLayout.vue'
 
+import NotFoundView from '@/shared/components/NotFoundView.vue'
+
 import { authRoutes } from '@/router/routes/auth.routes'
-import { assetRoutes } from '@/router/routes/asset.routes'
+import { assetRoutes, assetDetailRoutes, assetManagementRoutes } from '@/router/routes/asset.routes'
 import { useAuthStore } from '@/features/auth'
 import { compareRoutes } from '@/router/routes/compare.routes'
 import { homeRoutes } from '@/router/routes/home.routes'
@@ -17,6 +19,7 @@ const AUTH_REQUIRED_ROUTE_NAMES = [
   'asset-auth',
   'asset-syncing',
   'asset-link-additional',
+  'asset-detail',
   'home',
   'compare',
   'my',
@@ -29,19 +32,26 @@ const SKIP_AUTH_GUARD = import.meta.env.VITE_SKIP_AUTH_GUARD === 'true'
 const routes = [
   {
     path: '/',
+    component: AuthLayout,
+    children: [...authRoutes, ...assetRoutes],
+  },
+  {
+    path: '/',
     component: MobileLayout,
     children: [
       ...homeRoutes,
       ...goalRoutes,
       ...compareRoutes,
       ...memberRoutes,
+      ...assetDetailRoutes,
+      ...assetManagementRoutes,
       ...placeholderRoutes,
     ],
   },
   {
-    path: '/',
-    component: AuthLayout,
-    children: [...authRoutes, ...assetRoutes],
+    path: '/:pathMatch(.*)*',
+    name: 'not-found',
+    component: NotFoundView,
   },
 ]
 
@@ -52,9 +62,11 @@ const router = createRouter({
 
 router.beforeEach((to) => {
   if (SKIP_AUTH_GUARD) return true
-  if (!AUTH_REQUIRED_ROUTE_NAMES.includes(to.name)) return true
 
   const authStore = useAuthStore()
+
+  if (to.name === 'login' && authStore.user) return { name: 'home' }
+  if (!AUTH_REQUIRED_ROUTE_NAMES.includes(to.name)) return true
   if (!authStore.user) return { name: 'login' }
 
   return true

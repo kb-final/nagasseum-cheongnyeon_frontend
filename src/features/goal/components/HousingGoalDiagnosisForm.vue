@@ -12,18 +12,17 @@ import RegionSelect from '@/features/goal/components/RegionSelect.vue'
 import { useGoalStore } from '@/features/goal/store/goalStore'
 import { getRegionLabel } from '@/shared/constants/regions'
 
-// 백엔드에 housingType/dealType enum이 아직 없음(String 컬럼, DB 코멘트가 한글 그대로 표기) —
-// 확정 코드가 생기기 전까지 한글 표시값을 그대로 값으로 사용한다.
+// label은 화면 표시용 한글, value는 백엔드 진단 API가 기대하는 propertyType/tradeType enum 그대로 사용한다.
 const HOUSING_TYPE_OPTIONS = [
-  { label: '아파트', value: '아파트' },
-  { label: '오피스텔', value: '오피스텔' },
-  { label: '연립·다세대', value: '연립다세대' },
-  { label: '단독·다가구', value: '단독다가구' },
+  { label: '아파트', value: 'APT' },
+  { label: '오피스텔', value: 'OFFICETEL' },
+  { label: '연립·다세대', value: 'ROW_HOUSE' },
+  { label: '단독·다가구', value: 'DETACHED' },
 ]
 
 const DEAL_TYPE_OPTIONS = [
-  { label: '전세', value: '전세' },
-  { label: '월세', value: '월세' },
+  { label: '전세', value: 'JEONSE' },
+  { label: '월세', value: 'WOLSE' },
 ]
 
 const form = reactive({
@@ -41,12 +40,16 @@ const emit = defineEmits(['submitted'])
 
 const goalStore = useGoalStore()
 
-const isMonthlyRent = computed(() => form.dealType === '월세')
+const isMonthlyRent = computed(() => form.dealType === 'WOLSE')
 
-// 진단 결과 팝업 상단 조건 요약줄("강남구 · 오피스텔 · 전세 · 10~20평")에 사용
+// 진단 결과 팝업 상단 조건 요약줄("강남구 · 오피스텔 · 전세 · 10~20평")에 사용.
+// form.housingType/dealType은 이제 enum 값이라, 화면에는 옵션 목록에서 라벨을 찾아 보여준다.
 const conditionSummary = computed(() => {
   const regionLabel = form.region ? getRegionLabel(form.region) : ''
-  return `${regionLabel} · ${form.housingType ?? ''} · ${form.dealType ?? ''} · ${form.area.min}~${form.area.max}평`
+  const housingLabel =
+    HOUSING_TYPE_OPTIONS.find((option) => option.value === form.housingType)?.label ?? ''
+  const dealLabel = DEAL_TYPE_OPTIONS.find((option) => option.value === form.dealType)?.label ?? ''
+  return `${regionLabel} · ${housingLabel} · ${dealLabel} · ${form.area.min}~${form.area.max}평`
 })
 
 function formatPyeong(value) {
@@ -55,8 +58,7 @@ function formatPyeong(value) {
 
 async function onSubmit() {
   const payload = {
-    // UI는 지역 단일 선택이지만, 백엔드 계약(goalHousing.regions: 지역 코드 배열)에 맞춰 배열로 감싼다
-    regions: form.region ? [form.region] : [],
+    region: form.region,
     housingType: form.housingType,
     dealType: form.dealType,
     areaMin: form.area.min,

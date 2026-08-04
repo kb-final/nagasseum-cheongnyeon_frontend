@@ -7,14 +7,10 @@ import BaseBreadcrumb from '@/shared/components/atoms/navigation/Breadcrumb/Base
 import BaseSkeleton from '@/shared/components/atoms/feedback/Skeleton/BaseSkeleton.vue'
 import AppHeader from '@/shared/components/molecules/AppHeader.vue'
 import { ONBOARDING_STEPS } from '@/shared/constants/onboardingSteps'
+import { BUSINESS_TYPE_LABELS } from '@/shared/constants/businessType'
 
 import AssetInstitutionCard from '@/features/asset/components/AssetInstitutionCard.vue'
-import { useAssetStore } from '@/features/asset/store/assetStore'
-
-const BUSINESS_TYPE_LABELS = {
-  BK: '은행',
-  ST: '증권',
-}
+import { FLOW_CONTEXT, useAssetStore } from '@/features/asset/store/assetStore'
 
 const SKELETON_ROW_COUNT = 4
 
@@ -24,12 +20,17 @@ const selectedIds = ref([])
 const isLoading = ref(false)
 const errorMessage = ref('')
 
+const isOnboarding = computed(() => assetStore.flowContext === FLOW_CONTEXT.ONBOARDING)
+
 const institutions = computed(() =>
-  assetStore.organizations.map((organization) => ({
-    id: organization.organizationCode,
-    name: organization.organizationName,
-    category: BUSINESS_TYPE_LABELS[organization.businessType] ?? organization.businessType,
-  })),
+  assetStore.organizations
+    .filter((organization) => !organization.isConnected)
+    .map((organization) => ({
+      id: organization.organizationCode,
+      name: organization.organizationName,
+      category: BUSINESS_TYPE_LABELS[organization.businessType] ?? organization.businessType,
+      businessType: organization.businessType,
+    })),
 )
 
 const selectedCount = computed(() => selectedIds.value.length)
@@ -70,8 +71,13 @@ onMounted(loadInstitutions)
 
 <template>
   <div class="asset-link-view">
-    <AppHeader title="자산 연동" :show-back="false" />
-    <BaseBreadcrumb class="asset-link-view__steps" :steps="ONBOARDING_STEPS" :current="3" />
+    <AppHeader title="자산 연동" :show-back="!isOnboarding" @back="router.back()" />
+    <BaseBreadcrumb
+      v-if="isOnboarding"
+      class="asset-link-view__steps"
+      :steps="ONBOARDING_STEPS"
+      :current="3"
+    />
 
     <div class="asset-link-view__body">
       <div class="asset-link-view__intro">
@@ -112,6 +118,7 @@ onMounted(loadInstitutions)
   flex-direction: column;
   gap: 24px;
   width: 100%;
+  min-height: 100vh;
   padding: 16px 24px 24px;
 }
 

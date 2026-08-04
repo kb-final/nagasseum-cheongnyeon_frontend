@@ -13,23 +13,32 @@ const goalStore = useGoalStore()
 
 const isResultOpen = ref(false)
 const conditionSummary = ref('')
-const lastDiagnosisPayload = ref(null)
 
-function onSubmitted({ conditionSummary: summary, payload }) {
+function onSubmitted({ conditionSummary: summary }) {
   if (goalStore.error) return
 
   conditionSummary.value = summary
-  lastDiagnosisPayload.value = payload
   isResultOpen.value = true
 }
 
 async function onConfirm() {
-  // 목표 설정 시점 중앙값을 targetAmount/targetRentMiddleAmount로 함께 저장한다 (goal ERD 참고)
-  const median = goalStore.diagnosisResult?.results?.[0]?.marketStats?.median
+  // 저장 요청은 폼 입력값이 아니라 진단 응답 필드를 그대로 쓴다 — 백엔드가 정규화해 echo해준
+  // regionCode/propertyType/... 값과 진단 시점 예산/중앙값이 실제 저장값과 항상 일치하게 하기 위함.
+  const result = goalStore.diagnosisResult
   const saved = await goalStore.saveGoal({
-    ...lastDiagnosisPayload.value,
-    targetAmount: median,
-    targetRentMiddleAmount: median,
+    regionCode: result.regionCode,
+    propertyType: result.propertyType,
+    tradeType: result.tradeType,
+    sizeMin: result.sizeMin,
+    sizeMax: result.sizeMax,
+    depositMin: result.depositMin,
+    depositMax: result.depositMax,
+    monthlyRentMin: result.monthlyRentMin,
+    monthlyRentMax: result.monthlyRentMax,
+    monthlySavings: result.monthlySavings,
+    targetDate: result.targetDate,
+    targetAmount: result.budget.totalBudget,
+    targetRentMiddleAmount: result.marketStats.median,
   })
 
   if (saved) {
@@ -44,13 +53,19 @@ async function onConfirm() {
     <AppHeader title="목표 진단하기" @back="router.back()" />
     <div class="diagnosis-view__content">
       <HousingGoalDiagnosisForm @submitted="onSubmitted" />
-      <p v-if="goalStore.error" class="diagnosis-view__error">진단 결과를 불러오지 못했어요.</p>
+      <p v-if="goalStore.error" class="diagnosis-view__error">
+        {{ goalStore.error?.message ?? '진단 결과를 불러오지 못했어요.' }}
+      </p>
+      <p v-if="goalStore.saveError" class="diagnosis-view__error">
+        {{ goalStore.saveError?.message ?? '목표 저장에 실패했어요.' }}
+      </p>
     </div>
 
     <DiagnosisResultModal
       v-model="isResultOpen"
       :condition-summary="conditionSummary"
       :result="goalStore.diagnosisResult"
+      :is-saving="goalStore.isSaving"
       @confirm="onConfirm"
     />
   </div>

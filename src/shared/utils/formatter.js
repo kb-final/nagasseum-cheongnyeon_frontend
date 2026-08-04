@@ -25,6 +25,12 @@ export function formatYearMonthKo(date) {
   return `${d.getFullYear()}년 ${d.getMonth() + 1}월`
 }
 
+// "2028-09-30" -> "2028.09" (계좌 만기일 등 짧은 연월 표기용)
+export function formatYearMonthDot(date) {
+  const d = new Date(date)
+  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}`
+}
+
 // "9.3억" 형태로 축약 표기 (억 단위 미만은 소수 첫째 자리까지, 불필요한 0은 생략)
 export function formatEok(amount) {
   const eok = Number((amount / 100000000).toFixed(1))
