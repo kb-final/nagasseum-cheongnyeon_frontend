@@ -8,6 +8,10 @@ import {
 
 export const authRoutes = [
   {
+    path: '',
+    redirect: { name: 'login' },
+  },
+  {
     path: 'login',
     name: 'login',
     component: LoginView,
