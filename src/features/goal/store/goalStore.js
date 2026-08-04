@@ -9,6 +9,7 @@ import {
   putGoal,
   fetchMonthlySavingSimulation,
 } from '@/features/goal/api/goalApi'
+import { useAuthStore } from '@/features/auth/store/authStore'
 
 export const useGoalStore = defineStore('goal', () => {
   const diagnosisResult = ref(null) // 진단 결과 { budget, results }
@@ -37,9 +38,11 @@ export const useGoalStore = defineStore('goal', () => {
     error.value = null
 
     try {
-      diagnosisResult.value = await postGoalDiagnosis(payload)
+      const memberId = useAuthStore().user?.id
+      diagnosisResult.value = await postGoalDiagnosis(memberId, payload)
     } catch (e) {
-      error.value = e
+      // 백엔드가 {success:false, error:{code,message,fields}}로 내려주므로, 있으면 그 메시지를 그대로 쓴다.
+      error.value = e.response?.data?.error ?? e
     } finally {
       isSubmitting.value = false
     }
