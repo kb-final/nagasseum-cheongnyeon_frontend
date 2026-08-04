@@ -2,14 +2,26 @@
 import { onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 
+import { FLOW_CONTEXT, useAssetStore } from '@/features/asset/store/assetStore'
+
 const SYNC_DISPLAY_DURATION_MS = 1800
 
 const router = useRouter()
+const assetStore = useAssetStore()
 let redirectTimer = null
+
+const ADDITIONAL_FLOW_STEP_COUNT = 3
 
 onMounted(() => {
   redirectTimer = setTimeout(() => {
-    router.push({ name: 'home' })
+    const isAdditionalFlow = assetStore.flowContext === FLOW_CONTEXT.ADDITIONAL
+    assetStore.setFlowContext(FLOW_CONTEXT.ONBOARDING)
+
+    if (isAdditionalFlow) {
+      router.go(-ADDITIONAL_FLOW_STEP_COUNT)
+    } else {
+      router.push({ name: 'home' })
+    }
   }, SYNC_DISPLAY_DURATION_MS)
 })
 

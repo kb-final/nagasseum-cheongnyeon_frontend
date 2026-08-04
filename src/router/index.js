@@ -5,7 +5,7 @@ import MobileLayout from '@/layouts/MobileLayout.vue'
 import NotFoundView from '@/shared/components/NotFoundView.vue'
 
 import { authRoutes } from '@/router/routes/auth.routes'
-import { assetRoutes, assetDetailRoutes } from '@/router/routes/asset.routes'
+import { assetRoutes, assetDetailRoutes, assetManagementRoutes } from '@/router/routes/asset.routes'
 import { useAuthStore } from '@/features/auth'
 import { compareRoutes } from '@/router/routes/compare.routes'
 import { homeRoutes } from '@/router/routes/home.routes'
@@ -44,6 +44,7 @@ const routes = [
       ...compareRoutes,
       ...memberRoutes,
       ...assetDetailRoutes,
+      ...assetManagementRoutes,
       ...placeholderRoutes,
     ],
   },
