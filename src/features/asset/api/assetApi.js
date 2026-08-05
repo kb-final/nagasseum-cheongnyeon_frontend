@@ -1,4 +1,7 @@
 import httpClient from '@/shared/api/httpClient'
+import { createManualAsset } from '@/shared/api/manualAssetApi'
+
+export { createManualAsset }
 
 export async function getAssetOrganizations() {
   const { data } = await httpClient.get('/api/v1/assets/organizations')
@@ -50,12 +53,6 @@ export async function deleteAssetConnection(organizationCode) {
 // 수동 자산 목록 조회: CODEF로 연동할 수 없는 자산(예: 현재 거주 보증금)을 회원이 직접 등록한 목록
 export async function getManualAssets() {
   const { data } = await httpClient.get('/api/v1/assets/manual')
-  return data
-}
-
-// 수동 자산 등록
-export async function createManualAsset({ assetType, amount }) {
-  const { data } = await httpClient.post('/api/v1/assets/manual', { assetType, amount })
   return data
 }
 

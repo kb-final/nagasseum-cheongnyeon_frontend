@@ -8,6 +8,7 @@ import BaseSkeleton from '@/shared/components/atoms/feedback/Skeleton/BaseSkelet
 import AppHeader from '@/shared/components/molecules/AppHeader.vue'
 import { ONBOARDING_STEPS } from '@/shared/constants/onboardingSteps'
 import { BUSINESS_TYPE_LABELS } from '@/shared/constants/businessType'
+import { useAsyncLoad } from '@/shared/composables/useAsyncLoad'
 
 import AssetInstitutionCard from '@/features/asset/components/AssetInstitutionCard.vue'
 import { FLOW_CONTEXT, useAssetStore } from '@/features/asset/store/assetStore'
@@ -17,8 +18,7 @@ const SKELETON_ROW_COUNT = 4
 const router = useRouter()
 const assetStore = useAssetStore()
 const selectedIds = ref([])
-const isLoading = ref(false)
-const errorMessage = ref('')
+const { isLoading, errorMessage, run: loadInstitutions } = useAsyncLoad()
 
 const isOnboarding = computed(() => assetStore.flowContext === FLOW_CONTEXT.ONBOARDING)
 
@@ -46,19 +46,6 @@ function toggleInstitution(id) {
     : [...selectedIds.value, id]
 }
 
-async function loadInstitutions() {
-  errorMessage.value = ''
-  isLoading.value = !assetStore.isLoaded
-
-  try {
-    await assetStore.fetchOrganizations()
-  } catch {
-    errorMessage.value = '연동 가능한 기관을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.'
-  } finally {
-    isLoading.value = false
-  }
-}
-
 function handleNext() {
   if (!canSubmit.value) return
   const selected = institutions.value.filter((institution) => isSelected(institution.id))
@@ -66,7 +53,12 @@ function handleNext() {
   router.push({ name: 'asset-auth' })
 }
 
-onMounted(loadInstitutions)
+onMounted(() =>
+  loadInstitutions(() => assetStore.fetchOrganizations(), {
+    skipSkeleton: assetStore.isLoaded,
+    errorMessage: '연동 가능한 기관을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.',
+  }),
+)
 </script>
 
 <template>

@@ -6,6 +6,8 @@ import AppHeader from '@/shared/components/molecules/AppHeader.vue'
 import BaseToggle from '@/shared/components/atoms/form/Toggle/BaseToggle.vue'
 import BaseModal from '@/shared/components/atoms/feedback/Modal/BaseModal.vue'
 import BaseButton from '@/shared/components/atoms/base/button/BaseButton.vue'
+import BaseProfileIcon from '@/shared/components/atoms/base/icon/BaseProfileIcon.vue'
+import BaseChevronIcon from '@/shared/components/atoms/base/icon/BaseChevronIcon.vue'
 
 import { useAuthStore } from '@/features/auth'
 import { useMemberStore, AGREEMENT_TYPE } from '@/features/member/store/memberStore'
@@ -70,13 +72,7 @@ async function confirmLogout() {
 
     <section class="my-page-view__profile">
       <div class="my-page-view__avatar">
-        <svg viewBox="0 0 24 24" width="24" height="24">
-          <circle cx="12" cy="8" r="4" fill="currentColor" />
-          <path
-            d="M4 21C4 16.5817 7.58172 13 12 13C16.4183 13 20 16.5817 20 21"
-            fill="currentColor"
-          />
-        </svg>
+        <BaseProfileIcon />
       </div>
       <p class="my-page-view__nickname">{{ memberStore.profile?.nickname ?? '회원' }} 님</p>
 
@@ -108,42 +104,15 @@ async function confirmLogout() {
       <h2 class="my-page-view__section-title">계정 관리</h2>
       <button type="button" class="my-page-view__row" @click="goToEditInfo">
         <span class="my-page-view__row-label">회원정보 수정</span>
-        <svg class="my-page-view__chevron" viewBox="0 0 12 12" width="12" height="12">
-          <path
-            d="M4 1L10 6L4 11"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.9"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-        </svg>
+        <BaseChevronIcon class="my-page-view__chevron" />
       </button>
       <button type="button" class="my-page-view__row" @click="openLogoutModal">
         <span class="my-page-view__row-label">로그아웃</span>
-        <svg class="my-page-view__chevron" viewBox="0 0 12 12" width="12" height="12">
-          <path
-            d="M4 1L10 6L4 11"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.9"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-        </svg>
+        <BaseChevronIcon class="my-page-view__chevron" />
       </button>
       <button type="button" class="my-page-view__row" @click="goToAssetLink">
         <span class="my-page-view__row-label">자산 연동 관리</span>
-        <svg class="my-page-view__chevron" viewBox="0 0 12 12" width="12" height="12">
-          <path
-            d="M4 1L10 6L4 11"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.9"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-        </svg>
+        <BaseChevronIcon class="my-page-view__chevron" />
       </button>
     </section>
 
@@ -167,32 +136,14 @@ async function confirmLogout() {
 
     <section class="my-page-view__section">
       <h2 class="my-page-view__section-title">앱 정보</h2>
-      <a href="#" class="my-page-view__row">
+      <router-link :to="{ name: 'terms' }" class="my-page-view__row">
         <span class="my-page-view__row-label">이용약관</span>
-        <svg class="my-page-view__chevron" viewBox="0 0 12 12" width="12" height="12">
-          <path
-            d="M4 1L10 6L4 11"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.9"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-        </svg>
-      </a>
-      <a href="#" class="my-page-view__row">
+        <BaseChevronIcon class="my-page-view__chevron" />
+      </router-link>
+      <router-link :to="{ name: 'privacy' }" class="my-page-view__row">
         <span class="my-page-view__row-label">개인정보 처리방침</span>
-        <svg class="my-page-view__chevron" viewBox="0 0 12 12" width="12" height="12">
-          <path
-            d="M4 1L10 6L4 11"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.9"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-        </svg>
-      </a>
+        <BaseChevronIcon class="my-page-view__chevron" />
+      </router-link>
       <div class="my-page-view__row my-page-view__row--static">
         <span class="my-page-view__row-label">앱 버전</span>
         <span class="my-page-view__row-value">1.0.0</span>
