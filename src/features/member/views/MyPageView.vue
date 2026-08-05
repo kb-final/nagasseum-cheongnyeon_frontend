@@ -9,11 +9,9 @@ import BaseButton from '@/shared/components/atoms/base/button/BaseButton.vue'
 import BaseProfileIcon from '@/shared/components/atoms/base/icon/BaseProfileIcon.vue'
 import BaseChevronIcon from '@/shared/components/atoms/base/icon/BaseChevronIcon.vue'
 
-import { useAuthStore } from '@/features/auth'
 import { useMemberStore, AGREEMENT_TYPE } from '@/features/member/store/memberStore'
 
 const router = useRouter()
-const authStore = useAuthStore()
 const memberStore = useMemberStore()
 
 const isLogoutModalOpen = ref(false)
@@ -59,10 +57,9 @@ function openLogoutModal() {
   isLogoutModalOpen.value = true
 }
 
-async function confirmLogout() {
+function confirmLogout() {
   isLogoutModalOpen.value = false
-  await authStore.logout()
-  router.push({ name: 'login' })
+  router.push({ name: 'logout' })
 }
 </script>
 
