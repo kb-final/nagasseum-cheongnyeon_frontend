@@ -66,3 +66,15 @@ export async function postGoal(payload) {
   const { data } = await httpClient.post('/api/v1/goals', payload)
   return data.data
 }
+
+// 홈 화면 매물 시세 변화 카드용 데이터. memberId는 인증 토큰(@LoginMember)에서 추출하므로 별도 전달 불필요
+export async function fetchGoalMarketTrend() {
+  const { data } = await httpClient.get('/api/v1/goals/market-trend')
+  return data.data
+}
+
+// 홈 화면 목표 달성 요약 카드용 데이터. memberId는 인증 토큰에서 추출하므로 별도 전달 불필요
+export async function fetchGoalSummary() {
+  const { data } = await httpClient.get('/api/v1/goals/summary')
+  return data.data
+}
