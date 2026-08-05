@@ -20,6 +20,13 @@ const DEFAULT_ASSET_RANGE = 10_000_000
 const DEFAULT_AGE_RANGE = 2
 
 /**
+ * 비교 범위의 최댓값. CohortEditSheet의 슬라이더 상한과 같은 값이다.
+ * 이미 최대로 넓힌 사람에게 "넓혀보라"고 하면 안 되므로 여기서도 알아야 한다.
+ */
+const MAX_ASSET_RANGE = 30_000_000
+const MAX_AGE_RANGE = 5
+
+/**
  * 코호트 비교 범위는 사용자 데이터가 아니라 화면 필터라서 서버에 저장하지 않는다.
  * 브라우저에만 남겨두고, 없거나 깨졌으면 기본값으로 돌아간다.
  */
@@ -46,7 +53,7 @@ const ageRange = ref(savedRange.ageRange)
 const memberStore = useMemberStore()
 const hasCompareConsent = computed(() => memberStore.profile?.compareDataAgreed ?? false)
 
-const status = ref('loading') // loading | ready | insufficient | no-snapshot | no-consent | error
+const status = ref('loading') // loading | ready | insufficient | no-snapshot | no-asset | no-consent | error
 const comparison = ref(null)
 const isEditOpen = ref(false)
 
@@ -60,6 +67,11 @@ function applyCohort({ assetRange: nextAsset, ageRange: nextAge }) {
     JSON.stringify({ assetRange: nextAsset, ageRange: nextAge }),
   )
 }
+
+/** 아직 넓힐 여지가 있는지. 둘 다 최대면 범위를 건드려도 소용이 없다. */
+const canWidenCohort = computed(
+  () => assetRange.value < MAX_ASSET_RANGE || ageRange.value < MAX_AGE_RANGE,
+)
 
 /** 응답의 snapshotYm('2026-07')을 '2026.07.01'로 바꾼다. 집계는 매월 1일 기준이다. */
 const snapshotLabel = computed(() => {
@@ -101,7 +113,11 @@ async function fetchComparison() {
     status.value = 'ready'
   } catch (error) {
     if (error.response?.status === 404) {
-      status.value = 'no-snapshot'
+      // 같은 404라도 이유가 다르다. 상태 코드가 아니라 에러 코드로 갈라야 한다.
+      //   COMPARE_001 목표 자체가 없음        → 목표를 세우러 보낸다
+      //   COMPARE_004 목표는 있으나 자산이 없음 → 자산 연동으로 보낸다
+      const code = error.response.data?.error?.code
+      status.value = code === 'COMPARE_004' ? 'no-asset' : 'no-snapshot'
     } else if (error.response?.status === 403) {
       // 클라이언트가 들고 있던 동의 정보가 오래됐을 때를 위한 보루.
       status.value = 'no-consent'
@@ -150,8 +166,18 @@ onMounted(async () => {
       <div v-else-if="status === 'no-snapshot'" class="state-card">
         <span class="state-card__eyebrow">목표 미설정</span>
         <p class="state-card__title">아직 비교할 내 목표가 없어요</p>
-        <p class="state-card__body">목표를 설정하면 이번 달 집계부터 또래와 비교해서 보여드려요.</p>
+        <p class="state-card__body">목표를 설정하면 바로 또래와 비교해서 보여드려요.</p>
         <RouterLink class="state-card__cta" to="/diagnosis">목표 설정하러 가기</RouterLink>
+      </div>
+
+      <div v-else-if="status === 'no-asset'" class="state-card">
+        <span class="state-card__eyebrow state-card__eyebrow--wait">자산 연동 필요</span>
+        <p class="state-card__title">자산을 연동하면 비교해드릴게요</p>
+        <p class="state-card__body">
+          또래 비교는 순자산이 비슷한 사람끼리 묶어서 보여드려요.<br />
+          자산을 연동하면 바로 결과를 볼 수 있어요.
+        </p>
+        <RouterLink class="state-card__cta" to="/asset-link">자산 연동하러 가기</RouterLink>
       </div>
 
       <div v-else-if="status === 'insufficient'" class="state-card">
@@ -174,6 +200,24 @@ onMounted(async () => {
             {{ comparison.cohort.cohortSize }} / {{ comparison.cohort.minimumRequired }}명
           </span>
         </div>
+
+        <!--
+          이 화면에는 CohortConditionCard가 없어서 범위를 넓힐 길이 여기밖에 없다.
+          기본값(±1,000만/±2세)으로 인원이 안 차면 넓히면 채워지는 경우가 많은데,
+          버튼이 없으면 넓힐 수 있다는 것 자체를 모르고 나가게 된다.
+        -->
+        <button
+          v-if="canWidenCohort"
+          type="button"
+          class="state-card__cta state-card__cta--button"
+          @click="isEditOpen = true"
+        >
+          비교 범위 넓히기
+        </button>
+        <p v-else class="state-card__hint">
+          비교 범위를 가장 넓게 잡아도 아직 또래가 모이지 않았어요.<br />
+          조금 뒤에 다시 확인해주세요.
+        </p>
       </div>
 
       <template v-else-if="status === 'ready' && comparison">
@@ -380,6 +424,12 @@ onMounted(async () => {
   margin-bottom: 9px;
 }
 
+/* 한 단계만 더 하면 되는 상태는 붉은색이 아니라 노란색. 잘못된 게 아니다. */
+.state-card__eyebrow--wait {
+  background: rgba(255, 217, 57, 0.16);
+  color: #ffd939;
+}
+
 .state-card__title {
   margin: 0 0 5px;
   font-size: 13.5px;
@@ -407,6 +457,21 @@ onMounted(async () => {
   text-decoration: none;
 }
 
+/* RouterLink가 아니라 button이라 브라우저 기본 스타일을 지워야 모양이 같아진다. */
+.state-card__cta--button {
+  border: 0;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.state-card__hint {
+  margin: 12px 0 0;
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--text);
+  opacity: 0.75;
+}
+
 .state-card__gauge {
   margin-top: 11px;
   display: flex;
@@ -414,10 +479,10 @@ onMounted(async () => {
   gap: 8px;
 }
 
+/* 모서리를 굴리지 않는다. 앱 전체가 각진 픽셀 톤이라 여기만 둥글면 튄다. (SavingRangeCard와 같은 규칙) */
 .state-card__gauge-track {
   flex: 1;
   height: 6px;
-  border-radius: 999px;
   background: var(--border);
   overflow: hidden;
 }
@@ -425,7 +490,6 @@ onMounted(async () => {
 .state-card__gauge-fill {
   display: block;
   height: 100%;
-  border-radius: 999px;
   background: var(--color-point);
 }
 
