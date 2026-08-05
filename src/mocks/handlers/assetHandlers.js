@@ -27,9 +27,8 @@ export const assetHandlers = [
   http.get(`${API_BASE_URL}/api/v1/assets/accounts`, () => {
     return HttpResponse.json({ success: true, data: mockAssetAccountsResponse, error: null })
   }),
-  http.post(`${API_BASE_URL}/api/v1/assets/sync`, ({ request }) => {
-    const memberId = new URL(request.url).searchParams.get('memberId')
-    const jobId = createMockSyncJob(memberId)
+  http.post(`${API_BASE_URL}/api/v1/assets/sync`, () => {
+    const jobId = createMockSyncJob()
 
     return HttpResponse.json(
       { success: true, data: { jobId }, error: null },
@@ -62,14 +61,14 @@ export const assetHandlers = [
       return HttpResponse.json(result, { status: result.success ? 200 : 400 })
     },
   ),
-  http.post(`${API_BASE_URL}/api/v1/assets/connections`, async ({ request }) => {
+  http.post(`${API_BASE_URL}/api/v1/assets/link`, async ({ request }) => {
     const body = await request.json()
 
     if (body.password === FAILURE_TEST_PASSWORD) {
       return HttpResponse.json(mockConnectionFailureResponse, { status: 400 })
     }
 
-    return HttpResponse.json(createMockConnectionResponse(body.organizationCode))
+    return HttpResponse.json(createMockConnectionResponse(body.organization), { status: 201 })
   }),
   http.get(`${API_BASE_URL}/api/v1/assets/summary`, () => {
     return HttpResponse.json({ success: true, data: mockAssetSummaryResponse, error: null })

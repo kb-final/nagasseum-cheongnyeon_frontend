@@ -175,7 +175,11 @@ export const useAssetStore = defineStore('asset', () => {
 
   async function authenticateCurrentInstitution(credentials) {
     const institution = currentInstitution.value
-    const response = await linkAssetConnection({ organizationCode: institution.id, ...credentials })
+    await linkAssetConnection({
+      organization: institution.id,
+      businessType: institution.businessType,
+      ...credentials,
+    })
     selectedInstitutions.value = selectedInstitutions.value.slice(1)
 
     patchOrganizationConnected(institution.id, true)
@@ -183,8 +187,8 @@ export const useAssetStore = defineStore('asset', () => {
       connections.value = [
         ...connections.value,
         {
-          organizationCode: response.data.organizationCode,
-          organizationName: response.data.organizationName,
+          organizationCode: institution.id,
+          organizationName: institution.name,
           businessType: institution.businessType,
           connectedAt: new Date().toISOString(),
         },
@@ -260,7 +264,7 @@ export const useAssetStore = defineStore('asset', () => {
     isSyncing.value = true
     syncError.value = null
     try {
-      const { data } = await syncAssets(getCurrentMemberId())
+      const { data } = await syncAssets()
       await pollAssetSyncStatus(data.jobId)
       await fetchAssetDetail()
     } catch (e) {

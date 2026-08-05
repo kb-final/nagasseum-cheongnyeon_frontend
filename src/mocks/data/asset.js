@@ -60,6 +60,8 @@ export function createMockConnectionResponse(organizationCode) {
 
   if (organization) organization.isConnected = true
 
+  const action = mockConnectionsResponse.data.length === 0 ? 'CREATED' : 'ADDED'
+
   if (!mockConnectionsResponse.data.some((item) => item.organizationCode === organizationCode)) {
     mockConnectionsResponse.data.push({
       organizationCode,
@@ -73,8 +75,8 @@ export function createMockConnectionResponse(organizationCode) {
     success: true,
     data: {
       connectedId: 'byi1wYwD40k8hEIiXl6bRF',
-      organizationCode,
-      organizationName: organization?.organizationName ?? '',
+      organization: organizationCode,
+      action,
     },
     error: null,
   }
@@ -119,9 +121,9 @@ export function deleteMockConnection(organizationCode) {
 const SYNC_JOB_PENDING_CHECKS = 2
 const mockSyncJobs = new Map()
 
-export function createMockSyncJob(memberId) {
+export function createMockSyncJob() {
   const jobId = crypto.randomUUID()
-  mockSyncJobs.set(jobId, { checkCount: 0, memberId })
+  mockSyncJobs.set(jobId, { checkCount: 0 })
   return jobId
 }
 
@@ -140,7 +142,7 @@ export function getMockSyncJobStatus(jobId) {
     jobId,
     status: 'SUCCESS',
     errorMessage: null,
-    resultUrl: `/api/v1/assets/summary/${job.memberId}`,
+    resultUrl: '/api/v1/assets/summary',
   }
 }
 
