@@ -7,6 +7,8 @@ import {
   mockGoal,
   applyMockGoalUpdate,
   mockSavingSimulations,
+  mockGoalMarketTrend,
+  mockGoalSummaryHome,
 } from '@/mocks/data/goal'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
@@ -67,8 +69,19 @@ export const goalHandlers = [
     })
   }),
 
-  // 주의: `/goals/active`, `/goals/home-summary`(homeHandlers)와 경로 모양이 겹친다.
-  // MSW는 먼저 등록된 핸들러가 이기므로 handlers/index.js에서 homeHandlers가 goalHandlers보다 앞에 있어야 한다.
+  // 홈 화면 매물 시세 변화 카드. 아래 `/goals/:goalId`가 `market-trend`도 goalId로 매칭해버리므로
+  // 반드시 그보다 먼저 등록해야 한다(MSW는 먼저 등록된 핸들러가 이긴다).
+  http.get(`${API_BASE_URL}/api/v1/goals/market-trend`, () => {
+    return HttpResponse.json({ success: true, data: mockGoalMarketTrend, error: null })
+  }),
+
+  // 홈 화면 목표 달성 요약 카드. 마찬가지로 `/goals/:goalId`보다 먼저 등록해야 한다.
+  http.get(`${API_BASE_URL}/api/v1/goals/summary`, () => {
+    return HttpResponse.json({ success: true, data: mockGoalSummaryHome, error: null })
+  }),
+
+  // 주의: 아래 `/goals/:goalId`는 세그먼트 하나짜리 경로는 모두 goalId로 매칭하므로,
+  // `market-trend`/`summary`처럼 고정 경로를 쓰는 핸들러는 항상 이보다 먼저 등록해야 한다.
   http.get(`${API_BASE_URL}/api/v1/goals/:goalId`, ({ params }) => {
     return HttpResponse.json({
       success: true,

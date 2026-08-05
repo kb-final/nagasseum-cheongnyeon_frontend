@@ -22,7 +22,7 @@ export const assetHandlers = [
   http.get(`${API_BASE_URL}/api/v1/assets/organizations`, () => {
     return HttpResponse.json(mockOrganizationsResponse)
   }),
-  http.get(`${API_BASE_URL}/api/v1/assets/accounts/:memberId`, () => {
+  http.get(`${API_BASE_URL}/api/v1/assets/accounts`, () => {
     return HttpResponse.json({ success: true, data: mockAssetAccountsResponse, error: null })
   }),
   http.post(`${API_BASE_URL}/api/v1/assets/sync`, () => {
@@ -47,10 +47,10 @@ export const assetHandlers = [
 
     return HttpResponse.json(createMockConnectionResponse(body.organizationCode))
   }),
-  http.get(`${API_BASE_URL}/api/v1/assets/summary/:memberId`, () => {
+  http.get(`${API_BASE_URL}/api/v1/assets/summary`, () => {
     return HttpResponse.json({ success: true, data: mockAssetSummaryResponse, error: null })
   }),
-  http.get(`${API_BASE_URL}/api/v1/assets/manual/:memberId`, () => {
+  http.get(`${API_BASE_URL}/api/v1/assets/manual`, () => {
     return HttpResponse.json({ success: true, data: mockManualAssetsResponse, error: null })
   }),
   http.post(`${API_BASE_URL}/api/v1/assets/manual`, async ({ request }) => {

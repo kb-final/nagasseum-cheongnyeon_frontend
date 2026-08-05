@@ -6,8 +6,8 @@ export async function getAssetOrganizations() {
 }
 
 // 계좌 목록 조회: 연동된 금융기관의 자산 계좌·대출 계좌 목록을 기관별로 그룹화하여 반환
-export async function getAssetAccounts(memberId) {
-  const { data } = await httpClient.get(`/api/v1/assets/accounts/${memberId}`)
+export async function getAssetAccounts() {
+  const { data } = await httpClient.get('/api/v1/assets/accounts')
   return data
 }
 
@@ -18,8 +18,8 @@ export async function syncAssets() {
 }
 
 // 자산 요약 조회: 총자산·총부채·순자산과 현금성/투자 자산 구성을 최신 동기화 값 기준으로 한 번에 조회
-export async function getAssetSummary(memberId) {
-  const { data } = await httpClient.get(`/api/v1/assets/summary/${memberId}`)
+export async function getAssetSummary() {
+  const { data } = await httpClient.get('/api/v1/assets/summary')
   return data
 }
 
@@ -38,34 +38,26 @@ export async function deleteAssetConnection(organizationCode) {
 }
 
 // 수동 자산 목록 조회: CODEF로 연동할 수 없는 자산(예: 현재 거주 보증금)을 회원이 직접 등록한 목록
-export async function getManualAssets(memberId) {
-  const { data } = await httpClient.get(`/api/v1/assets/manual/${memberId}`)
+export async function getManualAssets() {
+  const { data } = await httpClient.get('/api/v1/assets/manual')
   return data
 }
 
 // 수동 자산 등록
-export async function createManualAsset(memberId, { assetType, amount }) {
-  const { data } = await httpClient.post(
-    '/api/v1/assets/manual',
-    { assetType, amount },
-    { params: { memberId } },
-  )
+export async function createManualAsset({ assetType, amount }) {
+  const { data } = await httpClient.post('/api/v1/assets/manual', { assetType, amount })
   return data
 }
 
 // 수동 자산 수정
-export async function updateManualAsset(id, memberId, { assetType, amount }) {
-  const { data } = await httpClient.put(
-    `/api/v1/assets/manual/${id}`,
-    { assetType, amount },
-    { params: { memberId } },
-  )
+export async function updateManualAsset(id, { assetType, amount }) {
+  const { data } = await httpClient.put(`/api/v1/assets/manual/${id}`, { assetType, amount })
   return data
 }
 
 // 수동 자산 삭제
-export async function deleteManualAsset(id, memberId) {
-  const { data } = await httpClient.delete(`/api/v1/assets/manual/${id}`, { params: { memberId } })
+export async function deleteManualAsset(id) {
+  const { data } = await httpClient.delete(`/api/v1/assets/manual/${id}`)
   return data
 }
 

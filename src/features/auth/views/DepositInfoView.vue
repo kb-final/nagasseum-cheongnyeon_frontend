@@ -10,12 +10,10 @@ import { ONBOARDING_STEPS } from '@/shared/constants/onboardingSteps'
 import { formatNumber } from '@/shared/utils/formatter'
 
 import { createManualDepositAsset } from '@/features/auth/api/authApi'
-import { useAuthStore } from '@/features/auth/store/authStore'
 
 const MAX_AMOUNT = 10 ** 18
 
 const router = useRouter()
-const authStore = useAuthStore()
 
 const amount = ref('')
 const isSubmitting = ref(false)
@@ -42,10 +40,7 @@ async function handleNext() {
   errorMessage.value = ''
 
   try {
-    await createManualDepositAsset({
-      memberId: authStore.user?.id,
-      amount: numericAmount.value,
-    })
+    await createManualDepositAsset({ amount: numericAmount.value })
     router.push({ name: 'asset-link' })
   } catch (error) {
     errorMessage.value =

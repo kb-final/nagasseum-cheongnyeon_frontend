@@ -21,11 +21,10 @@ export async function logout() {
   await httpClient.post('/api/v1/auth/logout')
 }
 
-export async function createManualDepositAsset({ memberId, amount }) {
-  const { data } = await httpClient.post(
-    '/api/v1/assets/manual',
-    { assetType: 'DEPOSIT', amount },
-    { params: { memberId } },
-  )
+export async function createManualDepositAsset({ amount }) {
+  const { data } = await httpClient.post('/api/v1/assets/manual', {
+    assetType: 'DEPOSIT',
+    amount,
+  })
   return data.data
 }

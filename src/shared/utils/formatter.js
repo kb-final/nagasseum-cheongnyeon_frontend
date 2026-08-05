@@ -41,3 +41,21 @@ export function formatEok(amount) {
   const eok = Number((amount / 100000000).toFixed(1))
   return `${eok}억`
 }
+
+// "2027-08" -> "2027년 8월". null/undefined면 계산 불가 문구로 대체 (홈 화면 예상 달성 시점처럼 null이 올 수 있는 필드용)
+export function formatYearMonth(yearMonth, fallback = '예상 시점 계산 불가') {
+  if (!yearMonth) return fallback
+  const [year, month] = yearMonth.split('-')
+  return `${year}년 ${Number(month)}월`
+}
+
+// 10, 20 -> "10~20평"
+export function formatAreaRange(areaMin, areaMax) {
+  return `${areaMin}~${areaMax}평`
+}
+
+// 시세 변동액에 부호를 붙여 "▲ 500만 원" / "▼ 500만 원" / "500만 원"(변동 없음)으로 표기
+export function formatChangeAmount(amount) {
+  const arrow = amount > 0 ? '▲ ' : amount < 0 ? '▼ ' : ''
+  return `${arrow}${formatManwon(Math.abs(amount))}`
+}
