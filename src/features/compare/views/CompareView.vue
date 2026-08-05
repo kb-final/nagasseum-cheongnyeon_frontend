@@ -151,7 +151,7 @@ onMounted(async () => {
         <span class="state-card__eyebrow">목표 미설정</span>
         <p class="state-card__title">아직 비교할 내 목표가 없어요</p>
         <p class="state-card__body">목표를 설정하면 이번 달 집계부터 또래와 비교해서 보여드려요.</p>
-        <RouterLink class="state-card__cta" to="/">목표 설정하러 가기</RouterLink>
+        <RouterLink class="state-card__cta" to="/diagnosis">목표 설정하러 가기</RouterLink>
       </div>
 
       <div v-else-if="status === 'insufficient'" class="state-card">
