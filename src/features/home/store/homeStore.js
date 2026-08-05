@@ -81,13 +81,11 @@ export const useHomeStore = defineStore('home', () => {
   const recommendedPolicies = ref([])
   const isLoading = ref(false)
   const loaded = ref(false)
-  const error = ref(null)
 
   async function loadSummary() {
     isLoading.value = true
-    error.value = null
 
-    // 세 카드는 서로 독립적인 API라, 하나가 실패(예: 활성 목표 없음)해도 나머지 카드는 그대로 보여준다.
+    // 네 API는 서로 독립적이라, 하나가 실패(예: 활성 목표 없음, 자산 미연동)해도 나머지 카드는 그대로 보여준다.
     const [goalSummaryResult, marketTrendResult, assetSummaryResult, policiesResult] =
       await Promise.allSettled([
         fetchGoalSummary(),
@@ -114,10 +112,9 @@ export const useHomeStore = defineStore('home', () => {
       assetSummary.value = raw
       assetBreakdown.value = toAssetBreakdownViewModel(raw)
     } else {
+      // 자산 미연동(ASSET_006) 등으로 실패하면 자산 카드 자리에 연동 유도 카드를 대신 보여준다.
       assetSummary.value = null
       assetBreakdown.value = null
-      // 자산 요약은 총자산/자산 구성 카드에 필수라, 실패하면 화면 전체를 에러로 처리한다.
-      error.value = assetSummaryResult.reason
     }
 
     recommendedPolicies.value = policiesResult.status === 'fulfilled' ? policiesResult.value : []
@@ -136,7 +133,6 @@ export const useHomeStore = defineStore('home', () => {
     recommendedPolicies,
     isLoading,
     loaded,
-    error,
     loadSummary,
   }
 })

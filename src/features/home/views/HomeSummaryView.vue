@@ -5,25 +5,33 @@ import { useRouter } from 'vue-router'
 import BaseSkeleton from '@/shared/components/atoms/feedback/Skeleton/BaseSkeleton.vue'
 
 import { useHomeStore } from '@/features/home/store/homeStore'
+import { useAssetStore, FLOW_CONTEXT } from '@/features/asset'
 import GreetingHeader from '@/features/home/components/GreetingHeader.vue'
 import ClimbProgressCard from '@/features/home/components/ClimbProgressCard.vue'
 import EmptyGoalCard from '@/features/home/components/EmptyGoalCard.vue'
 import TotalAssetCard from '@/features/home/components/TotalAssetCard.vue'
 import AssetSummaryGrid from '@/features/home/components/AssetSummaryGrid.vue'
+import EmptyAssetCard from '@/features/home/components/EmptyAssetCard.vue'
 import RecommendedPolicyList from '@/features/home/components/RecommendedPolicyList.vue'
 import MarketPriceAlertCard from '@/features/home/components/MarketPriceAlertCard.vue'
 
 const homeStore = useHomeStore()
+const assetStore = useAssetStore()
 const router = useRouter()
 
 onMounted(() => {
   if (!homeStore.loaded) homeStore.loadSummary()
 })
+
+function goToAssetLink() {
+  assetStore.setFlowContext(FLOW_CONTEXT.ADDITIONAL)
+  router.push({ name: 'asset-link' })
+}
 </script>
 
 <template>
   <div class="home-summary-view">
-    <template v-if="homeStore.loaded && homeStore.assetSummary">
+    <template v-if="homeStore.loaded">
       <GreetingHeader :member="homeStore.member" />
       <ClimbProgressCard
         v-if="homeStore.goal"
@@ -32,11 +40,16 @@ onMounted(() => {
         @view-goal="router.push(`/goals/${homeStore.goal.id}`)"
       />
       <EmptyGoalCard v-else @create-goal="router.push('/diagnosis')" />
-      <TotalAssetCard :asset-summary="homeStore.assetSummary" @refresh="homeStore.loadSummary" />
-      <AssetSummaryGrid
-        :asset-summary="homeStore.assetSummary"
-        :asset-breakdown="homeStore.assetBreakdown"
-      />
+
+      <template v-if="homeStore.assetSummary">
+        <TotalAssetCard :asset-summary="homeStore.assetSummary" @refresh="homeStore.loadSummary" />
+        <AssetSummaryGrid
+          :asset-summary="homeStore.assetSummary"
+          :asset-breakdown="homeStore.assetBreakdown"
+        />
+      </template>
+      <EmptyAssetCard v-else @link-asset="goToAssetLink" />
+
       <RecommendedPolicyList
         :policies="homeStore.recommendedPolicies"
         @view-all="router.push('/policy')"
@@ -53,8 +66,6 @@ onMounted(() => {
       <BaseSkeleton height="120px" radius="16px" />
       <BaseSkeleton height="80px" radius="16px" />
     </div>
-
-    <p v-else-if="homeStore.error" class="home-summary-view__error">데이터를 불러오지 못했어요.</p>
   </div>
 </template>
 
@@ -69,11 +80,5 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 16px;
-}
-
-.home-summary-view__error {
-  padding: 24px 0;
-  color: var(--text, #9aa09a);
-  text-align: center;
 }
 </style>
