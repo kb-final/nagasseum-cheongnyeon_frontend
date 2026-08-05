@@ -37,7 +37,7 @@ onMounted(() => {
         :total-assets="assetStore.assetDetail.totalAssets"
         :synced-at="assetStore.assetDetail.syncedAt"
         :is-refreshing="assetStore.isSyncing"
-        @refresh="assetStore.syncAndRefreshAssetDetail"
+        @refresh="assetStore.runAssetSync"
       />
 
       <AssetCategorySection

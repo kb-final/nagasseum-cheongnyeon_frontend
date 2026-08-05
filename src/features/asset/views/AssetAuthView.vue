@@ -11,6 +11,7 @@ import BaseInputField from '@/shared/components/molecules/BaseInputField.vue'
 import AppHeader from '@/shared/components/molecules/AppHeader.vue'
 import { ONBOARDING_STEPS } from '@/shared/constants/onboardingSteps'
 import { loadAuthSession } from '@/shared/utils/authSession'
+import { isValidBirthDate } from '@/shared/utils/validator'
 
 import { useAssetStore } from '@/features/asset/store/assetStore'
 
@@ -36,7 +37,7 @@ const canSubmit = computed(
   () =>
     bankId.value.trim().length > 0 &&
     password.value.trim().length > 0 &&
-    /^\d{6}$/.test(birthDate.value) &&
+    isValidBirthDate(birthDate.value) &&
     !isSubmitting.value,
 )
 

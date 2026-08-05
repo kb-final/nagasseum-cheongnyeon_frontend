@@ -108,7 +108,7 @@ export const useHomeStore = defineStore('home', () => {
         : null
 
     if (assetSummaryResult.status === 'fulfilled') {
-      const raw = assetSummaryResult.value.data
+      const raw = assetSummaryResult.value
       assetSummary.value = raw
       assetBreakdown.value = toAssetBreakdownViewModel(raw)
     } else {

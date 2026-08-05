@@ -23,6 +23,5 @@ export async function logout() {
 }
 
 export async function createManualDepositAsset({ amount }) {
-  const { data } = await createManualAsset({ assetType: 'DEPOSIT', amount })
-  return data
+  return createManualAsset({ assetType: 'DEPOSIT', amount })
 }

@@ -154,8 +154,7 @@ export const useAssetStore = defineStore('asset', () => {
   async function fetchOrganizations({ force = false } = {}) {
     if (isLoaded.value && !force) return organizations.value
 
-    const response = await getAssetOrganizations()
-    organizations.value = response.data
+    organizations.value = await getAssetOrganizations()
     isLoaded.value = true
     return organizations.value
   }
@@ -199,8 +198,7 @@ export const useAssetStore = defineStore('asset', () => {
   async function fetchConnections({ force = false } = {}) {
     if (isConnectionsLoaded.value && !force) return connections.value
 
-    const response = await getConnectedAssetOrganizations()
-    connections.value = response.data
+    connections.value = await getConnectedAssetOrganizations()
     isConnectionsLoaded.value = true
     return connections.value
   }
@@ -222,17 +220,17 @@ export const useAssetStore = defineStore('asset', () => {
     detailError.value = null
 
     try {
-      const [accountsResponse, summaryResponse, manualAssetsResponse] = await Promise.all([
+      const [accounts, summary, manualAssets] = await Promise.all([
         getAssetAccounts(),
         getAssetSummary(),
         getManualAssets(),
       ])
 
       assetDetail.value = {
-        ...transformAssetAccountsResponse(accountsResponse.data.institutions),
-        totalAssets: summaryResponse.data.totalAssets,
-        syncedAt: summaryResponse.data.syncedAt,
-        manualAssets: manualAssetsResponse.data.map(buildManualAssetViewModel),
+        ...transformAssetAccountsResponse(accounts.institutions),
+        totalAssets: summary.totalAssets,
+        syncedAt: summary.syncedAt,
+        manualAssets: manualAssets.map(buildManualAssetViewModel),
       }
     } catch (e) {
       detailError.value = e
@@ -246,8 +244,7 @@ export const useAssetStore = defineStore('asset', () => {
     const deadline = Date.now() + SYNC_POLL_TIMEOUT_MS
 
     while (Date.now() < deadline) {
-      const response = await getAssetSyncStatus(jobId)
-      const { status, errorMessage } = response.data
+      const { status, errorMessage } = await getAssetSyncStatus(jobId)
 
       if (status === SYNC_STATUS.SUCCESS) return
       if (status === SYNC_STATUS.FAILED) {
@@ -264,19 +261,14 @@ export const useAssetStore = defineStore('asset', () => {
     isSyncing.value = true
     syncError.value = null
     try {
-      const { data } = await syncAssets()
-      await pollAssetSyncStatus(data.jobId)
+      const { jobId } = await syncAssets()
+      await pollAssetSyncStatus(jobId)
       await fetchAssetDetail()
     } catch (e) {
       syncError.value = e
     } finally {
       isSyncing.value = false
     }
-  }
-
-  // 자산 상세 화면의 새로고침 버튼: 완료(성공/실패)까지 기다렸다가 반환
-  async function syncAndRefreshAssetDetail() {
-    await runAssetSync()
   }
 
   function startAssetSync() {
@@ -318,7 +310,7 @@ export const useAssetStore = defineStore('asset', () => {
     syncError,
     detailError,
     fetchAssetDetail,
-    syncAndRefreshAssetDetail,
+    runAssetSync,
     startAssetSync,
     addManualAsset,
     editManualAsset,
