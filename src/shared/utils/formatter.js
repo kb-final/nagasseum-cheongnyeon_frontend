@@ -14,9 +14,14 @@ export function formatManwon(amount, locale = 'ko-KR') {
   return `${Math.round(amount / 10000).toLocaleString(locale)}만원`
 }
 
+// "32,480,000" 형태로 표기할 때 사용 (단위 없이 천 단위 구분 기호만)
+export function formatNumber(amount, locale = 'ko-KR') {
+  return new Intl.NumberFormat(locale).format(amount)
+}
+
 // "32,480,000원" 형태로 표기할 때 사용 (통화 기호 없이 숫자 + 원 단위)
 export function formatWon(amount, locale = 'ko-KR') {
-  return `${new Intl.NumberFormat(locale).format(amount)}원`
+  return `${formatNumber(amount, locale)}원`
 }
 
 // "2028-09-30" -> "2028년 9월" (일자는 의미가 없고 연월만 보여주는 목표 시점/달성 시점 표기용)
