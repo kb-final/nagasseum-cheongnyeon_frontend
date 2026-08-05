@@ -26,6 +26,21 @@ const compareDataAgreed = computed({
   set: (value) => memberStore.toggleAgreement(AGREEMENT_TYPE.COMPARE_DATA, value),
 })
 
+/**
+ * 등반 레벨·고도.
+ *
+ * 서버가 아직 레벨을 내려주지 않는다. 산정 기준도 팀에서 정하지 않았다.
+ * 기준이 정해지고 API에 필드가 생기면 아래 세 값을 memberStore.profile 에서
+ * 읽어오도록 바꾸면 된다. 지금은 화면을 먼저 맞추기 위한 임시값이라 한곳에 모아둔다.
+ */
+const EXP_SEGMENT_COUNT = 10
+const climbLevel = 3
+const climbTitle = '등반가'
+const altitudePercent = 27
+
+/** 진행률을 칸 수로 바꾼다. 홈의 등반 카드와 같은 방식이다. */
+const filledSegments = computed(() => Math.round((altitudePercent / 100) * EXP_SEGMENT_COUNT))
+
 onMounted(() => {
   if (!memberStore.profile) memberStore.fetchProfile()
 })
@@ -64,7 +79,29 @@ async function confirmLogout() {
         </svg>
       </div>
       <p class="my-page-view__nickname">{{ memberStore.profile?.nickname ?? '회원' }} 님</p>
-      <span class="my-page-view__badge">등반가 · 고도 27%</span>
+
+      <div class="my-page-view__badges">
+        <span class="my-page-view__badge my-page-view__badge--level">
+          Lv.{{ climbLevel }} {{ climbTitle }}
+        </span>
+        <span class="my-page-view__badge">고도 {{ altitudePercent }}%</span>
+      </div>
+
+      <div class="my-page-view__exp">
+        <span class="my-page-view__exp-label">EXP</span>
+        <span class="my-page-view__exp-track">
+          <span
+            v-for="index in EXP_SEGMENT_COUNT"
+            :key="index"
+            class="my-page-view__exp-segment"
+            :class="{
+              'my-page-view__exp-segment--filled': index <= filledSegments,
+              'my-page-view__exp-segment--current': index === filledSegments,
+            }"
+          />
+        </span>
+        <span class="my-page-view__exp-value">{{ altitudePercent }}%</span>
+      </div>
     </section>
 
     <section class="my-page-view__section">
@@ -181,6 +218,9 @@ async function confirmLogout() {
 }
 
 .my-page-view__profile {
+  /* 레벨 뱃지와 EXP 현재 칸이 같이 쓰는 색. 이 화면에서만 쓴다. */
+  --level-badge: #ffd939;
+
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -204,13 +244,69 @@ async function confirmLogout() {
   color: var(--text-h, #ffffff);
 }
 
+.my-page-view__badges {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+}
+
 .my-page-view__badge {
-  margin-top: 12px;
-  padding: 5px 14px;
+  padding: 3px 7px;
   border-radius: 999px;
   background: var(--accent, #e3ffe8);
   color: var(--color-mint-deep, #16281c);
-  font-size: 11.6px;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+/* 레벨 뱃지만 노란색 */
+.my-page-view__badge--level {
+  background: var(--level-badge);
+  color: #3a2f00;
+}
+
+.my-page-view__exp {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 280px;
+  margin-top: 10px;
+}
+
+.my-page-view__exp-label {
+  font-size: 9.5px;
+  letter-spacing: 0.5px;
+  color: var(--text, #9aa09a);
+}
+
+/* 칸 사이를 띄워 눈금처럼 보이게 한다. 홈 등반 카드와 같은 방식이다. */
+.my-page-view__exp-track {
+  display: flex;
+  flex: 1;
+  gap: 4px;
+}
+
+.my-page-view__exp-segment {
+  flex: 1;
+  height: 11px;
+  border-radius: 3px;
+  background: var(--border, #262626);
+}
+
+.my-page-view__exp-segment--filled {
+  background: var(--color-mint-strong, #c1e8c8);
+}
+
+/* 지금 서 있는 칸만 노란색. --filled 뒤에 와야 덮어쓴다. */
+.my-page-view__exp-segment--current {
+  background: var(--level-badge);
+}
+
+.my-page-view__exp-value {
+  font-size: 10px;
+  color: var(--text, #9aa09a);
+  font-variant-numeric: tabular-nums;
 }
 
 .my-page-view__section {
