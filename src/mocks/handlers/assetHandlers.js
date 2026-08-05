@@ -2,7 +2,9 @@ import { http, HttpResponse } from 'msw'
 
 import {
   createMockConnectionResponse,
+  createMockSyncJob,
   deleteMockConnection,
+  getMockSyncJobStatus,
   mockAssetAccountsResponse,
   mockAssetSummaryResponse,
   mockConnectionFailureResponse,
@@ -25,8 +27,30 @@ export const assetHandlers = [
   http.get(`${API_BASE_URL}/api/v1/assets/accounts`, () => {
     return HttpResponse.json({ success: true, data: mockAssetAccountsResponse, error: null })
   }),
-  http.post(`${API_BASE_URL}/api/v1/assets/sync`, () => {
-    return HttpResponse.json({ success: true, data: null, error: null })
+  http.post(`${API_BASE_URL}/api/v1/assets/sync`, ({ request }) => {
+    const memberId = new URL(request.url).searchParams.get('memberId')
+    const jobId = createMockSyncJob(memberId)
+
+    return HttpResponse.json(
+      { success: true, data: { jobId }, error: null },
+      { status: 202, headers: { Location: `/api/v1/assets/sync/status/${jobId}` } },
+    )
+  }),
+  http.get(`${API_BASE_URL}/api/v1/assets/sync/status/:jobId`, ({ params }) => {
+    const status = getMockSyncJobStatus(params.jobId)
+
+    if (!status) {
+      return HttpResponse.json(
+        {
+          success: false,
+          data: null,
+          error: { code: 'ASSET_SYNC_JOB_NOT_FOUND', message: '동기화 작업을 찾을 수 없습니다.' },
+        },
+        { status: 404 },
+      )
+    }
+
+    return HttpResponse.json({ success: true, data: status, error: null })
   }),
   http.get(`${API_BASE_URL}/api/v1/assets/connections`, () => {
     return HttpResponse.json(mockConnectionsResponse)
