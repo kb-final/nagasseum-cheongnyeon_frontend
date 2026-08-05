@@ -2,6 +2,9 @@ import httpClient from '@/shared/api/httpClient'
 
 export async function getAssetOrganizations() {
   const { data } = await httpClient.get('/api/v1/assets/organizations')
+  data.data.forEach((organization) => {
+    console.log('[assetApi] organizationCode:', organization.organizationCode)
+  })
   return data
 }
 
@@ -11,9 +14,16 @@ export async function getAssetAccounts() {
   return data
 }
 
-// 자산 동기화: 연동된 모든 기관의 계좌 정보를 CODEF에서 다시 조회해 DB에 반영
+// 자산 동기화: 연동된 모든 기관의 계좌 정보를 CODEF에서 비동기로 재조회하도록 요청.
+// 202 Accepted와 함께 jobId를 반환하며, 실제 동기화 완료 여부는 getAssetSyncStatus로 폴링해야 한다.
 export async function syncAssets() {
   const { data } = await httpClient.post('/api/v1/assets/sync')
+  return data
+}
+
+// 자산 동기화 상태 조회: syncAssets가 반환한 jobId로 백그라운드 동기화 진행 상태를 조회
+export async function getAssetSyncStatus(jobId) {
+  const { data } = await httpClient.get(`/api/v1/assets/sync/status/${jobId}`)
   return data
 }
 
@@ -61,12 +71,12 @@ export async function deleteManualAsset(id) {
   return data
 }
 
-const LOGIN_TYPE_ID = 'ID'
+const LOGIN_TYPE_ID = '1'
 
-// RSA 공개키 도입 전 평문으로 전송
-export async function linkAssetConnection({ organizationCode, id, password, birthDate }) {
-  const { data } = await httpClient.post('/api/v1/assets/connections', {
-    organizationCode,
+export async function linkAssetConnection({ organization, businessType, id, password, birthDate }) {
+  const { data } = await httpClient.post('/api/v1/assets/link', {
+    organization,
+    businessType,
     loginType: LOGIN_TYPE_ID,
     id,
     password,
