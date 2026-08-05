@@ -17,27 +17,24 @@ const homeStore = useHomeStore()
 const router = useRouter()
 
 onMounted(() => {
-  if (!homeStore.summary) homeStore.loadSummary()
+  if (!homeStore.loaded) homeStore.loadSummary()
 })
 </script>
 
 <template>
   <div class="home-summary-view">
-    <template v-if="homeStore.summary">
-      <GreetingHeader :member="homeStore.summary.member" />
+    <template v-if="homeStore.loaded && homeStore.assetSummary">
+      <GreetingHeader :member="homeStore.member" />
       <ClimbProgressCard
-        v-if="homeStore.summary.goal"
-        :climb="homeStore.summary.climb"
-        :goal="homeStore.summary.goal"
-        @view-goal="router.push(`/goals/${homeStore.summary.goal.id}`)"
+        v-if="homeStore.goal"
+        :climb="homeStore.climb"
+        :goal="homeStore.goal"
+        @view-goal="router.push(`/goals/${homeStore.goal.id}`)"
       />
       <EmptyGoalCard v-else @create-goal="router.push('/diagnosis')" />
-      <TotalAssetCard
-        :asset-summary="homeStore.summary.assetSummary"
-        @refresh="homeStore.loadSummary"
-      />
+      <TotalAssetCard :asset-summary="homeStore.assetSummary" @refresh="homeStore.loadSummary" />
       <AssetSummaryGrid
-        :asset-summary="homeStore.summary.assetSummary"
+        :asset-summary="homeStore.assetSummary"
         :asset-breakdown="homeStore.assetBreakdown"
       />
       <RecommendedPolicyList
@@ -45,7 +42,8 @@ onMounted(() => {
         @view-all="router.push('/policy')"
       />
       <MarketPriceAlertCard
-        :market-alert="homeStore.summary.marketAlert"
+        v-if="homeStore.marketAlert"
+        :market-alert="homeStore.marketAlert"
         @edit-goal="router.push('/goal')"
       />
     </template>

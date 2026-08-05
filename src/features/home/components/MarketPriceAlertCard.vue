@@ -4,18 +4,18 @@ import { computed } from 'vue'
 import BaseCard from '@/shared/components/atoms/base/card/BaseCard.vue'
 import BaseBadge from '@/shared/components/atoms/base/badge/BaseBadge.vue'
 import BaseButton from '@/shared/components/atoms/base/button/BaseButton.vue'
-import { formatEok } from '@/shared/utils/formatter'
+import {
+  formatEok,
+  formatManwon,
+  formatChangeAmount,
+  formatYearMonth,
+} from '@/shared/utils/formatter'
 
 const props = defineProps({
   marketAlert: { type: Object, required: true },
 })
 
 defineEmits(['edit-goal'])
-
-// "3,000만원" 형태로 표기 (이 카드에서만 쓰는 만원 단위 표기라 지역 헬퍼로 둠)
-function formatManwon(amount) {
-  return `${Math.round(amount / 10000).toLocaleString('ko-KR')}만원`
-}
 
 const subtitle = computed(() => {
   const [year, month] = props.marketAlert.updatedYm.split('-')
@@ -56,11 +56,6 @@ const timeline = computed(() => {
   }))
 })
 
-// "2028-09" -> "2028.09"
-function formatEta(ym) {
-  return ym.replace('-', '.')
-}
-
 // 내 목표가 중앙값보다 낮은지/높은지에 따라 방향 표현과 금액 강조색을 바꾼다(주어는 항상 "내 목표가 중앙값보다")
 // 목표 > 중앙값(높아요): #C1442E, 목표 < 중앙값(낮아요): #57B5B7
 const diffDirection = computed(() => {
@@ -79,7 +74,7 @@ const diffAmountText = computed(() => {
   <BaseCard class="market-alert">
     <div class="market-alert__header">
       <h2 class="market-alert__title">매물 시세 변화</h2>
-      <BaseBadge variant="point">▲ +{{ formatManwon(marketAlert.changeAmount) }}</BaseBadge>
+      <BaseBadge variant="point">{{ formatChangeAmount(marketAlert.changeAmount) }}</BaseBadge>
     </div>
     <p class="market-alert__subtitle">{{ subtitle }}</p>
 
@@ -113,7 +108,9 @@ const diffAmountText = computed(() => {
       <div class="market-alert__compare-box">
         <span class="market-alert__compare-label">유지 시</span>
         <span class="market-alert__compare-value">{{ formatEok(marketAlert.targetAmount) }}</span>
-        <span class="market-alert__compare-eta">{{ formatEta(marketAlert.maintainEta) }}</span>
+        <span class="market-alert__compare-eta">{{
+          formatYearMonth(marketAlert.maintainEta)
+        }}</span>
       </div>
       <span class="market-alert__compare-arrow">→</span>
       <div class="market-alert__compare-box">
@@ -121,7 +118,7 @@ const diffAmountText = computed(() => {
         <span class="market-alert__compare-value">{{
           formatEok(marketAlert.currentMiddleAmount)
         }}</span>
-        <span class="market-alert__compare-eta">{{ formatEta(marketAlert.reflectEta) }}</span>
+        <span class="market-alert__compare-eta">{{ formatYearMonth(marketAlert.reflectEta) }}</span>
       </div>
     </div>
 

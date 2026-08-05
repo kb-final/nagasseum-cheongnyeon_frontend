@@ -259,3 +259,47 @@ export function applyMockGoalUpdate({ monthlySaving }) {
   const fixedForecast = mockGoalDetail.forecasts.find((forecast) => forecast.basis === 'FIXED')
   if (fixedForecast) fixedForecast.monthlySaving = monthlySaving
 }
+
+// GET /api/v1/goals/market-trend 응답 mock (홈 화면 API 명세서 예시값 그대로)
+export const mockGoalMarketTrend = {
+  regionName: '서울 강남구',
+  housingType: 'OFFICETEL',
+  dealType: 'JEONSE',
+  areaMin: 10,
+  areaMax: 20,
+  updatedYm: '2026-07',
+  changeAmount: 5000000,
+  targetAmount: 100000000,
+  initialMiddleAmount: 90000000,
+  currentMiddleAmount: 95000000,
+  maintainEta: '2027-08',
+  reflectEta: '2027-03',
+}
+
+// GET /api/v1/goals/summary 응답 mock (홈 화면 API 명세서 예시값 그대로)
+export const mockGoalSummaryHome = {
+  goalId: 42,
+  goalType: 'HOUSING',
+  housing: {
+    regionName: '서울 강남구',
+    housingType: 'OFFICETEL',
+    dealType: 'JEONSE',
+    areaMin: 10,
+    areaMax: 20,
+  },
+  targetAmount: 100000000,
+  targetDate: '2027-08',
+  progress: {
+    currentAmount: 20000000,
+    remainingAmount: 80000000,
+    achievementRate: 20.0,
+    remainingMonths: 12,
+  },
+}
+
+// 활성 목표가 없을 때(GOAL_001) 흐름 확인용
+export const mockGoalNotFoundResponse = {
+  success: false,
+  data: null,
+  error: { code: 'GOAL_001', message: '활성 목표를 찾을 수 없습니다.' },
+}
