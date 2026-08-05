@@ -48,6 +48,7 @@ defineEmits(['create-goal'])
 .empty-goal__icon {
   width: 30px;
   height: 30px;
+  image-rendering: pixelated;
 }
 
 .empty-goal__heading {
