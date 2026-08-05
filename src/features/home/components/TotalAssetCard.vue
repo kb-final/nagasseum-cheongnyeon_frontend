@@ -9,7 +9,7 @@ const props = defineProps({
   assetSummary: { type: Object, required: true },
 })
 
-defineEmits(['refresh'])
+defineEmits(['refresh', 'view-detail'])
 
 // 오늘이면 "오늘 HH:mm", 아니면 "MM.DD HH:mm"으로 표시
 const syncedAtLabel = computed(() => {
@@ -30,6 +30,9 @@ const syncedAtLabel = computed(() => {
   <BaseCard class="total-asset-card">
     <div class="total-asset-card__top">
       <span class="total-asset-card__label">총 자산</span>
+      <button type="button" class="total-asset-card__detail-link" @click="$emit('view-detail')">
+        자세히 ▷
+      </button>
     </div>
     <p class="total-asset-card__amount">{{ formatWon(assetSummary.totalAssets) }}</p>
     <div class="total-asset-card__footer">
@@ -52,9 +55,26 @@ const syncedAtLabel = computed(() => {
   background: var(--color-card-highlight, #f7ffd1);
 }
 
+.total-asset-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .total-asset-card__label {
   font-size: 13px;
   color: var(--color-mint-deep, #16281c);
+}
+
+.total-asset-card__detail-link {
+  border: none;
+  background: transparent;
+  padding: 0;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--color-mint-deep, #16281c);
+  opacity: 0.7;
+  cursor: pointer;
 }
 
 .total-asset-card__amount {

@@ -9,17 +9,9 @@ import BaseToggle from '@/shared/components/atoms/form/Toggle/BaseToggle.vue'
 import BaseBreadcrumb from '@/shared/components/atoms/navigation/Breadcrumb/BaseBreadcrumb.vue'
 import AppHeader from '@/shared/components/molecules/AppHeader.vue'
 import { ONBOARDING_STEPS } from '@/shared/constants/onboardingSteps'
+import { INCOME_BRACKET_OPTIONS } from '@/shared/constants/incomeBracket'
 
 import { useAuthStore } from '@/features/auth/store/authStore'
-
-const incomeBracketOptions = [
-  { value: 'INCOME_DECILE_1', label: '1분위', sublabel: '하위 10%' },
-  { value: 'INCOME_DECILE_2_3', label: '2~3분위', sublabel: '하위 10~30%' },
-  { value: 'INCOME_DECILE_4_5', label: '4~5분위', sublabel: '중위 30~50%' },
-  { value: 'INCOME_DECILE_6_7', label: '6~7분위', sublabel: '중위 50~70%' },
-  { value: 'INCOME_DECILE_8_9', label: '8~9분위', sublabel: '상위 30%' },
-  { value: 'INCOME_DECILE_10', label: '10분위', sublabel: '상위 10%' },
-]
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -91,7 +83,7 @@ async function handleNext() {
           <p class="basic-info-view__section-helper">
             맞춤 청년 정책 추천에 활용되며, 언제든지 수정 가능합니다
           </p>
-          <BaseOptionCardGroup v-model="incomeBracket" :options="incomeBracketOptions" />
+          <BaseOptionCardGroup v-model="incomeBracket" :options="INCOME_BRACKET_OPTIONS" />
         </section>
 
         <section class="basic-info-view__section">

@@ -10,6 +10,7 @@ import BaseEmptyState from '@/shared/components/atoms/feedback/EmptyState/BaseEm
 import BaseAlert from '@/shared/components/atoms/feedback/Alert/BaseAlert.vue'
 import BaseToast from '@/shared/components/atoms/feedback/Toast/BaseToast.vue'
 import { BUSINESS_TYPE_LABELS } from '@/shared/constants/businessType'
+import { useAsyncLoad } from '@/shared/composables/useAsyncLoad'
 
 import ConnectedInstitutionCard from '@/features/asset/components/ConnectedInstitutionCard.vue'
 import { FLOW_CONTEXT, useAssetStore } from '@/features/asset/store/assetStore'
@@ -19,8 +20,7 @@ const SKELETON_ROW_COUNT = 3
 const router = useRouter()
 const assetStore = useAssetStore()
 
-const isLoading = ref(false)
-const errorMessage = ref('')
+const { isLoading, errorMessage, run: loadConnections } = useAsyncLoad()
 
 const isDeleteModalOpen = ref(false)
 const deleteTargetCode = ref(null)
@@ -42,19 +42,6 @@ const deleteTargetName = computed(
   () =>
     institutions.value.find((institution) => institution.id === deleteTargetCode.value)?.name ?? '',
 )
-
-async function loadConnections() {
-  errorMessage.value = ''
-  isLoading.value = !assetStore.isConnectionsLoaded
-
-  try {
-    await assetStore.fetchConnections()
-  } catch {
-    errorMessage.value = '연동된 자산을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.'
-  } finally {
-    isLoading.value = false
-  }
-}
 
 function openDeleteModal(organizationCode) {
   deleteTargetCode.value = organizationCode
@@ -90,7 +77,12 @@ function goToAdditionalLink() {
   router.push({ name: 'asset-link' })
 }
 
-onMounted(loadConnections)
+onMounted(() =>
+  loadConnections(() => assetStore.fetchConnections(), {
+    skipSkeleton: assetStore.isConnectionsLoaded,
+    errorMessage: '연동된 자산을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.',
+  }),
+)
 </script>
 
 <template>

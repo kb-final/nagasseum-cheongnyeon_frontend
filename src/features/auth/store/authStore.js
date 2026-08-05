@@ -2,6 +2,7 @@ import { ref, watch } from 'vue'
 import { defineStore } from 'pinia'
 
 import { loadAuthSession, saveAuthSession, clearAuthSession } from '@/shared/utils/authSession'
+import { resetOtherStores } from '@/shared/utils/storeRegistry'
 
 import { signupWithKakao, logout as logoutRequest } from '@/features/auth/api/authApi'
 
@@ -22,6 +23,10 @@ export const useAuthStore = defineStore('auth', () => {
   watch(
     [user, accessToken, refreshToken],
     ([nextUser, nextAccessToken, nextRefreshToken]) => {
+      if (!nextUser && !nextAccessToken && !nextRefreshToken) {
+        clearAuthSession()
+        return
+      }
       saveAuthSession({
         user: nextUser,
         accessToken: nextAccessToken,
@@ -63,6 +68,7 @@ export const useAuthStore = defineStore('auth', () => {
       accessToken.value = null
       refreshToken.value = null
       clearAuthSession()
+      resetOtherStores('auth')
     }
   }
 

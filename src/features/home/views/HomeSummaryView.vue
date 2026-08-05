@@ -44,7 +44,11 @@ function goToAssetLink() {
       <EmptyGoalCard v-else @create-goal="router.push('/diagnosis')" />
 
       <template v-if="homeStore.assetSummary">
-        <TotalAssetCard :asset-summary="homeStore.assetSummary" @refresh="homeStore.loadSummary" />
+        <TotalAssetCard
+          :asset-summary="homeStore.assetSummary"
+          @refresh="homeStore.loadSummary"
+          @view-detail="router.push({ name: 'asset-detail' })"
+        />
         <AssetSummaryGrid
           :asset-summary="homeStore.assetSummary"
           :asset-breakdown="homeStore.assetBreakdown"
