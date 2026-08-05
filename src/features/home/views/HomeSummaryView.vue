@@ -19,8 +19,10 @@ const homeStore = useHomeStore()
 const assetStore = useAssetStore()
 const router = useRouter()
 
+// 홈 화면에 들어올 때마다(목표 저장/자산 연동 등 다른 화면에서 상태가 바뀌고 돌아오는 경우 포함)
+// 항상 최신 데이터를 다시 불러온다. loaded는 최초 스켈레톤 노출 여부 구분용으로만 쓰인다.
 onMounted(() => {
-  if (!homeStore.loaded) homeStore.loadSummary()
+  homeStore.loadSummary()
 })
 
 function goToAssetLink() {
