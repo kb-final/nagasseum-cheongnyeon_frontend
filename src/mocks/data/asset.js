@@ -60,6 +60,8 @@ export function createMockConnectionResponse(organizationCode) {
 
   if (organization) organization.isConnected = true
 
+  const action = mockConnectionsResponse.data.length === 0 ? 'CREATED' : 'ADDED'
+
   if (!mockConnectionsResponse.data.some((item) => item.organizationCode === organizationCode)) {
     mockConnectionsResponse.data.push({
       organizationCode,
@@ -73,8 +75,8 @@ export function createMockConnectionResponse(organizationCode) {
     success: true,
     data: {
       connectedId: 'byi1wYwD40k8hEIiXl6bRF',
-      organizationCode,
-      organizationName: organization?.organizationName ?? '',
+      organization: organizationCode,
+      action,
     },
     error: null,
   }
@@ -110,6 +112,37 @@ export function deleteMockConnection(organizationCode) {
       organizationName: removed.organizationName,
     },
     error: null,
+  }
+}
+
+// 노션 "자산 동기화"(POST /api/v1/assets/sync) / "자산 동기화 상태 조회"
+// (GET /api/v1/assets/sync/status/{jobId}) 비동기 폴링 흐름을 로컬에서 재현하기 위한 목 상태.
+// 상태 조회를 SYNC_JOB_PENDING_CHECKS번 PENDING으로 응답한 뒤 SUCCESS로 전환한다.
+const SYNC_JOB_PENDING_CHECKS = 2
+const mockSyncJobs = new Map()
+
+export function createMockSyncJob() {
+  const jobId = crypto.randomUUID()
+  mockSyncJobs.set(jobId, { checkCount: 0 })
+  return jobId
+}
+
+export function getMockSyncJobStatus(jobId) {
+  const job = mockSyncJobs.get(jobId)
+  if (!job) return null
+
+  job.checkCount += 1
+
+  if (job.checkCount <= SYNC_JOB_PENDING_CHECKS) {
+    return { jobId, status: 'PENDING', errorMessage: null, resultUrl: null }
+  }
+
+  mockSyncJobs.delete(jobId)
+  return {
+    jobId,
+    status: 'SUCCESS',
+    errorMessage: null,
+    resultUrl: '/api/v1/assets/summary',
   }
 }
 

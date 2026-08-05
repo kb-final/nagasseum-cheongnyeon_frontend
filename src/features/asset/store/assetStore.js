@@ -10,12 +10,28 @@ import {
   getAssetAccounts,
   getAssetOrganizations,
   getAssetSummary,
+  getAssetSyncStatus,
   getConnectedAssetOrganizations,
   getManualAssets,
   linkAssetConnection,
   syncAssets,
   updateManualAsset,
 } from '@/features/asset/api/assetApi'
+
+const SYNC_STATUS = {
+  PENDING: 'PENDING',
+  SUCCESS: 'SUCCESS',
+  FAILED: 'FAILED',
+}
+
+// 폴링 간격 2~3초 권장(명세) 중 짧은 쪽을 택하고, 체감 대기 시간이 30초를 넘지 않도록
+// 총 폴링 시간을 20초(=2초 x 10회)로 제한한다. 초과 시 타임아웃으로 처리한다.
+const SYNC_POLL_INTERVAL_MS = 2000
+const SYNC_POLL_TIMEOUT_MS = 20000
+
+function wait(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
 
 export const FLOW_CONTEXT = {
   ONBOARDING: 'onboarding',
@@ -128,6 +144,7 @@ export const useAssetStore = defineStore('asset', () => {
   const assetDetail = ref(null)
   const isLoadingDetail = ref(false)
   const isSyncing = ref(false)
+  const syncError = ref(null)
   const detailError = ref(null)
 
   const connections = ref([])
@@ -158,7 +175,11 @@ export const useAssetStore = defineStore('asset', () => {
 
   async function authenticateCurrentInstitution(credentials) {
     const institution = currentInstitution.value
-    const response = await linkAssetConnection({ organizationCode: institution.id, ...credentials })
+    await linkAssetConnection({
+      organization: institution.id,
+      businessType: institution.businessType,
+      ...credentials,
+    })
     selectedInstitutions.value = selectedInstitutions.value.slice(1)
 
     patchOrganizationConnected(institution.id, true)
@@ -166,8 +187,8 @@ export const useAssetStore = defineStore('asset', () => {
       connections.value = [
         ...connections.value,
         {
-          organizationCode: response.data.organizationCode,
-          organizationName: response.data.organizationName,
+          organizationCode: institution.id,
+          organizationName: institution.name,
           businessType: institution.businessType,
           connectedAt: new Date().toISOString(),
         },
@@ -221,14 +242,45 @@ export const useAssetStore = defineStore('asset', () => {
     }
   }
 
-  async function syncAndRefreshAssetDetail() {
+  async function pollAssetSyncStatus(jobId) {
+    const deadline = Date.now() + SYNC_POLL_TIMEOUT_MS
+
+    while (Date.now() < deadline) {
+      const response = await getAssetSyncStatus(jobId)
+      const { status, errorMessage } = response.data
+
+      if (status === SYNC_STATUS.SUCCESS) return
+      if (status === SYNC_STATUS.FAILED) {
+        throw new Error(errorMessage ?? '자산 동기화에 실패했어요.')
+      }
+
+      await wait(SYNC_POLL_INTERVAL_MS)
+    }
+
+    throw new Error('자산 동기화가 지연되고 있어요. 잠시 후 다시 시도해주세요.')
+  }
+
+  async function runAssetSync() {
     isSyncing.value = true
+    syncError.value = null
     try {
-      await syncAssets()
+      const { data } = await syncAssets()
+      await pollAssetSyncStatus(data.jobId)
       await fetchAssetDetail()
+    } catch (e) {
+      syncError.value = e
     } finally {
       isSyncing.value = false
     }
+  }
+
+  // 자산 상세 화면의 새로고침 버튼: 완료(성공/실패)까지 기다렸다가 반환
+  async function syncAndRefreshAssetDetail() {
+    await runAssetSync()
+  }
+
+  function startAssetSync() {
+    runAssetSync()
   }
 
   async function addManualAsset(payload) {
@@ -263,9 +315,11 @@ export const useAssetStore = defineStore('asset', () => {
     assetDetail,
     isLoadingDetail,
     isSyncing,
+    syncError,
     detailError,
     fetchAssetDetail,
     syncAndRefreshAssetDetail,
+    startAssetSync,
     addManualAsset,
     editManualAsset,
     removeManualAsset,

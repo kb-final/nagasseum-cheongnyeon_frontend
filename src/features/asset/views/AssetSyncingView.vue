@@ -13,6 +13,9 @@ let redirectTimer = null
 const ADDITIONAL_FLOW_STEP_COUNT = 3
 
 onMounted(() => {
+  // 동기화 완료를 기다리지 않고 백그라운드로 진행 — 진행 상태는 자산 상세 화면에서 이어서 확인한다.
+  assetStore.startAssetSync()
+
   redirectTimer = setTimeout(() => {
     const isAdditionalFlow = assetStore.flowContext === FLOW_CONTEXT.ADDITIONAL
     assetStore.setFlowContext(FLOW_CONTEXT.ONBOARDING)
