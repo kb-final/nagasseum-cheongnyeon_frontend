@@ -19,22 +19,48 @@ const props = defineProps({
  */
 const manwon = (won) => Math.round(won / 10000).toLocaleString()
 
-const fillPct = computed(() => Math.min(100, (props.myMonthlySaving / TRACK_MAX) * 100))
+/** 금액을 눈금 위 위치(%)로. 눈금 밖으로 나가지 않게 자른다. */
+const toPercent = (won) => Math.min(100, Math.max(0, (won / TRACK_MAX) * 100))
+
+const rangeStartPct = computed(() => toPercent(props.cohortRangeMin))
+const rangeEndPct = computed(() => toPercent(props.cohortRangeMax))
+const myPct = computed(() => toPercent(props.myMonthlySaving))
 </script>
 
 <template>
   <div class="card">
-    <p class="card__title">월 저축액 구간</p>
-    <p class="card__range">{{ manwon(cohortRangeMin) }}~{{ manwon(cohortRangeMax) }}만원</p>
+    <p class="card__title">
+      월 저축액 구간
+      <span class="card__range">{{ manwon(cohortRangeMin) }}~{{ manwon(cohortRangeMax) }}만원</span>
+    </p>
 
-    <div class="slider">
-      <div class="slider__fill" :style="{ width: `${fillPct}%` }"></div>
-      <img class="slider__runner" :src="runnerImage" alt="" :style="{ left: `${fillPct}%` }" />
+    <div class="gauge">
+      <!-- 캐릭터와 라벨은 absolute라 높이를 차지하지 않는다. 위쪽 여백이 그 자리다. -->
+      <span class="gauge__my-label" :style="{ left: `${myPct}%` }">
+        나 {{ manwon(myMonthlySaving) }}만
+      </span>
+
+      <div class="gauge__track">
+        <!-- 또래의 가운데 50% 구간. 내 위치와 무관하게 이 구간만 칠한다. -->
+        <span
+          class="gauge__band"
+          :style="{ left: `${rangeStartPct}%`, width: `${rangeEndPct - rangeStartPct}%` }"
+        ></span>
+      </div>
+
+      <img class="gauge__runner" :src="runnerImage" alt="" :style="{ left: `${myPct}%` }" />
+
+      <!-- 구간 양 끝 눈금. 막대 아래에 구간 경계와 같은 위치로 붙인다. -->
+      <span class="gauge__tick" :style="{ left: `${rangeStartPct}%` }">
+        {{ manwon(cohortRangeMin) }}만
+      </span>
+      <span class="gauge__tick" :style="{ left: `${rangeEndPct}%` }">
+        {{ manwon(cohortRangeMax) }}만
+      </span>
     </div>
 
-    <div class="slider__scale">
+    <div class="gauge__ends">
       <span>0</span>
-      <span>{{ manwon(cohortRangeMin) }}만 · 나 {{ manwon(myMonthlySaving) }}만</span>
       <span>{{ manwon(TRACK_MAX) }}만+</span>
     </div>
   </div>
@@ -49,7 +75,7 @@ const fillPct = computed(() => Math.min(100, (props.myMonthlySaving / TRACK_MAX)
   --ink: #10130f;
   --ink-muted: #4e5c50;
   --track: #d9dcc0;
-  --fill: #9fd8ab;
+  --band: #9fd8ab;
 
   border-radius: 20px;
   padding: 16px;
@@ -61,47 +87,70 @@ const fillPct = computed(() => Math.min(100, (props.myMonthlySaving / TRACK_MAX)
 }
 
 .card__title {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
   margin: 0;
   font-size: 14px;
 }
 
 .card__range {
-  margin: 6px 0 0;
-  font-size: 14px;
-  text-align: center;
+  font-size: 13px;
+  color: var(--ink-muted);
 }
 
-/* 위쪽 여백은 캐릭터가 설 자리다. 캐릭터는 absolute라 높이를 차지하지 않는다. */
-.slider {
+/* 위 여백은 캐릭터와 '나' 라벨 자리, 아래 여백은 구간 눈금 자리다.
+   둘 다 absolute라 높이를 차지하지 않아 여기서 미리 확보해둔다. */
+.gauge {
+  position: relative;
+  margin: 44px 0 22px;
+}
+
+/* 모서리를 굴리지 않는다. 앱 전체가 각진 픽셀 톤이라 여기만 둥글면 튄다. */
+.gauge__track {
   position: relative;
   height: 6px;
-  margin-top: 35px;
   background: var(--track);
 }
 
-.slider__fill {
+.gauge__band {
+  position: absolute;
+  top: 0;
   height: 100%;
-  background: var(--fill);
+  background: var(--band);
 }
 
-.slider__runner {
+.gauge__runner {
   position: absolute;
-  bottom: 100%;
+  bottom: 6px;
   width: 30px;
   height: 30px;
   transform: translateX(-50%);
   image-rendering: pixelated;
 }
 
-.slider__scale {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  margin-top: 4px;
+.gauge__my-label {
+  position: absolute;
+  bottom: 40px;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: 12px;
+  color: var(--ink);
+}
+
+.gauge__tick {
+  position: absolute;
+  top: 14px;
+  transform: translateX(-50%);
+  white-space: nowrap;
   font-size: 12px;
   color: var(--ink-muted);
 }
 
-.slider__scale span:last-child {
-  text-align: right;
+.gauge__ends {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--ink-muted);
 }
 </style>
