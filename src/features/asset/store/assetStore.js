@@ -1,7 +1,6 @@
 import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 
-import { getCurrentMemberId } from '@/shared/utils/authSession'
 import { formatYearMonthDot } from '@/shared/utils/formatter'
 
 import {
@@ -79,9 +78,9 @@ function buildManualAssetViewModel(asset) {
   }
 }
 
-// 계좌 목록 조회(GET /api/v1/assets/accounts/{memberId}) 응답을
+// 계좌 목록 조회(GET /api/v1/assets/accounts) 응답을
 // 화면에서 쓰는 { categories, loans } 형태로 변환
-// 총자산은 자산 요약 조회(GET /api/v1/assets/summary/{memberId}) 값을 그대로 사용
+// 총자산은 자산 요약 조회(GET /api/v1/assets/summary) 값을 그대로 사용
 function transformAssetAccountsResponse(institutions) {
   const categoryMap = new Map()
   const loans = []
@@ -202,11 +201,10 @@ export const useAssetStore = defineStore('asset', () => {
     detailError.value = null
 
     try {
-      const memberId = getCurrentMemberId()
       const [accountsResponse, summaryResponse, manualAssetsResponse] = await Promise.all([
-        getAssetAccounts(memberId),
-        getAssetSummary(memberId),
-        getManualAssets(memberId),
+        getAssetAccounts(),
+        getAssetSummary(),
+        getManualAssets(),
       ])
 
       assetDetail.value = {
@@ -234,17 +232,17 @@ export const useAssetStore = defineStore('asset', () => {
   }
 
   async function addManualAsset(payload) {
-    await createManualAsset(getCurrentMemberId(), payload)
+    await createManualAsset(payload)
     await fetchAssetDetail()
   }
 
   async function editManualAsset(id, payload) {
-    await updateManualAsset(id, getCurrentMemberId(), payload)
+    await updateManualAsset(id, payload)
     await fetchAssetDetail()
   }
 
   async function removeManualAsset(id) {
-    await deleteManualAsset(id, getCurrentMemberId())
+    await deleteManualAsset(id)
     await fetchAssetDetail()
   }
 

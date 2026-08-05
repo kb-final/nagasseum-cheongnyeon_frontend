@@ -1,10 +1,9 @@
 <script setup>
-import { computed, onMounted } from 'vue'
+import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 
 import AppHeader from '@/shared/components/molecules/AppHeader.vue'
 import BaseSkeleton from '@/shared/components/atoms/feedback/Skeleton/BaseSkeleton.vue'
-import { AuthSessionMissingError } from '@/shared/utils/authSession'
 
 import AssetTotalCard from '@/features/asset/components/AssetTotalCard.vue'
 import AssetCategorySection from '@/features/asset/components/AssetCategorySection.vue'
@@ -13,8 +12,6 @@ import { useAssetStore } from '@/features/asset/store/assetStore'
 
 const router = useRouter()
 const assetStore = useAssetStore()
-
-const isSessionMissing = computed(() => assetStore.detailError instanceof AuthSessionMissingError)
 
 onMounted(() => {
   if (!assetStore.assetDetail) assetStore.fetchAssetDetail()
@@ -80,7 +77,7 @@ onMounted(() => {
     </div>
 
     <p v-else-if="assetStore.detailError" class="asset-detail-view__error">
-      {{ isSessionMissing ? '로그인이 필요해요.' : '자산 정보를 불러오지 못했어요.' }}
+      자산 정보를 불러오지 못했어요.
     </p>
   </div>
 </template>
