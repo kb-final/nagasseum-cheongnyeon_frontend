@@ -1,10 +1,10 @@
 <script setup>
-import { computed, onMounted } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 import AppHeader from '@/shared/components/molecules/AppHeader.vue'
 import BaseSkeleton from '@/shared/components/atoms/feedback/Skeleton/BaseSkeleton.vue'
-import { AuthSessionMissingError } from '@/shared/utils/authSession'
+import BaseToast from '@/shared/components/atoms/feedback/Toast/BaseToast.vue'
 
 import AssetTotalCard from '@/features/asset/components/AssetTotalCard.vue'
 import AssetCategorySection from '@/features/asset/components/AssetCategorySection.vue'
@@ -14,7 +14,14 @@ import { useAssetStore } from '@/features/asset/store/assetStore'
 const router = useRouter()
 const assetStore = useAssetStore()
 
-const isSessionMissing = computed(() => assetStore.detailError instanceof AuthSessionMissingError)
+const showSyncErrorToast = ref(false)
+
+watch(
+  () => assetStore.syncError,
+  (error) => {
+    if (error) showSyncErrorToast.value = true
+  },
+)
 
 onMounted(() => {
   if (!assetStore.assetDetail) assetStore.fetchAssetDetail()
@@ -30,7 +37,7 @@ onMounted(() => {
         :total-assets="assetStore.assetDetail.totalAssets"
         :synced-at="assetStore.assetDetail.syncedAt"
         :is-refreshing="assetStore.isSyncing"
-        @refresh="assetStore.syncAndRefreshAssetDetail"
+        @refresh="assetStore.runAssetSync"
       />
 
       <AssetCategorySection
@@ -80,8 +87,12 @@ onMounted(() => {
     </div>
 
     <p v-else-if="assetStore.detailError" class="asset-detail-view__error">
-      {{ isSessionMissing ? '로그인이 필요해요.' : '자산 정보를 불러오지 못했어요.' }}
+      자산 정보를 불러오지 못했어요.
     </p>
+
+    <BaseToast v-model="showSyncErrorToast" variant="error">
+      {{ assetStore.syncError?.message ?? '자산 동기화에 실패했어요.' }}
+    </BaseToast>
   </div>
 </template>
 

@@ -7,17 +7,10 @@ import BaseButton from '@/shared/components/atoms/base/button/BaseButton.vue'
 import BaseFieldBadge from '@/shared/components/atoms/base/badge/BaseFieldBadge.vue'
 import BaseInputField from '@/shared/components/molecules/BaseInputField.vue'
 import BaseOptionCardGroup from '@/shared/components/atoms/form/OptionCardGroup/BaseOptionCardGroup.vue'
+import BaseProfileIcon from '@/shared/components/atoms/base/icon/BaseProfileIcon.vue'
+import { INCOME_BRACKET_OPTIONS } from '@/shared/constants/incomeBracket'
 
 import { useMemberStore } from '@/features/member/store/memberStore'
-
-const incomeBracketOptions = [
-  { value: 'INCOME_DECILE_1', label: '1분위', sublabel: '하위 10%' },
-  { value: 'INCOME_DECILE_2_3', label: '2~3분위', sublabel: '하위 10~30%' },
-  { value: 'INCOME_DECILE_4_5', label: '4~5분위', sublabel: '중위 30~50%' },
-  { value: 'INCOME_DECILE_6_7', label: '6~7분위', sublabel: '중위 50~70%' },
-  { value: 'INCOME_DECILE_8_9', label: '8~9분위', sublabel: '상위 30%' },
-  { value: 'INCOME_DECILE_10', label: '10분위', sublabel: '상위 10%' },
-]
 
 const router = useRouter()
 const memberStore = useMemberStore()
@@ -48,13 +41,7 @@ async function handleSave() {
 
     <section class="edit-info-view__avatar-section">
       <div class="edit-info-view__avatar">
-        <svg viewBox="0 0 24 24" width="24" height="24">
-          <circle cx="12" cy="8" r="4" fill="currentColor" />
-          <path
-            d="M4 21C4 16.5817 7.58172 13 12 13C16.4183 13 20 16.5817 20 21"
-            fill="currentColor"
-          />
-        </svg>
+        <BaseProfileIcon />
         <span class="edit-info-view__avatar-edit">
           <svg viewBox="0 0 16 16" width="9" height="9">
             <path
@@ -87,7 +74,7 @@ async function handleSave() {
           <span class="edit-info-view__field-label">소득 분위</span>
           <BaseFieldBadge :required="false" />
         </div>
-        <BaseOptionCardGroup v-model="incomeBracket" :options="incomeBracketOptions" />
+        <BaseOptionCardGroup v-model="incomeBracket" :options="INCOME_BRACKET_OPTIONS" />
       </div>
     </section>
 

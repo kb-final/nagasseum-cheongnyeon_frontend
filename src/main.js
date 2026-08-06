@@ -5,6 +5,7 @@ import App from './App.vue'
 import router from './router'
 
 import { registerAuthRefreshInterceptor } from '@/features/auth'
+import { trackStore } from '@/shared/utils/storeRegistry'
 
 async function enableMocking() {
   if (import.meta.env.VITE_USE_MOCK !== 'true') return
@@ -15,6 +16,9 @@ async function enableMocking() {
 
 registerAuthRefreshInterceptor()
 
+const pinia = createPinia()
+pinia.use(trackStore)
+
 enableMocking().then(() => {
-  createApp(App).use(createPinia()).use(router).mount('#app')
+  createApp(App).use(pinia).use(router).mount('#app')
 })

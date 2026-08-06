@@ -7,13 +7,13 @@ import BaseBreadcrumb from '@/shared/components/atoms/navigation/Breadcrumb/Base
 import BaseInputField from '@/shared/components/molecules/BaseInputField.vue'
 import AppHeader from '@/shared/components/molecules/AppHeader.vue'
 import { ONBOARDING_STEPS } from '@/shared/constants/onboardingSteps'
+import { isValidBirthDate } from '@/shared/utils/validator'
 
 import { useAuthStore } from '@/features/auth/store/authStore'
 
 const NICKNAME_MAX_LENGTH = 12
 const BIRTH_DATE_LENGTH = 6
 const NICKNAME_PATTERN = /^[가-힣a-zA-Z0-9]{2,12}$/
-const DAYS_IN_MONTH = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -23,13 +23,6 @@ const nickname = ref(authStore.pendingSignup?.nickname ?? '')
 const birthDate = ref(authStore.pendingSignup?.birthDate ?? '')
 
 const errorMessage = ref(kakaoId ? '' : '잘못된 접근입니다. 카카오 로그인을 다시 시도해주세요.')
-
-function isValidBirthDate(value) {
-  if (!/^\d{6}$/.test(value)) return false
-  const month = Number(value.slice(2, 4))
-  const day = Number(value.slice(4, 6))
-  return month >= 1 && month <= 12 && day >= 1 && day <= DAYS_IN_MONTH[month - 1]
-}
 
 const canSubmit = computed(
   () => NICKNAME_PATTERN.test(nickname.value) && isValidBirthDate(birthDate.value),

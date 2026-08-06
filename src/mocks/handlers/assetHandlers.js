@@ -2,7 +2,9 @@ import { http, HttpResponse } from 'msw'
 
 import {
   createMockConnectionResponse,
+  createMockSyncJob,
   deleteMockConnection,
+  getMockSyncJobStatus,
   mockAssetAccountsResponse,
   mockAssetSummaryResponse,
   mockConnectionFailureResponse,
@@ -22,11 +24,32 @@ export const assetHandlers = [
   http.get(`${API_BASE_URL}/api/v1/assets/organizations`, () => {
     return HttpResponse.json(mockOrganizationsResponse)
   }),
-  http.get(`${API_BASE_URL}/api/v1/assets/accounts/:memberId`, () => {
+  http.get(`${API_BASE_URL}/api/v1/assets/accounts`, () => {
     return HttpResponse.json({ success: true, data: mockAssetAccountsResponse, error: null })
   }),
   http.post(`${API_BASE_URL}/api/v1/assets/sync`, () => {
-    return HttpResponse.json({ success: true, data: null, error: null })
+    const jobId = createMockSyncJob()
+
+    return HttpResponse.json(
+      { success: true, data: { jobId }, error: null },
+      { status: 202, headers: { Location: `/api/v1/assets/sync/status/${jobId}` } },
+    )
+  }),
+  http.get(`${API_BASE_URL}/api/v1/assets/sync/status/:jobId`, ({ params }) => {
+    const status = getMockSyncJobStatus(params.jobId)
+
+    if (!status) {
+      return HttpResponse.json(
+        {
+          success: false,
+          data: null,
+          error: { code: 'ASSET_SYNC_JOB_NOT_FOUND', message: '동기화 작업을 찾을 수 없습니다.' },
+        },
+        { status: 404 },
+      )
+    }
+
+    return HttpResponse.json({ success: true, data: status, error: null })
   }),
   http.get(`${API_BASE_URL}/api/v1/assets/connections`, () => {
     return HttpResponse.json(mockConnectionsResponse)
@@ -38,19 +61,19 @@ export const assetHandlers = [
       return HttpResponse.json(result, { status: result.success ? 200 : 400 })
     },
   ),
-  http.post(`${API_BASE_URL}/api/v1/assets/connections`, async ({ request }) => {
+  http.post(`${API_BASE_URL}/api/v1/assets/link`, async ({ request }) => {
     const body = await request.json()
 
     if (body.password === FAILURE_TEST_PASSWORD) {
       return HttpResponse.json(mockConnectionFailureResponse, { status: 400 })
     }
 
-    return HttpResponse.json(createMockConnectionResponse(body.organizationCode))
+    return HttpResponse.json(createMockConnectionResponse(body.organization), { status: 201 })
   }),
-  http.get(`${API_BASE_URL}/api/v1/assets/summary/:memberId`, () => {
+  http.get(`${API_BASE_URL}/api/v1/assets/summary`, () => {
     return HttpResponse.json({ success: true, data: mockAssetSummaryResponse, error: null })
   }),
-  http.get(`${API_BASE_URL}/api/v1/assets/manual/:memberId`, () => {
+  http.get(`${API_BASE_URL}/api/v1/assets/manual`, () => {
     return HttpResponse.json({ success: true, data: mockManualAssetsResponse, error: null })
   }),
   http.post(`${API_BASE_URL}/api/v1/assets/manual`, async ({ request }) => {

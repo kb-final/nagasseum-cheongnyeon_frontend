@@ -7,18 +7,31 @@ import BaseBreadcrumb from '@/shared/components/atoms/navigation/Breadcrumb/Base
 import BaseInputField from '@/shared/components/molecules/BaseInputField.vue'
 import AppHeader from '@/shared/components/molecules/AppHeader.vue'
 import { ONBOARDING_STEPS } from '@/shared/constants/onboardingSteps'
+import { formatNumber } from '@/shared/utils/formatter'
 
 import { createManualDepositAsset } from '@/features/auth/api/authApi'
-import { useAuthStore } from '@/features/auth/store/authStore'
+
+const MAX_AMOUNT = 10 ** 18
 
 const router = useRouter()
-const authStore = useAuthStore()
 
 const amount = ref('')
 const isSubmitting = ref(false)
 const errorMessage = ref('')
 
-const canSubmit = computed(() => !isSubmitting.value && Number(amount.value) > 0)
+const numericAmount = computed(() => Number(amount.value.replace(/,/g, '')) || 0)
+const canSubmit = computed(() => !isSubmitting.value && numericAmount.value > 0)
+
+function handleAmountInput(value) {
+  const digits = String(value).replace(/\D/g, '')
+  if (!digits) {
+    amount.value = ''
+    return
+  }
+
+  const capped = Math.min(Number(digits), MAX_AMOUNT)
+  amount.value = formatNumber(capped)
+}
 
 async function handleNext() {
   if (!canSubmit.value) return
@@ -27,10 +40,7 @@ async function handleNext() {
   errorMessage.value = ''
 
   try {
-    await createManualDepositAsset({
-      memberId: authStore.user?.id,
-      amount: Number(amount.value),
-    })
+    await createManualDepositAsset({ amount: numericAmount.value })
     router.push({ name: 'asset-link' })
   } catch (error) {
     errorMessage.value =
@@ -59,7 +69,13 @@ function handleSkip() {
         </p>
       </div>
 
-      <BaseInputField v-model="amount" label="현재 거주 보증금" type="number" placeholder="0">
+      <BaseInputField
+        :model-value="amount"
+        label="현재 거주 보증금"
+        type="text"
+        placeholder="0"
+        @update:model-value="handleAmountInput"
+      >
         <template #suffix>
           <span class="deposit-info-view__suffix">원</span>
         </template>
@@ -116,6 +132,11 @@ function handleSkip() {
   margin: 0;
   font-size: 13.1px;
   color: var(--text, #9aa09a);
+}
+
+.deposit-info-view :deep(.base-input) {
+  text-align: right;
+  padding-right: 40px;
 }
 
 .deposit-info-view__suffix {

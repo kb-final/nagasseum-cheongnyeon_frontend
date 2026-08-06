@@ -6,6 +6,10 @@
   font-display: swap;
 }
 
+html {
+  scrollbar-gutter: stable;
+}
+
 :root {
   --text: #9aa09a;
   --text-h: #ffffff;

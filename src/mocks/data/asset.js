@@ -60,6 +60,8 @@ export function createMockConnectionResponse(organizationCode) {
 
   if (organization) organization.isConnected = true
 
+  const action = mockConnectionsResponse.data.length === 0 ? 'CREATED' : 'ADDED'
+
   if (!mockConnectionsResponse.data.some((item) => item.organizationCode === organizationCode)) {
     mockConnectionsResponse.data.push({
       organizationCode,
@@ -73,8 +75,8 @@ export function createMockConnectionResponse(organizationCode) {
     success: true,
     data: {
       connectedId: 'byi1wYwD40k8hEIiXl6bRF',
-      organizationCode,
-      organizationName: organization?.organizationName ?? '',
+      organization: organizationCode,
+      action,
     },
     error: null,
   }
@@ -113,6 +115,37 @@ export function deleteMockConnection(organizationCode) {
   }
 }
 
+// 노션 "자산 동기화"(POST /api/v1/assets/sync) / "자산 동기화 상태 조회"
+// (GET /api/v1/assets/sync/status/{jobId}) 비동기 폴링 흐름을 로컬에서 재현하기 위한 목 상태.
+// 상태 조회를 SYNC_JOB_PENDING_CHECKS번 PENDING으로 응답한 뒤 SUCCESS로 전환한다.
+const SYNC_JOB_PENDING_CHECKS = 2
+const mockSyncJobs = new Map()
+
+export function createMockSyncJob() {
+  const jobId = crypto.randomUUID()
+  mockSyncJobs.set(jobId, { checkCount: 0 })
+  return jobId
+}
+
+export function getMockSyncJobStatus(jobId) {
+  const job = mockSyncJobs.get(jobId)
+  if (!job) return null
+
+  job.checkCount += 1
+
+  if (job.checkCount <= SYNC_JOB_PENDING_CHECKS) {
+    return { jobId, status: 'PENDING', errorMessage: null, resultUrl: null }
+  }
+
+  mockSyncJobs.delete(jobId)
+  return {
+    jobId,
+    status: 'SUCCESS',
+    errorMessage: null,
+    resultUrl: '/api/v1/assets/summary',
+  }
+}
+
 export const mockConnectionFailureResponse = {
   success: false,
   error: {
@@ -122,7 +155,7 @@ export const mockConnectionFailureResponse = {
   },
 }
 
-// 노션 "자산 요약 조회"(GET /api/v1/assets/summary/{memberId}) 응답 형태.
+// 노션 "자산 요약 조회"(GET /api/v1/assets/summary, @LoginMember) 응답 형태.
 // mockAssetAccountsResponse의 계좌 합산액과 일치하도록 값을 맞춰 뒀다 (총자산 36,530,000 = 현금성 7,600,000
 // + 예적금 21,700,000 + 청약 1,080,000 + 투자자산 5,300,000 + 기타 850,000).
 export const mockAssetSummaryResponse = {
@@ -244,7 +277,7 @@ export const mockManualAssetNotFoundResponse = {
   },
 }
 
-// Figma "07 자산 상세 화면" 목업. [추가] 계좌 목록 조회 API(GET /api/v1/assets/accounts/{memberId}) 응답 형태.
+// Figma "07 자산 상세 화면" 목업. [추가] 계좌 목록 조회 API(GET /api/v1/assets/accounts, @LoginMember) 응답 형태.
 // 노션 "[추가] 계좌 목록 조회" 명세에 등장하는 accountType(DEPOSIT/SAVINGS/STOCK/FUND/SUBSCRIPTION)과
 // assetCategory(현금성자산/예적금/투자자산/청약/기타)를 모두 최소 1개씩, 대출 계좌도 포함해 커버한다.
 export const mockAssetAccountsResponse = {

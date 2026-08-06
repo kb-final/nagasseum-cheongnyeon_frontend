@@ -5,47 +5,64 @@ import { useRouter } from 'vue-router'
 import BaseSkeleton from '@/shared/components/atoms/feedback/Skeleton/BaseSkeleton.vue'
 
 import { useHomeStore } from '@/features/home/store/homeStore'
+import { useAssetStore, FLOW_CONTEXT } from '@/features/asset'
 import GreetingHeader from '@/features/home/components/GreetingHeader.vue'
 import ClimbProgressCard from '@/features/home/components/ClimbProgressCard.vue'
 import EmptyGoalCard from '@/features/home/components/EmptyGoalCard.vue'
 import TotalAssetCard from '@/features/home/components/TotalAssetCard.vue'
 import AssetSummaryGrid from '@/features/home/components/AssetSummaryGrid.vue'
+import EmptyAssetCard from '@/features/home/components/EmptyAssetCard.vue'
 import RecommendedPolicyList from '@/features/home/components/RecommendedPolicyList.vue'
 import MarketPriceAlertCard from '@/features/home/components/MarketPriceAlertCard.vue'
 
 const homeStore = useHomeStore()
+const assetStore = useAssetStore()
 const router = useRouter()
 
+// 홈 화면에 들어올 때마다(목표 저장/자산 연동 등 다른 화면에서 상태가 바뀌고 돌아오는 경우 포함)
+// 항상 최신 데이터를 다시 불러온다. loaded는 최초 스켈레톤 노출 여부 구분용으로만 쓰인다.
 onMounted(() => {
-  if (!homeStore.summary) homeStore.loadSummary()
+  homeStore.loadSummary()
 })
+
+function goToAssetLink() {
+  assetStore.setFlowContext(FLOW_CONTEXT.ADDITIONAL)
+  router.push({ name: 'asset-link' })
+}
 </script>
 
 <template>
   <div class="home-summary-view">
-    <template v-if="homeStore.summary">
-      <GreetingHeader :member="homeStore.summary.member" />
+    <template v-if="homeStore.loaded">
+      <GreetingHeader :member="homeStore.member" />
       <ClimbProgressCard
-        v-if="homeStore.summary.goal"
-        :climb="homeStore.summary.climb"
-        :goal="homeStore.summary.goal"
-        @view-goal="router.push(`/goals/${homeStore.summary.goal.id}`)"
+        v-if="homeStore.goal"
+        :climb="homeStore.climb"
+        :goal="homeStore.goal"
+        @view-goal="router.push(`/goals/${homeStore.goal.id}`)"
       />
       <EmptyGoalCard v-else @create-goal="router.push('/diagnosis')" />
-      <TotalAssetCard
-        :asset-summary="homeStore.summary.assetSummary"
-        @refresh="homeStore.loadSummary"
-      />
-      <AssetSummaryGrid
-        :asset-summary="homeStore.summary.assetSummary"
-        :asset-breakdown="homeStore.assetBreakdown"
-      />
+
+      <template v-if="homeStore.assetSummary">
+        <TotalAssetCard
+          :asset-summary="homeStore.assetSummary"
+          @refresh="homeStore.loadSummary"
+          @view-detail="router.push({ name: 'asset-detail' })"
+        />
+        <AssetSummaryGrid
+          :asset-summary="homeStore.assetSummary"
+          :asset-breakdown="homeStore.assetBreakdown"
+        />
+      </template>
+      <EmptyAssetCard v-else @link-asset="goToAssetLink" />
+
       <RecommendedPolicyList
         :policies="homeStore.recommendedPolicies"
         @view-all="router.push('/policy')"
       />
       <MarketPriceAlertCard
-        :market-alert="homeStore.summary.marketAlert"
+        v-if="homeStore.marketAlert"
+        :market-alert="homeStore.marketAlert"
         @edit-goal="router.push('/goal')"
       />
     </template>
@@ -55,8 +72,6 @@ onMounted(() => {
       <BaseSkeleton height="120px" radius="16px" />
       <BaseSkeleton height="80px" radius="16px" />
     </div>
-
-    <p v-else-if="homeStore.error" class="home-summary-view__error">데이터를 불러오지 못했어요.</p>
   </div>
 </template>
 
@@ -71,11 +86,5 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 16px;
-}
-
-.home-summary-view__error {
-  padding: 24px 0;
-  color: var(--text, #9aa09a);
-  text-align: center;
 }
 </style>
