@@ -1,4 +1,5 @@
 import httpClient from '@/shared/api/httpClient'
+import { createManualAsset } from '@/shared/api/manualAssetApi'
 
 export async function getKakaoCallback(code) {
   const { data } = await httpClient.get('/api/v1/oauth/kakao/callback', {
@@ -22,9 +23,5 @@ export async function logout() {
 }
 
 export async function createManualDepositAsset({ amount }) {
-  const { data } = await httpClient.post('/api/v1/assets/manual', {
-    assetType: 'DEPOSIT',
-    amount,
-  })
-  return data.data
+  return createManualAsset({ assetType: 'DEPOSIT', amount })
 }
