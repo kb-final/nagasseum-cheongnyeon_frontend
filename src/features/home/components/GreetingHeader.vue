@@ -60,6 +60,7 @@ defineProps({
 .greeting-header__bell-icon {
   width: 20px;
   height: 20px;
+  image-rendering: pixelated;
 }
 
 .greeting-header__bell-dot {
