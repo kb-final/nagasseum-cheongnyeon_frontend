@@ -118,6 +118,7 @@ export const useGoalStore = defineStore('goal', () => {
   // 월 저축액만 바꾸는 화면이지만 목표 수정 API가 전체 교체(PUT)라, 기존 목표를 먼저 조회해
   // 나머지 필드(목표 금액/시점/주거 조건)를 그대로 실어 보낸다. 상세 조회 응답에는 지역 "코드"가
   // 없어서 detail 값만으로는 요청 본문을 만들 수 없다.
+  // 조회 응답(GoalResponse)과 수정 요청 본문은 필드 구성이 같아, 월 저축액만 갈아끼우면 된다.
   async function updateMonthlySaving(goalId, monthlySaving) {
     isUpdating.value = true
     updateError.value = null
@@ -125,10 +126,19 @@ export const useGoalStore = defineStore('goal', () => {
     try {
       const goal = await fetchGoal(goalId)
       await putGoal(goalId, {
-        targetAmount: goal.targetAmount,
+        regionCode: goal.regionCode,
+        propertyType: goal.propertyType,
+        tradeType: goal.tradeType,
+        sizeMin: goal.sizeMin,
+        sizeMax: goal.sizeMax,
+        depositMin: goal.depositMin,
+        depositMax: goal.depositMax,
+        monthlyRentMin: goal.monthlyRentMin,
+        monthlyRentMax: goal.monthlyRentMax,
         targetDate: goal.targetDate,
-        monthlySaving,
-        housing: goal.housing,
+        targetAmount: goal.targetAmount,
+        targetRentMiddleAmount: goal.targetRentMiddleAmount,
+        monthlySavings: monthlySaving,
       })
       return true
     } catch (e) {
