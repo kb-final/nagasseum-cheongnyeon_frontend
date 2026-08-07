@@ -65,15 +65,15 @@ const bandWidthPct = computed(() => (isReady.value ? rangeEndPct.value - rangeSt
 
 <style scoped>
 .card {
-  --cream: #f6f8d9;
-  --ink: #10130f;
-  --ink-muted: #4e5c50;
-  --track: #d9dcc0;
+  --ink: #e8f0e6;
+  --ink-muted: #7fa398;
+  --track: #263029;
   --band: #9fd8ab;
 
-  border-radius: 20px;
+  border: 1px solid #334234;
+  border-radius: 0;
   padding: 16px;
-  background: var(--cream);
+  background: #171b16;
   color: var(--ink);
   line-height: 1.45;
   animation: card-rise 0.35s ease-out both;
@@ -128,7 +128,7 @@ const bandWidthPct = computed(() => (isReady.value ? rangeEndPct.value - rangeSt
   transform: translateX(-50%);
   white-space: nowrap;
   font-size: 12px;
-  color: var(--ink);
+  color: #ffd939;
   transition: left 0.7s cubic-bezier(0.22, 0.9, 0.32, 1) 0.5s;
 }
 

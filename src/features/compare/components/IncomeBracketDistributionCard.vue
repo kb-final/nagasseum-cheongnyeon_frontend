@@ -115,18 +115,18 @@ const isHintOpen = ref(false)
 
 <style scoped>
 .card {
-  --cream: #f6f8d9;
-  --ink: #10130f;
-  --ink-muted: #4e5c50;
-  --forest: #1d6b3f;
-  --bar-body: #b8b8ac;
-  --bar-line: #d6d6c9;
-  --bar-body-mine: #165231;
-  --bar-line-mine: #1d6b3f;
+  --ink: #e8f0e6;
+  --ink-muted: #7fa398;
+  --mint: #9fd8ab;
+  --bar-body: #263029;
+  --bar-line: #171b16;
+  --bar-body-mine: var(--mint);
+  --bar-line-mine: #171b16;
 
-  border-radius: 20px;
+  border: 1px solid #334234;
+  border-radius: 0;
   padding: 16px;
-  background: var(--cream);
+  background: #171b16;
   color: var(--ink);
   line-height: 1.45;
   animation: card-rise 0.35s ease-out both;
@@ -145,7 +145,7 @@ const isHintOpen = ref(false)
 
 .card__desc b {
   font-weight: inherit;
-  color: var(--forest);
+  color: var(--mint);
 }
 
 .card__hint-row {

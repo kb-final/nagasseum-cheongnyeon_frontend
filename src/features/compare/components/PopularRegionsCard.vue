@@ -39,22 +39,25 @@ const filledCount = (ratio) => Math.round((ratio / 100) * SEGMENT_COUNT)
 /* 폰트 크기는 rem이 아닌 px로 고정한다.
    루트가 18px/16px로 바뀌면 픽셀 폰트가 그리드에서 어긋나 뭉개진다. */
 .card {
-  --mint: #cdedd3;
-  --ink: #10130f;
-  --forest: #1d6b3f;
-  --forest-soft: #7fae89;
-  --segment: #a9c9b0;
+  --ink: #e8f0e6;
+  --ink-muted: #7fa398;
+  --mint: #9fd8ab;
+  --mint-soft: #4f7a5c;
+  --segment: #263029;
   --rank-1: #ffd939;
-  --rank-2: #d9dcc0;
+  --rank-2: #c7ccc8;
   --rank-3: #c9a26b;
 
-  border-radius: 20px;
+  border: 1px solid #334234;
+  border-radius: 0;
   padding: 16px;
-  background: var(--mint);
+  background: #171b16;
   color: var(--ink);
   /* 루트의 145%는 18px 기준으로 계산된 26.1px이 그대로 상속된다.
      단위 없는 값으로 덮어써야 각 요소가 제 폰트 크기로 줄 높이를 계산한다. */
   line-height: 1.45;
+  animation: card-rise 0.35s ease-out both;
+  animation-delay: 0.24s;
 }
 
 .card__title {
@@ -83,6 +86,7 @@ const filledCount = (ratio) => Math.round((ratio / 100) * SEGMENT_COUNT)
   justify-content: center;
   width: 24px;
   height: 24px;
+  color: #171b16;
   font-size: 12px;
 }
 
@@ -99,6 +103,7 @@ const filledCount = (ratio) => Math.round((ratio / 100) * SEGMENT_COUNT)
 }
 
 .region-row__name {
+  color: var(--ink);
   font-size: 14px;
   white-space: nowrap;
   overflow: hidden;
@@ -118,14 +123,15 @@ const filledCount = (ratio) => Math.round((ratio / 100) * SEGMENT_COUNT)
 }
 
 .region-row__segment--on {
-  background: var(--forest-soft);
+  background: var(--mint-soft);
 }
 
 .region-row__track--top .region-row__segment--on {
-  background: var(--forest);
+  background: var(--mint);
 }
 
 .region-row__value {
+  color: var(--ink-muted);
   font-size: 13px;
   font-variant-numeric: tabular-nums;
 }

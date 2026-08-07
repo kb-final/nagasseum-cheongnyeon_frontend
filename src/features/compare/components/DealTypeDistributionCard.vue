@@ -33,20 +33,22 @@ const barItems = computed(() =>
 
 <style scoped>
 .card {
-  --cream: #f6f8d9;
-  --ink: #10130f;
-  --forest: #1d6b3f;
-  --forest-soft: #7fae89;
-  --segment: #d9dcc0;
-  --segment-on: var(--forest-soft);
-  --segment-on-highlight: var(--forest);
+  --ink: #e8f0e6;
+  --ink-muted: #7fa398;
+  --mint: #9fd8ab;
+  --segment: #263029;
+  --segment-on: #4f7a5c;
+  --segment-on-highlight: var(--mint);
   --badge: #ffd939;
 
-  border-radius: 20px;
+  border: 1px solid #334234;
+  border-radius: 0;
   padding: 16px;
-  background: var(--cream);
+  background: #171b16;
   color: var(--ink);
   line-height: 1.45;
+  animation: card-rise 0.35s ease-out both;
+  animation-delay: 0.18s;
 }
 
 .card__title {
@@ -58,10 +60,11 @@ const barItems = computed(() =>
   margin: 0;
   font-size: 13px;
   line-height: 1.7;
+  color: var(--ink-muted);
 }
 
 .card__desc b {
   font-weight: inherit;
-  color: var(--forest);
+  color: var(--mint);
 }
 </style>
