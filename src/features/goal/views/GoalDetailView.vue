@@ -12,7 +12,7 @@ import { useToast } from '@/shared/composables/useToast'
 import GoalProgressCard from '@/features/goal/components/GoalProgressCard.vue'
 import SavingForecastCard from '@/features/goal/components/SavingForecastCard.vue'
 import MonthlySavingEditModal from '@/features/goal/components/MonthlySavingEditModal.vue'
-import MarketPriceAlertCard from '@/features/home/components/MarketPriceAlertCard.vue'
+import MarketPriceAlertCard from '@/features/goal/components/MarketPriceAlertCard.vue'
 import { useGoalStore } from '@/features/goal/store/goalStore'
 
 const props = defineProps({

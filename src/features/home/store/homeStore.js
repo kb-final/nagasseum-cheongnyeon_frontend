@@ -3,12 +3,10 @@ import { defineStore } from 'pinia'
 
 import { HOUSING_TYPE_LABEL, DEAL_TYPE_LABEL } from '@/shared/constants/housing'
 
-import { fetchGoalMarketTrend, fetchGoalSummary } from '@/features/goal/api/goalApi'
-import { toMarketAlertViewModel } from '@/features/goal/utils/marketAlertViewModel'
+import { fetchGoalSummary } from '@/features/goal/api/goalApi'
 import { getAssetSummary } from '@/features/asset/api/assetApi'
-import { fetchRecommendedPolicies } from '@/features/home/api/homeApi'
 
-// 레벨/알림 배지는 홈 화면 API 명세(목표 요약 · 매물 시세 변화 · 자산 요약) 어디에도 없는 항목이라
+// 레벨/알림 배지는 홈 화면 API 명세(목표 요약 · 자산 요약) 어디에도 없는 항목이라
 // 연동할 API가 아직 없다. 화면 골격을 채우기 위한 임시 표시값.
 const PLACEHOLDER_MEMBER_BADGE = {
   nickname: '민지',
@@ -58,24 +56,19 @@ export const useHomeStore = defineStore('home', () => {
   const member = ref(PLACEHOLDER_MEMBER_BADGE)
   const goal = ref(null)
   const climb = ref(null)
-  const marketAlert = ref(null)
   const assetSummary = ref(null)
   const assetBreakdown = ref(null)
-  const recommendedPolicies = ref([])
   const isLoading = ref(false)
   const loaded = ref(false)
 
   async function loadSummary() {
     isLoading.value = true
 
-    // 네 API는 서로 독립적이라, 하나가 실패(예: 활성 목표 없음, 자산 미연동)해도 나머지 카드는 그대로 보여준다.
-    const [goalSummaryResult, marketTrendResult, assetSummaryResult, policiesResult] =
-      await Promise.allSettled([
-        fetchGoalSummary(),
-        fetchGoalMarketTrend(),
-        getAssetSummary(),
-        fetchRecommendedPolicies(),
-      ])
+    // 두 API는 서로 독립적이라, 하나가 실패(예: 활성 목표 없음, 자산 미연동)해도 나머지 카드는 그대로 보여준다.
+    const [goalSummaryResult, assetSummaryResult] = await Promise.allSettled([
+      fetchGoalSummary(),
+      getAssetSummary(),
+    ])
 
     if (goalSummaryResult.status === 'fulfilled') {
       goal.value = toGoalViewModel(goalSummaryResult.value)
@@ -84,11 +77,6 @@ export const useHomeStore = defineStore('home', () => {
       goal.value = null
       climb.value = null
     }
-
-    marketAlert.value =
-      marketTrendResult.status === 'fulfilled'
-        ? toMarketAlertViewModel(marketTrendResult.value)
-        : null
 
     if (assetSummaryResult.status === 'fulfilled') {
       const raw = assetSummaryResult.value
@@ -100,8 +88,6 @@ export const useHomeStore = defineStore('home', () => {
       assetBreakdown.value = null
     }
 
-    recommendedPolicies.value = policiesResult.status === 'fulfilled' ? policiesResult.value : []
-
     isLoading.value = false
     loaded.value = true
   }
@@ -110,10 +96,8 @@ export const useHomeStore = defineStore('home', () => {
     member,
     goal,
     climb,
-    marketAlert,
     assetSummary,
     assetBreakdown,
-    recommendedPolicies,
     isLoading,
     loaded,
     loadSummary,
