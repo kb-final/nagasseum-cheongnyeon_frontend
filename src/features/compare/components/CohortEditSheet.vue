@@ -1,6 +1,8 @@
 <script setup>
 import { computed, ref } from 'vue'
 
+import { filterEligibleCohortTypes } from '@/features/compare/composables/useCohortFilter'
+
 import runnerImage from '@/features/compare/assets/runner.png'
 
 const ASSET = { min: 5_000_000, max: 30_000_000, step: 1_000_000 }
@@ -9,30 +11,47 @@ const AGE = { min: 1, max: 5, step: 1 }
 const props = defineProps({
   assetRange: { type: Number, required: true },
   ageRange: { type: Number, required: true },
+  cohortTypes: { type: Array, default: () => [] },
+  hasIncomeInfo: { type: Boolean, default: true },
+  hasOccupationInfo: { type: Boolean, default: true },
 })
 
 const emit = defineEmits(['apply', 'close'])
 
-// 취소하면 되돌려야 하므로 원본을 건드리지 않고 사본으로 조작한다.
 const draftAsset = ref(props.assetRange)
 const draftAge = ref(props.ageRange)
+const draftTypes = ref(
+  filterEligibleCohortTypes(props.cohortTypes, {
+    hasIncomeInfo: props.hasIncomeInfo,
+    hasOccupationInfo: props.hasOccupationInfo,
+  }),
+)
+
+const missingInfoLabel = computed(() => {
+  const missing = []
+  if (!props.hasIncomeInfo) missing.push('소득')
+  if (!props.hasOccupationInfo) missing.push('직업')
+  return missing.join('·')
+})
 
 const manwon = (won) => (won / 10000).toLocaleString()
 
-/** 채워진 트랙 길이. 손잡이 중심 위치와 같은 값이다. */
 const percent = (value, { min, max }) => `${((value - min) / (max - min)) * 100}%`
 
 const assetPct = computed(() => percent(draftAsset.value, ASSET))
 const agePct = computed(() => percent(draftAge.value, AGE))
 
 function apply() {
-  emit('apply', { assetRange: draftAsset.value, ageRange: draftAge.value })
+  emit('apply', {
+    assetRange: draftAsset.value,
+    ageRange: draftAge.value,
+    cohortTypes: draftTypes.value,
+  })
 }
 </script>
 
 <template>
   <div class="sheet-layer">
-    <!-- 바깥을 눌러도 닫히게 한다. 시트는 형제 요소라 클릭이 겹치지 않는다. -->
     <div class="sheet-layer__backdrop" @click="emit('close')"></div>
 
     <section
@@ -90,6 +109,30 @@ function apply() {
         </div>
       </div>
 
+      <div class="field">
+        <div class="field__head">
+          <span>추가 조건</span>
+        </div>
+        <div class="checkbox-group">
+          <label class="checkbox" :class="{ 'checkbox--disabled': !hasIncomeInfo }">
+            <input v-model="draftTypes" type="checkbox" value="INCOME" :disabled="!hasIncomeInfo" />
+            소득 구간
+          </label>
+          <label class="checkbox" :class="{ 'checkbox--disabled': !hasOccupationInfo }">
+            <input
+              v-model="draftTypes"
+              type="checkbox"
+              value="OCCUPATION"
+              :disabled="!hasOccupationInfo"
+            />
+            직업군
+          </label>
+        </div>
+        <p v-if="missingInfoLabel" class="field__note">
+          마이페이지에서 {{ missingInfoLabel }} 정보를 등록하면 사용할 수 있어요.
+        </p>
+      </div>
+
       <p class="sheet__hint">
         범위를 넓히면 비교 대상이 늘어나지만<br />유사도는 낮아질 수 있어요.
       </p>
@@ -103,8 +146,6 @@ function apply() {
 </template>
 
 <style scoped>
-/* 폰트 크기는 rem이 아닌 px로 고정한다.
-   루트가 18px/16px로 바뀌면 픽셀 폰트가 그리드에서 어긋나 뭉개진다. */
 .sheet-layer {
   position: fixed;
   inset: 0;
@@ -121,7 +162,6 @@ function apply() {
 }
 
 .sheet {
-  /* 이 시트에서만 쓰는 색 */
   --surface: #becfc7;
   --ink: #16281c;
   --ink-muted: #4e5c50;
@@ -137,8 +177,6 @@ function apply() {
   border-radius: 20px 20px 0 0;
   background: var(--surface);
   color: var(--ink);
-  /* 루트의 145%는 18px 기준으로 계산된 26.1px이 그대로 상속된다.
-     단위 없는 값으로 덮어써야 각 요소가 제 폰트 크기로 줄 높이를 계산한다. */
   line-height: 1.45;
 }
 
@@ -172,10 +210,6 @@ function apply() {
   color: var(--ink-muted);
 }
 
-/* 네이티브 range는 손잡이를 트랙 안쪽에 가둔다. 최솟값일 때 손잡이의 '왼쪽 끝'이
-   트랙 시작점에 맞춰지므로, 손잡이 중심은 늘 반폭만큼 안쪽에 머문다.
-   그래서 트랙은 따로 그리고, input만 좌우로 손잡이 폭만큼 넓혀 밖으로 뺀다.
-   이러면 손잡이 중심이 트랙의 양 끝까지 정확히 도달한다. */
 .slider {
   --thumb-size: 24px;
 
@@ -207,7 +241,6 @@ function apply() {
   cursor: pointer;
 }
 
-/* 트랙 높이를 손잡이와 같게 잡아야 손잡이가 세로 중앙에 온다. */
 .slider__input::-webkit-slider-runnable-track {
   height: var(--thumb-size);
   background: transparent;
@@ -233,6 +266,44 @@ function apply() {
   border: 0;
   background: var(--thumb) center / contain no-repeat;
   image-rendering: pixelated;
+}
+
+.checkbox-group {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  padding: 7px 12px;
+  background: var(--dark);
+  color: #f0f2ef;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.checkbox input {
+  margin: 0;
+  accent-color: var(--track-fill);
+}
+
+.checkbox--disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.checkbox--disabled input {
+  cursor: not-allowed;
+}
+
+.field__note {
+  margin: 6px 0 0;
+  font-size: 10.5px;
+  color: var(--ink-muted);
 }
 
 .sheet__hint {

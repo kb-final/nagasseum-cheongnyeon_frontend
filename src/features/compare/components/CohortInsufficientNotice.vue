@@ -1,0 +1,97 @@
+<script setup>
+import StateNoticeCard from '@/features/compare/components/StateNoticeCard.vue'
+
+defineProps({
+  cohortSize: { type: Number, required: true },
+  minimumRequired: { type: Number, required: true },
+  canWiden: { type: Boolean, required: true },
+})
+
+defineEmits(['widen'])
+</script>
+
+<template>
+  <StateNoticeCard eyebrow="집계 대기" title="아직 비교 데이터가 부족합니다">
+    같은 자산·나이 범위의 또래가 {{ cohortSize }}명뿐이에요. 최소 {{ minimumRequired }}명이 모이면
+    정확한 비교 결과를 보여드릴게요.
+    <div class="gauge">
+      <span class="gauge__track">
+        <span
+          class="gauge__fill"
+          :style="{ width: `${(cohortSize / minimumRequired) * 100}%` }"
+        ></span>
+      </span>
+      <span class="gauge__label">{{ cohortSize }} / {{ minimumRequired }}명</span>
+    </div>
+
+    <template #action>
+      <button
+        v-if="canWiden"
+        type="button"
+        class="state-card__cta state-card__cta--button"
+        @click="$emit('widen')"
+      >
+        비교 범위 넓히기
+      </button>
+      <p v-else class="state-card__hint">
+        비교 범위를 가장 넓게 잡아도 아직 또래가 모이지 않았어요.<br />조금 뒤에 다시 확인해주세요.
+      </p>
+    </template>
+  </StateNoticeCard>
+</template>
+
+<style scoped>
+.gauge {
+  margin-top: 11px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gauge__track {
+  flex: 1;
+  height: 6px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.gauge__fill {
+  display: block;
+  height: 100%;
+  background: var(--color-point);
+}
+
+.gauge__label {
+  font-size: 10.5px;
+  color: var(--text);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.state-card__cta {
+  margin-top: 12px;
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 15px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--color-mint-deep);
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.state-card__cta--button {
+  border: 0;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.state-card__hint {
+  margin: 12px 0 0;
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--text);
+  opacity: 0.75;
+}
+</style>

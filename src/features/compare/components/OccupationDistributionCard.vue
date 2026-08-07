@@ -4,64 +4,47 @@ import { computed } from 'vue'
 import SegmentBarList from '@/features/compare/components/SegmentBarList.vue'
 
 const props = defineProps({
-  topDealType: { type: String, required: true },
-  topDealRatio: { type: Number, required: true },
   items: { type: Array, required: true },
 })
 
 const barItems = computed(() =>
   props.items.map((item) => ({
-    key: item.dealType,
-    label: item.label,
+    key: item.occupationType,
+    label: item.occupationType,
     ratio: item.ratio,
-    badge: item.rank === 1 ? '1위' : null,
-    highlighted: item.rank === 1,
+    badge: item.isMine ? '내 직업군' : null,
+    highlighted: item.isMine,
   })),
 )
 </script>
 
 <template>
   <div class="card">
-    <p class="card__title">목표 유형 분포</p>
-    <p class="card__desc">
-      나와 비슷한 자산 보유자들은 <br /><b>{{ topDealType }}({{ topDealRatio }}%)</b>를 가장 많이
-      목표로 합니다
-    </p>
+    <p class="card__title">직업군 분포</p>
     <SegmentBarList :items="barItems" />
   </div>
 </template>
 
 <style scoped>
 .card {
-  --cream: #f6f8d9;
+  --mint: #cdedd3;
   --ink: #10130f;
   --forest: #1d6b3f;
   --forest-soft: #7fae89;
-  --segment: #d9dcc0;
+  --segment: #a9c9b0;
   --segment-on: var(--forest-soft);
   --segment-on-highlight: var(--forest);
   --badge: #ffd939;
 
   border-radius: 20px;
   padding: 16px;
-  background: var(--cream);
+  background: var(--mint);
   color: var(--ink);
   line-height: 1.45;
 }
 
 .card__title {
-  margin: 0 0 8px;
-  font-size: 14px;
-}
-
-.card__desc {
   margin: 0;
-  font-size: 13px;
-  line-height: 1.7;
-}
-
-.card__desc b {
-  font-weight: inherit;
-  color: var(--forest);
+  font-size: 14px;
 }
 </style>

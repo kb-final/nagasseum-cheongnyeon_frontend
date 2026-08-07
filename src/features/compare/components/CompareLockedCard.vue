@@ -33,12 +33,10 @@ import lockedImage from '@/features/compare/assets/locked.png'
 /* 폰트 크기는 rem이 아닌 px로 고정한다.
    루트가 18px/16px로 바뀌면 픽셀 폰트가 그리드에서 어긋나 뭉개진다. */
 .locked {
-  /* 이 화면에서만 쓰는 색 */
   --badge: #ffd939;
   --on-pale: #556057;
   --on-pale-strong: #2d3a30;
 
-  /* 잠금 일러스트 전용 색 */
   --art-face: #2b312c;
   --art-line: #7f8a7d;
   --art-lock: #9fd8ab;
@@ -54,7 +52,6 @@ import lockedImage from '@/features/compare/assets/locked.png'
   line-height: 1.45;
 }
 
-/* 바깥 원만 둥글다. 안쪽 막대는 각지게 둔다. */
 .locked__art {
   position: relative;
   width: 120px;

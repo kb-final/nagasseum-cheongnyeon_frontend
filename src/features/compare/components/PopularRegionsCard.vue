@@ -1,9 +1,8 @@
 <script setup>
-/** 게이지는 10칸이고 한 칸이 10%다. 목표 유형 분포 카드와 같은 눈금이다. */
 const SEGMENT_COUNT = 10
 
 defineProps({
-  regions: { type: Array, required: true }, // [{ rank, regionName, ratio }]
+  regions: { type: Array, required: true },
 })
 
 const filledCount = (ratio) => Math.round((ratio / 100) * SEGMENT_COUNT)
@@ -40,7 +39,6 @@ const filledCount = (ratio) => Math.round((ratio / 100) * SEGMENT_COUNT)
 /* 폰트 크기는 rem이 아닌 px로 고정한다.
    루트가 18px/16px로 바뀌면 픽셀 폰트가 그리드에서 어긋나 뭉개진다. */
 .card {
-  /* 이 카드에서만 쓰는 색 */
   --mint: #cdedd3;
   --ink: #10130f;
   --forest: #1d6b3f;

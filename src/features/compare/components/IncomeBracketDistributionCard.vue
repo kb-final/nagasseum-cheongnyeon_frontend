@@ -1,31 +1,32 @@
 <script setup>
 import { computed } from 'vue'
 
+import { formatWon } from '@/shared/utils/formatter'
+
 import SegmentBarList from '@/features/compare/components/SegmentBarList.vue'
 
 const props = defineProps({
-  topDealType: { type: String, required: true },
-  topDealRatio: { type: Number, required: true },
-  items: { type: Array, required: true },
+  brackets: { type: Array, required: true },
+  myMonthlyIncome: { type: Number, default: null },
 })
 
 const barItems = computed(() =>
-  props.items.map((item) => ({
-    key: item.dealType,
-    label: item.label,
+  props.brackets.map((item) => ({
+    key: item.bracket,
+    label: item.bracket,
     ratio: item.ratio,
-    badge: item.rank === 1 ? '1위' : null,
-    highlighted: item.rank === 1,
+    badge: item.isMine ? '내 구간' : null,
+    highlighted: item.isMine,
   })),
 )
 </script>
 
 <template>
   <div class="card">
-    <p class="card__title">목표 유형 분포</p>
-    <p class="card__desc">
-      나와 비슷한 자산 보유자들은 <br /><b>{{ topDealType }}({{ topDealRatio }}%)</b>를 가장 많이
-      목표로 합니다
+    <p class="card__title">소득 구간 분포</p>
+    <p v-if="myMonthlyIncome != null" class="card__desc">
+      내 월 소득은 <b>{{ formatWon(myMonthlyIncome) }}</b
+      >이에요
     </p>
     <SegmentBarList :items="barItems" />
   </div>
@@ -50,14 +51,13 @@ const barItems = computed(() =>
 }
 
 .card__title {
-  margin: 0 0 8px;
+  margin: 0;
   font-size: 14px;
 }
 
 .card__desc {
-  margin: 0;
+  margin: 8px 0 0;
   font-size: 13px;
-  line-height: 1.7;
 }
 
 .card__desc b {
