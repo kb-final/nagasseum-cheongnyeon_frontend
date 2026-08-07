@@ -4,7 +4,6 @@ import { useRouter } from 'vue-router'
 
 import AppHeader from '@/shared/components/molecules/AppHeader.vue'
 import BaseBadge from '@/shared/components/atoms/base/badge/BaseBadge.vue'
-import BaseButton from '@/shared/components/atoms/base/button/BaseButton.vue'
 import BaseSkeleton from '@/shared/components/atoms/feedback/Skeleton/BaseSkeleton.vue'
 import { formatEok, formatManwon, formatYearMonthKo } from '@/shared/utils/formatter'
 import { useToast } from '@/shared/composables/useToast'
@@ -110,8 +109,6 @@ async function onSubmitMonthlySaving(monthlySaving) {
       </p>
 
       <MarketPriceAlertCard v-if="goalStore.marketAlert" :market-alert="goalStore.marketAlert" />
-
-      <BaseButton variant="primary" @click="goToEditGoal">목표 수정하기</BaseButton>
 
       <MonthlySavingEditModal
         v-model="isSavingModalOpen"
