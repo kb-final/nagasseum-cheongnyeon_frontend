@@ -252,6 +252,7 @@ onMounted(async () => {
               </div>
 
               <DealTypeDistributionCard
+                v-if="activeComparison.dealTypeDistribution.length"
                 :top-deal-type="activeComparison.dealTypeDistribution[0].label"
                 :top-deal-ratio="activeComparison.dealTypeDistribution[0].ratio"
                 :items="activeComparison.dealTypeDistribution"
