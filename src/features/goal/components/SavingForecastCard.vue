@@ -152,7 +152,9 @@ function forecastNote(forecast) {
       </li>
     </ul>
 
-    <BaseButton variant="highlight" @click="$emit('change-saving')">월 저축액 변경하기</BaseButton>
+    <BaseButton variant="highlight" @click="$emit('change-saving')"
+      >고정 저축액 변경하기</BaseButton
+    >
   </section>
 </template>
 

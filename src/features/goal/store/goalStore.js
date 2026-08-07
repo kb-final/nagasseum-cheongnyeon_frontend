@@ -8,7 +8,9 @@ import {
   fetchGoal,
   putGoal,
   fetchMonthlySavingSimulation,
+  fetchGoalMarketTrend,
 } from '@/features/goal/api/goalApi'
+import { toMarketAlertViewModel } from '@/features/goal/utils/marketAlertViewModel'
 
 export const useGoalStore = defineStore('goal', () => {
   const diagnosisResult = ref(null) // 진단 결과 { budget, results }
@@ -21,6 +23,9 @@ export const useGoalStore = defineStore('goal', () => {
   const goalDetail = ref(null) // 목표 상세 조회 결과 { housing, progress, savingStatus, forecasts, ... }
   const isLoadingDetail = ref(false)
   const detailError = ref(null)
+
+  // 목표 상세 화면 맨 아래 시세 변화 카드용. 목표 상세 조회와 독립적이라 실패해도 나머지 화면엔 영향 없다.
+  const marketAlert = ref(null)
 
   const isUpdating = ref(false)
   const updateError = ref(null)
@@ -71,6 +76,15 @@ export const useGoalStore = defineStore('goal', () => {
       goalDetail.value = null
     } finally {
       isLoadingDetail.value = false
+    }
+  }
+
+  // 실패해도 조용히 카드만 숨기면 되므로 별도 에러 상태 없이 marketAlert를 null로 둔다.
+  async function loadMarketAlert() {
+    try {
+      marketAlert.value = toMarketAlertViewModel(await fetchGoalMarketTrend())
+    } catch {
+      marketAlert.value = null
     }
   }
 
@@ -137,6 +151,8 @@ export const useGoalStore = defineStore('goal', () => {
     isLoadingDetail,
     detailError,
     loadGoalDetail,
+    marketAlert,
+    loadMarketAlert,
     isUpdating,
     updateError,
     updateMonthlySaving,

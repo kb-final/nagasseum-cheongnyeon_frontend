@@ -13,8 +13,6 @@ import EmptyGoalCard from '@/features/home/components/EmptyGoalCard.vue'
 import TotalAssetCard from '@/features/home/components/TotalAssetCard.vue'
 import AssetSummaryGrid from '@/features/home/components/AssetSummaryGrid.vue'
 import EmptyAssetCard from '@/features/home/components/EmptyAssetCard.vue'
-import RecommendedPolicyList from '@/features/home/components/RecommendedPolicyList.vue'
-import MarketPriceAlertCard from '@/features/home/components/MarketPriceAlertCard.vue'
 
 const homeStore = useHomeStore()
 const memberStore = useMemberStore()
@@ -64,16 +62,6 @@ function goToAssetLink() {
         />
       </template>
       <EmptyAssetCard v-else @link-asset="goToAssetLink" />
-
-      <RecommendedPolicyList
-        :policies="homeStore.recommendedPolicies"
-        @view-all="router.push('/policy')"
-      />
-      <MarketPriceAlertCard
-        v-if="homeStore.marketAlert"
-        :market-alert="homeStore.marketAlert"
-        @edit-goal="router.push('/goal')"
-      />
     </template>
 
     <div v-else-if="homeStore.isLoading" class="home-summary-view__skeleton">
