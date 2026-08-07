@@ -36,8 +36,8 @@ defineProps({
 }
 
 .base-badge--neutral {
-  background: #1e211f;
-  color: var(--text, #9aa09a);
+  background: #666666;
+  color: #ebebeb;
 }
 
 .base-badge--outline {
