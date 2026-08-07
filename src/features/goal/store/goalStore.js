@@ -65,6 +65,23 @@ export const useGoalStore = defineStore('goal', () => {
     }
   }
 
+  // 진단 화면을 수정 모드로 들어왔을 때 쓴다. 생성(saveGoal)과 요청 본문 스키마가 완전히 같고
+  // 엔드포인트만 POST -> PUT으로 바뀌므로, 호출부가 상태를 따로 다루지 않도록 isSaving/saveError를
+  // 그대로 공유한다.
+  async function updateGoal(goalId, payload) {
+    isSaving.value = true
+    saveError.value = null
+
+    try {
+      return await putGoal(goalId, payload)
+    } catch (e) {
+      saveError.value = e.response?.data?.error ?? e
+      return null
+    } finally {
+      isSaving.value = false
+    }
+  }
+
   async function loadGoalDetail(goalId) {
     isLoadingDetail.value = true
     detailError.value = null
@@ -157,6 +174,7 @@ export const useGoalStore = defineStore('goal', () => {
     isSaving,
     saveError,
     saveGoal,
+    updateGoal,
     goalDetail,
     isLoadingDetail,
     detailError,
