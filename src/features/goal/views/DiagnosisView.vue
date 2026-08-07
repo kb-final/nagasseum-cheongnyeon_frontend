@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
 
 import AppHeader from '@/shared/components/molecules/AppHeader.vue'
 
@@ -8,14 +8,17 @@ import HousingGoalDiagnosisForm from '@/features/goal/components/HousingGoalDiag
 import DiagnosisResultModal from '@/features/goal/components/DiagnosisResultModal.vue'
 import { useGoalStore } from '@/features/goal/store/goalStore'
 
-const route = useRoute()
+// goal-edit 라우트(`/goals/:goalId/edit`)로 들어오면 채워지고, 진단(생성)으로 들어오면 비어 있다.
+// 값이 있으면 생성(POST)이 아니라 수정(PUT)을 호출해야 한다 — 활성 목표가 이미 있는 상태라
+// 생성은 GOAL_003(이미 활성 목표가 존재합니다)으로 거부된다.
+const props = defineProps({
+  goalId: { type: [String, Number], default: null },
+})
+
 const router = useRouter()
 const goalStore = useGoalStore()
 
-// 목표 상세에서 "수정"으로 들어오면 ?goalId=... 가 붙는다. 이 경우 생성(POST)이 아니라
-// 수정(PUT)을 호출해야 한다 — 활성 목표가 이미 있어서 생성은 GOAL_003으로 거부된다.
-const editGoalId = computed(() => route.query.goalId ?? null)
-const isEditMode = computed(() => editGoalId.value !== null)
+const isEditMode = computed(() => props.goalId !== null)
 
 const isResultOpen = ref(false)
 const conditionSummary = ref('')
@@ -48,7 +51,7 @@ async function onConfirm() {
   }
 
   const saved = isEditMode.value
-    ? await goalStore.updateGoal(editGoalId.value, payload)
+    ? await goalStore.updateGoal(props.goalId, payload)
     : await goalStore.saveGoal(payload)
 
   if (!saved) return
@@ -56,9 +59,7 @@ async function onConfirm() {
   isResultOpen.value = false
   // 수정은 원래 보고 있던 목표 상세로 돌려보내고, 생성은 홈으로 보낸다.
   router.push(
-    isEditMode.value
-      ? { name: 'goal-detail', params: { goalId: editGoalId.value } }
-      : { name: 'home' },
+    isEditMode.value ? { name: 'goal-detail', params: { goalId: props.goalId } } : { name: 'home' },
   )
 }
 </script>
