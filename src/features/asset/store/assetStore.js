@@ -228,6 +228,9 @@ export const useAssetStore = defineStore('asset', () => {
 
       assetDetail.value = {
         ...transformAssetAccountsResponse(accounts.institutions),
+        // 인벤토리는 원본 institutions가 필요하다. categories는 accountType과
+        // 기관 이름이 남지 않아서 타일을 못 만든다.
+        institutions: accounts.institutions,
         totalAssets: summary.totalAssets,
         syncedAt: summary.syncedAt,
         manualAssets: manualAssets.map(buildManualAssetViewModel),

@@ -12,12 +12,18 @@ import signTorchOn from '@/assets/images/signTorchOn.png'
 import torchOff from '@/assets/images/torchOff.png'
 import torchOn from '@/assets/images/torchOn.png'
 
+/**
+ * 목표가 없으면 climb·goal이 null로 온다. 그때도 일러스트는 그대로 보여주고
+ * 캐릭터만 출발점에 세운다. 목표를 세우면 이 산을 오르게 된다는 걸 그림으로 보여주려는 것이다.
+ */
 const props = defineProps({
-  climb: { type: Object, required: true },
-  goal: { type: Object, required: true },
+  climb: { type: Object, default: null },
+  goal: { type: Object, default: null },
 })
 
-defineEmits(['view-goal'])
+defineEmits(['view-goal', 'create-goal'])
+
+const hasGoal = computed(() => Boolean(props.goal && props.climb))
 
 /* ------------------------------------------------------------------
  * 일러스트 좌표
@@ -59,8 +65,9 @@ const SIGN_TORCH = { at: 75, left: 66.5, top: 67.5 }
 /** 집 앞 자물쇠 표지판. 길 위에 놓여 길을 막는다. 100% 완주해야 사라진다. */
 const LOCK_SIGN = { left: 50.0, top: 57.3 }
 
-/** 서버 값이 범위를 벗어나면 좌표 계산이 깨진다. 그대로 믿지 않는다. */
-const progress = computed(() => Math.min(100, Math.max(0, props.climb.progressPercent)))
+const progress = computed(() =>
+  hasGoal.value ? Math.min(100, Math.max(0, props.climb.progressPercent)) : 0,
+)
 
 const torches = computed(() =>
   TORCHES.map((torch) => ({ ...torch, lit: progress.value >= torch.at })),
@@ -70,6 +77,14 @@ const signTorchLit = computed(() => progress.value >= SIGN_TORCH.at)
 
 /** 100%가 되면 자물쇠가 풀린다. 이 화면에서 유일하게 사라지는 요소다. */
 const unlocked = computed(() => progress.value >= 100)
+
+/**
+ * 캐릭터 이름표.
+ *
+ * <p>목표가 없으면 달성률이라는 개념 자체가 없다. 0%라고 쓰면 "목표의 0%"로 읽혀서
+ * 없는 목표가 있는 것처럼 보인다.
+ */
+const climberLabel = computed(() => (hasGoal.value ? `나 ${progress.value}%` : '출발'))
 
 /** 기준점 두 개를 찾아 그 사이를 비례로 나눈다. */
 const climberPosition = computed(() => {
@@ -100,34 +115,35 @@ const climberPosition = computed(() => {
  * 카드 한 줄에 들어갈 만큼 줄인 지역명.
  *
  * <p>서버는 "서울특별시 강남구"처럼 시도까지 붙여서 준다. 한 줄에 주거형태·거래유형·
- * 금액까지 같이 들어가야 해서 뺄 수 있으면 뺀다.
+ * 금액까지 같이 들어가야 해서 시도는 뗀다.
  *
- * <p>다만 시도를 무조건 떼면 안 된다.
- *   특별시·광역시   서울특별시 강남구 → 강남구      구 이름만으로 어디인지 안다
- *   도             경기도 부천시    → 경기도 부천시  시 이름만 남기면 헷갈린다
- * 앞 덩어리가 '시'로 끝나면 떼고, '도'로 끝나면 남긴다.
+ * <pre>
+ *   서울특별시 강남구      → 강남구
+ *   경기도 부천시         → 부천시
+ *   경기도 고양시 덕양구    → 고양시 덕양구
+ * </pre>
  *
- * <p>"경기도 고양시 덕양구"처럼 세 단계도 그대로 둔다. 마지막만 남기면 어느 시인지
- * 알 수 없다.
+ * <p>맨 앞 한 덩어리만 떼는 이유는 세 단계인 지역 때문이다. 마지막만 남기면
+ * "덕양구"가 되어 어느 시인지 알 수 없다.
  */
 function shortRegionName(regionName) {
   const parts = String(regionName ?? '')
     .trim()
     .split(/\s+/)
 
-  if (parts.length < 2) {
-    return parts.join(' ')
-  }
-  return parts[0].endsWith('시') ? parts.slice(1).join(' ') : parts.join(' ')
+  return parts.length > 1 ? parts.slice(1).join(' ') : parts.join(' ')
 }
 
-const goalTitle = computed(
-  () =>
-    `${shortRegionName(props.goal.regionName)} ${props.goal.housingType} ${props.goal.dealType} ${formatEok(props.goal.targetAmount)}`,
+const goalTitle = computed(() =>
+  hasGoal.value
+    ? `${shortRegionName(props.goal.regionName)} ${props.goal.housingType} ${props.goal.dealType} ${formatEok(props.goal.targetAmount)}`
+    : '',
 )
 
 // "2028-03-31" -> "2028.03"
-const targetEta = computed(() => props.goal.targetDate.slice(0, 7).replace('-', '.'))
+const targetEta = computed(() =>
+  hasGoal.value ? props.goal.targetDate.slice(0, 7).replace('-', '.') : '',
+)
 
 /**
  * 게이지 10칸의 상태.
@@ -179,35 +195,54 @@ const segments = computed(() => {
       />
 
       <div class="climb-card__climber" :style="climberPosition">
-        <span class="climb-card__climber-label">나 {{ progress }}%</span>
+        <span class="climb-card__climber-label">{{ climberLabel }}</span>
         <img class="climb-card__climber-img" :src="climberImage" alt="" />
       </div>
     </div>
 
     <BaseCard class="climb-card__body">
-      <div class="climb-card__status">
-        <span>정상까지 {{ 100 - climb.progressPercent }}% 남음</span>
-        <span class="climb-card__increase">+{{ formatWon(climb.recentIncreaseAmount) }}</span>
-      </div>
+      <template v-if="!hasGoal">
+        <div class="climb-card__status">
+          <span class="climb-card__quest-badge">NEW QUEST</span>
+          <span class="climb-card__quest-label">아직 오를 정상이 없어요</span>
+        </div>
 
-      <button type="button" class="climb-card__goal-summary" @click="$emit('view-goal')">
-        <div class="climb-card__goal-summary-top">
-          <span class="climb-card__goal-title">▲ {{ goalTitle }}</span>
-          <span class="climb-card__goal-detail-link">자세히 ▷</span>
+        <div class="climb-card__empty">
+          <p class="climb-card__empty-title">목표를 정하면 등반을 시작해요</p>
+          <p class="climb-card__empty-desc">
+            원하는 동네와 보증금을 입력하면 구간별 등반 계획을 만들어 드려요
+          </p>
+          <button type="button" class="climb-card__empty-cta" @click="$emit('create-goal')">
+            + 목표 설정하러 가기
+          </button>
         </div>
-        <p class="climb-card__goal-remaining">
-          정상까지 {{ formatWon(climb.remainingAmount) }} · ETA {{ targetEta }}
-        </p>
-        <div class="climb-card__segments">
-          <span
-            v-for="(state, i) in segments"
-            :key="i"
-            class="climb-card__segment"
-            :class="`climb-card__segment--${state}`"
-          />
-          <span class="climb-card__percent">{{ progress }}%</span>
+      </template>
+
+      <template v-else>
+        <div class="climb-card__status">
+          <span>정상까지 {{ 100 - progress }}% 남음</span>
+          <span class="climb-card__increase">+{{ formatWon(climb.recentIncreaseAmount) }}</span>
         </div>
-      </button>
+
+        <button type="button" class="climb-card__goal-summary" @click="$emit('view-goal')">
+          <div class="climb-card__goal-summary-top">
+            <span class="climb-card__goal-title">▲ {{ goalTitle }}</span>
+            <span class="climb-card__goal-detail-link">자세히 ▷</span>
+          </div>
+          <p class="climb-card__goal-remaining">
+            정상까지 {{ formatWon(climb.remainingAmount) }} · ETA {{ targetEta }}
+          </p>
+          <div class="climb-card__segments">
+            <span
+              v-for="(state, i) in segments"
+              :key="i"
+              class="climb-card__segment"
+              :class="`climb-card__segment--${state}`"
+            />
+            <span class="climb-card__percent">{{ progress }}%</span>
+          </div>
+        </button>
+      </template>
     </BaseCard>
   </div>
 </template>
@@ -349,6 +384,65 @@ const segments = computed(() => {
   line-height: 1.35;
 }
 
+/* ── 목표가 없을 때 ──────────────────────────────────────── */
+
+.climb-card__quest-badge {
+  flex: none;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: #ffd939;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.climb-card__quest-label {
+  flex: 1;
+  margin-left: 8px;
+  color: var(--ink-muted);
+}
+
+.climb-card__empty {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+/* 목표가 있을 때의 목표 제목과 같은 크기. 이 카드에서 제일 큰 글자다. */
+.climb-card__empty-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.climb-card__empty-desc {
+  margin: 0;
+  font-size: 11px;
+  color: var(--ink-muted);
+}
+
+/*
+  가로를 꽉 채운다. 이 화면에서 할 수 있는 일이 이것 하나뿐이라 작게 둘 이유가 없다.
+  글자를 노랑으로 두면 등불·캐릭터 이름표와 같은 색이라 위 일러스트와 이어진다.
+*/
+.climb-card__empty-cta {
+  width: 100%;
+  margin-top: 5px;
+  padding: 11px 0;
+  border: none;
+  border-radius: 999px;
+  background: var(--ink);
+  color: #ffd939;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* ── 목표가 있을 때 ──────────────────────────────────────── */
+
 .climb-card__status {
   display: flex;
   align-items: center;
@@ -430,7 +524,6 @@ const segments = computed(() => {
   background: var(--color-progress-fill, #1d6b3f);
 }
 
-/* 채우는 중인 한 칸. 등불과 같은 노랑이라 "지금 여기"로 읽힌다. */
 .climb-card__segment--current {
   background: #ffd939;
 }
