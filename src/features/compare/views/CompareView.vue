@@ -236,7 +236,6 @@ onMounted(async () => {
               <AchievementHistogramCard
                 :my-rate="activeComparison.achievement.mine"
                 :cohort-average-rate="activeComparison.achievement.cohortAverage"
-                :buckets="activeComparison.achievement.buckets"
               />
 
               <div class="stat-pair">
@@ -371,13 +370,14 @@ onMounted(async () => {
 }
 
 .stat-card {
-  --mint: #cdedd3;
-  --ink: #10130f;
-  --ink-muted: #4e5c50;
+  --ink-muted: #7fa398;
 
-  border-radius: 12px;
-  background: var(--mint);
+  border: 1px solid #334234;
+  border-radius: 0;
+  background: #171b16;
   padding: 14px;
+  animation: card-rise 0.35s ease-out both;
+  animation-delay: 0.12s;
 }
 
 .stat-card__label {
@@ -389,7 +389,7 @@ onMounted(async () => {
   margin-top: 2px;
   font-size: 18px;
   line-height: 1.2;
-  color: var(--ink);
+  color: #ffd939;
   font-variant-numeric: tabular-nums;
 }
 

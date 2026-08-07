@@ -14,7 +14,12 @@ const rows = computed(() =>
 
 <template>
   <div class="bar-list">
-    <div v-for="item in rows" :key="item.key" class="bar-row">
+    <div
+      v-for="(item, rowIndex) in rows"
+      :key="item.key"
+      class="bar-row"
+      :style="{ '--row': rowIndex }"
+    >
       <div class="bar-row__head">
         <span class="bar-row__label">{{ item.label }}</span>
         <span v-if="item.badge" class="bar-row__badge">{{ item.badge }}</span>
@@ -30,6 +35,7 @@ const rows = computed(() =>
           :key="n"
           class="bar-row__segment"
           :class="{ 'bar-row__segment--on': n <= item.filled }"
+          :style="{ '--i': n }"
         ></span>
       </div>
     </div>
@@ -58,6 +64,7 @@ const rows = computed(() =>
   border-radius: 999px;
   padding: 0 5px;
   background: var(--badge, #ffd939);
+  color: #171b16;
   font-size: 10px;
   line-height: 1;
 }
@@ -82,9 +89,23 @@ const rows = computed(() =>
 
 .bar-row__segment--on {
   background: var(--segment-on);
+  animation: segment-rise 0.26s ease-out both;
+  animation-delay: calc(var(--row, 0) * 90ms + (var(--i, 1) - 1) * 45ms);
 }
 
 .bar-row__track--highlight .bar-row__segment--on {
   background: var(--segment-on-highlight);
+}
+
+@keyframes segment-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>
