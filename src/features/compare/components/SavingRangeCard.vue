@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 
 import runnerImage from '@/features/compare/assets/runner.png'
 
@@ -18,6 +18,13 @@ const toPercent = (won) => Math.min(100, Math.max(0, (won / TRACK_MAX) * 100))
 const rangeStartPct = computed(() => toPercent(props.cohortRangeMin))
 const rangeEndPct = computed(() => toPercent(props.cohortRangeMax))
 const myPct = computed(() => toPercent(props.myMonthlySaving))
+
+// 첫 프레임은 출발선(0%)에 그려야 CSS transition이 진짜로 "달려오는" 움직임으로 보인다.
+// rAF 없이 바로 목표값을 넣으면 브라우저가 중간 과정 없이 도착 지점만 그려버린다.
+const isReady = ref(false)
+onMounted(() => requestAnimationFrame(() => (isReady.value = true)))
+const runnerPct = computed(() => (isReady.value ? myPct.value : 0))
+const bandWidthPct = computed(() => (isReady.value ? rangeEndPct.value - rangeStartPct.value : 0))
 </script>
 
 <template>
@@ -28,18 +35,18 @@ const myPct = computed(() => toPercent(props.myMonthlySaving))
     </p>
 
     <div class="gauge">
-      <span class="gauge__my-label" :style="{ left: `${myPct}%` }">
+      <span class="gauge__my-label" :style="{ left: `${runnerPct}%` }">
         나 {{ manwon(myMonthlySaving) }}만
       </span>
 
       <div class="gauge__track">
         <span
           class="gauge__band"
-          :style="{ left: `${rangeStartPct}%`, width: `${rangeEndPct - rangeStartPct}%` }"
+          :style="{ left: `${rangeStartPct}%`, width: `${bandWidthPct}%` }"
         ></span>
       </div>
 
-      <img class="gauge__runner" :src="runnerImage" alt="" :style="{ left: `${myPct}%` }" />
+      <img class="gauge__runner" :src="runnerImage" alt="" :style="{ left: `${runnerPct}%` }" />
 
       <span class="gauge__tick" :style="{ left: `${rangeStartPct}%` }">
         {{ manwon(cohortRangeMin) }}만
@@ -69,6 +76,8 @@ const myPct = computed(() => toPercent(props.myMonthlySaving))
   background: var(--cream);
   color: var(--ink);
   line-height: 1.45;
+  animation: card-rise 0.35s ease-out both;
+  animation-delay: 0.18s;
 }
 
 .card__title {
@@ -86,7 +95,7 @@ const myPct = computed(() => toPercent(props.myMonthlySaving))
 
 .gauge {
   position: relative;
-  margin: 44px 0 22px;
+  margin: 60px 0 22px;
 }
 
 .gauge__track {
@@ -100,6 +109,7 @@ const myPct = computed(() => toPercent(props.myMonthlySaving))
   top: 0;
   height: 100%;
   background: var(--band);
+  transition: width 0.7s cubic-bezier(0.22, 0.9, 0.32, 1) 0.5s;
 }
 
 .gauge__runner {
@@ -109,6 +119,7 @@ const myPct = computed(() => toPercent(props.myMonthlySaving))
   height: 30px;
   transform: translateX(-50%);
   image-rendering: pixelated;
+  transition: left 0.7s cubic-bezier(0.22, 0.9, 0.32, 1) 0.5s;
 }
 
 .gauge__my-label {
@@ -118,6 +129,7 @@ const myPct = computed(() => toPercent(props.myMonthlySaving))
   white-space: nowrap;
   font-size: 12px;
   color: var(--ink);
+  transition: left 0.7s cubic-bezier(0.22, 0.9, 0.32, 1) 0.5s;
 }
 
 .gauge__tick {

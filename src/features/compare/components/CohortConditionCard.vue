@@ -13,9 +13,9 @@ defineEmits(['edit'])
 <template>
   <section class="cohort-card">
     <div class="cohort-card__head">
-      <h2 class="cohort-card__title">내 코호트 기준</h2>
+      <h2 class="cohort-card__title">내 또래 기준</h2>
       <button type="button" class="cohort-card__edit" @click="$emit('edit')">
-        수정
+        기준 수정
         <svg width="7" height="9" viewBox="0 0 8 10" aria-hidden="true">
           <path d="M0 0L8 5L0 10Z" fill="currentColor" />
         </svg>
@@ -48,6 +48,7 @@ defineEmits(['edit'])
   padding: 16px;
   background: var(--surface);
   line-height: 1.45;
+  animation: card-rise 0.35s ease-out both;
 }
 
 .cohort-card__head {

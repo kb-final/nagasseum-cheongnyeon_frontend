@@ -48,7 +48,7 @@ function bucketGrow(bucket) {
     </div>
 
     <p class="hist__legend">
-      <span class="hist__legend-dot"></span>나 ({{ myRate }}%) — 코호트 평균 ({{
+      <span class="hist__legend-dot"></span>나 ({{ myRate }}%) — 또래 평균 ({{
         cohortAverageRate
       }}%)
     </p>

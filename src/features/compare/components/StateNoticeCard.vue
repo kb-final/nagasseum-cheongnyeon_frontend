@@ -23,6 +23,8 @@ defineProps({
   background: var(--card-bg, #161616);
   border: 1px solid var(--border);
   padding: 16px;
+  animation: card-rise 0.35s ease-out both;
+  animation-delay: 0.18s;
 }
 
 .state-card__eyebrow {

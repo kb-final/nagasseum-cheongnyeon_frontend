@@ -1,6 +1,8 @@
 <script setup>
 import { computed, ref } from 'vue'
 
+import BaseButton from '@/shared/components/atoms/base/button/BaseButton.vue'
+
 import { filterEligibleCohortTypes } from '@/features/compare/composables/useCohortFilter'
 
 import runnerImage from '@/features/compare/assets/runner.png'
@@ -27,12 +29,11 @@ const draftTypes = ref(
   }),
 )
 
-const missingInfoLabel = computed(() => {
-  const missing = []
-  if (!props.hasIncomeInfo) missing.push('소득')
-  if (!props.hasOccupationInfo) missing.push('직업')
-  return missing.join('·')
-})
+const openTooltip = ref(null) // null | 'INCOME' | 'OCCUPATION'
+
+function toggleTooltip(key) {
+  openTooltip.value = openTooltip.value === key ? null : key
+}
 
 const manwon = (won) => (won / 10000).toLocaleString()
 
@@ -61,85 +62,120 @@ function apply() {
       aria-labelledby="cohort-edit-title"
       :style="{ '--thumb': `url(${runnerImage})` }"
     >
-      <h2 id="cohort-edit-title" class="sheet__title">비교 기준 수정</h2>
+      <div class="sheet__handle" aria-hidden="true"></div>
 
-      <div class="field">
-        <div class="field__head">
-          <span>자산 범위</span>
-          <b>±{{ manwon(draftAsset) }}만원</b>
-        </div>
-        <div class="slider" :style="{ '--pct': assetPct }">
-          <div class="slider__track"></div>
-          <input
-            v-model.number="draftAsset"
-            class="slider__input"
-            type="range"
-            :min="ASSET.min"
-            :max="ASSET.max"
-            :step="ASSET.step"
-            aria-label="자산 범위"
-          />
-        </div>
-        <div class="field__scale">
-          <span>{{ manwon(ASSET.min) }}만</span>
-          <span>{{ manwon(ASSET.max) }}만</span>
-        </div>
-      </div>
+      <div class="sheet__scroll" @click="openTooltip = null">
+        <h2 id="cohort-edit-title" class="sheet__title">비교 기준 수정</h2>
 
-      <div class="field">
-        <div class="field__head">
-          <span>나이 범위</span>
-          <b>±{{ draftAge }}세</b>
-        </div>
-        <div class="slider" :style="{ '--pct': agePct }">
-          <div class="slider__track"></div>
-          <input
-            v-model.number="draftAge"
-            class="slider__input"
-            type="range"
-            :min="AGE.min"
-            :max="AGE.max"
-            :step="AGE.step"
-            aria-label="나이 범위"
-          />
-        </div>
-        <div class="field__scale">
-          <span>{{ AGE.min }}세</span>
-          <span>{{ AGE.max }}세</span>
-        </div>
-      </div>
-
-      <div class="field">
-        <div class="field__head">
-          <span>추가 조건</span>
-        </div>
-        <div class="checkbox-group">
-          <label class="checkbox" :class="{ 'checkbox--disabled': !hasIncomeInfo }">
-            <input v-model="draftTypes" type="checkbox" value="INCOME" :disabled="!hasIncomeInfo" />
-            소득 구간
-          </label>
-          <label class="checkbox" :class="{ 'checkbox--disabled': !hasOccupationInfo }">
+        <div class="field">
+          <div class="field__head">
+            <span>자산 범위</span>
+            <b>±{{ manwon(draftAsset) }}만원</b>
+          </div>
+          <div class="slider" :style="{ '--pct': assetPct }">
+            <div class="slider__track"></div>
             <input
-              v-model="draftTypes"
-              type="checkbox"
-              value="OCCUPATION"
-              :disabled="!hasOccupationInfo"
+              v-model.number="draftAsset"
+              class="slider__input"
+              type="range"
+              :min="ASSET.min"
+              :max="ASSET.max"
+              :step="ASSET.step"
+              aria-label="자산 범위"
             />
-            직업군
-          </label>
+          </div>
+          <div class="field__scale">
+            <span>{{ manwon(ASSET.min) }}만</span>
+            <span>{{ manwon(ASSET.max) }}만</span>
+          </div>
         </div>
-        <p v-if="missingInfoLabel" class="field__note">
-          마이페이지에서 {{ missingInfoLabel }} 정보를 등록하면 사용할 수 있어요.
+
+        <div class="field">
+          <div class="field__head">
+            <span>나이 범위</span>
+            <b>±{{ draftAge }}세</b>
+          </div>
+          <div class="slider" :style="{ '--pct': agePct }">
+            <div class="slider__track"></div>
+            <input
+              v-model.number="draftAge"
+              class="slider__input"
+              type="range"
+              :min="AGE.min"
+              :max="AGE.max"
+              :step="AGE.step"
+              aria-label="나이 범위"
+            />
+          </div>
+          <div class="field__scale">
+            <span>{{ AGE.min }}세</span>
+            <span>{{ AGE.max }}세</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="field__head">
+            <span>추가 조건</span>
+          </div>
+          <div class="checkbox-group">
+            <div class="checkbox-wrap">
+              <label class="checkbox" :class="{ 'checkbox--disabled': !hasIncomeInfo }">
+                <input
+                  v-model="draftTypes"
+                  type="checkbox"
+                  value="INCOME"
+                  :disabled="!hasIncomeInfo"
+                />
+                소득 구간
+                <button
+                  v-if="!hasIncomeInfo"
+                  type="button"
+                  class="checkbox__hint"
+                  aria-label="소득 구간을 사용할 수 없는 이유"
+                  @click.stop="toggleTooltip('INCOME')"
+                >
+                  ?
+                </button>
+              </label>
+              <div v-if="openTooltip === 'INCOME'" class="tooltip" role="tooltip">
+                마이페이지에서 소득 정보를 등록하면 사용할 수 있어요.
+              </div>
+            </div>
+
+            <div class="checkbox-wrap">
+              <label class="checkbox" :class="{ 'checkbox--disabled': !hasOccupationInfo }">
+                <input
+                  v-model="draftTypes"
+                  type="checkbox"
+                  value="OCCUPATION"
+                  :disabled="!hasOccupationInfo"
+                />
+                직업군
+                <button
+                  v-if="!hasOccupationInfo"
+                  type="button"
+                  class="checkbox__hint"
+                  aria-label="직업군을 사용할 수 없는 이유"
+                  @click.stop="toggleTooltip('OCCUPATION')"
+                >
+                  ?
+                </button>
+              </label>
+              <div v-if="openTooltip === 'OCCUPATION'" class="tooltip" role="tooltip">
+                마이페이지에서 직업 정보를 등록하면 사용할 수 있어요.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <p class="sheet__hint">
+          범위를 넓히면 비교 대상이 늘어나지만<br />유사도는 낮아질 수 있어요.
         </p>
       </div>
 
-      <p class="sheet__hint">
-        범위를 넓히면 비교 대상이 늘어나지만<br />유사도는 낮아질 수 있어요.
-      </p>
-
       <div class="sheet__actions">
-        <button type="button" class="btn btn--ghost" @click="emit('close')">취소</button>
-        <button type="button" class="btn btn--primary" @click="apply">적용하기</button>
+        <BaseButton variant="secondary" size="modal" @click="emit('close')">취소</BaseButton>
+        <BaseButton variant="primary" size="modal" @click="apply">적용하기</BaseButton>
       </div>
     </section>
   </div>
@@ -161,6 +197,26 @@ function apply() {
   background: rgba(0, 0, 0, 0.55);
 }
 
+.sheet-enter-active,
+.sheet-leave-active {
+  transition: opacity 0.22s ease;
+}
+
+.sheet-enter-active .sheet,
+.sheet-leave-active .sheet {
+  transition: transform 0.22s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.sheet-enter-from,
+.sheet-leave-to {
+  opacity: 0;
+}
+
+.sheet-enter-from .sheet,
+.sheet-leave-to .sheet {
+  transform: translateY(100%);
+}
+
 .sheet {
   --surface: #becfc7;
   --ink: #16281c;
@@ -171,23 +227,50 @@ function apply() {
   --on-dark: #9aa09a;
 
   position: relative;
+  display: flex;
+  flex-direction: column;
   width: 100%;
-  max-width: 420px;
-  padding: 20px 16px 16px;
-  border-radius: 20px 20px 0 0;
+  max-width: 400px;
+  max-height: min(85dvh, 640px);
+  padding: 10px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+  border-radius: 24px 24px 0 0;
   background: var(--surface);
   color: var(--ink);
   line-height: 1.45;
+  box-shadow: 0 -12px 32px rgba(0, 0, 0, 0.3);
+}
+
+.sheet__handle {
+  flex: none;
+  width: 36px;
+  height: 4px;
+  margin: 0 auto 14px;
+  border-radius: 999px;
+  background: rgba(22, 40, 28, 0.2);
+}
+
+.sheet__scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .sheet__title {
-  margin: 0 0 18px;
+  margin: 0 0 16px;
   font-size: 16px;
+  font-weight: 700;
   color: var(--ink);
 }
 
+.field {
+  padding: 14px;
+  border-radius: 14px;
+  background: rgba(22, 40, 28, 0.06);
+}
+
 .field + .field {
-  margin-top: 18px;
+  margin-top: 12px;
 }
 
 .field__head {
@@ -274,21 +357,50 @@ function apply() {
   margin-top: 8px;
 }
 
+.checkbox-wrap {
+  position: relative;
+}
+
 .checkbox {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
   border-radius: 999px;
   padding: 7px 12px;
   background: var(--dark);
   color: #f0f2ef;
   font-size: 12px;
   cursor: pointer;
+  transition: opacity 0.15s ease;
 }
 
 .checkbox input {
+  appearance: none;
+  position: relative;
+  flex: none;
+  width: 15px;
+  height: 15px;
   margin: 0;
-  accent-color: var(--track-fill);
+  border: 1.5px solid rgba(240, 242, 239, 0.4);
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.checkbox input:checked {
+  border-color: var(--track-fill);
+  background: var(--track-fill);
+}
+
+.checkbox input:checked::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 4px;
+  height: 8px;
+  border: solid var(--ink);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
 }
 
 .checkbox--disabled {
@@ -300,14 +412,51 @@ function apply() {
   cursor: not-allowed;
 }
 
-.field__note {
-  margin: 6px 0 0;
-  font-size: 10.5px;
-  color: var(--ink-muted);
+.checkbox__hint {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 13px;
+  height: 13px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid rgba(240, 242, 239, 0.5);
+  border-radius: 50%;
+  background: none;
+  color: inherit;
+  font-size: 9px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  z-index: 1;
+  width: max-content;
+  max-width: 200px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--dark);
+  color: #f0f2ef;
+  font-size: 11px;
+  line-height: 1.4;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 14px;
+  border: 5px solid transparent;
+  border-top-color: var(--dark);
 }
 
 .sheet__hint {
-  margin: 20px 0 0;
+  margin: 16px 0 0;
   padding: 10px 12px;
   border-radius: 10px;
   background: var(--dark);
@@ -318,27 +467,12 @@ function apply() {
 }
 
 .sheet__actions {
+  flex: none;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
-  margin-top: 12px;
-}
-
-.btn {
-  border: 0;
-  border-radius: 10px;
-  padding: 12px 0;
-  font-size: 13px;
-  cursor: pointer;
-}
-
-.btn--ghost {
-  background: var(--dark);
-  color: #f0f2ef;
-}
-
-.btn--primary {
-  background: var(--track-fill);
-  color: var(--ink);
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(22, 40, 28, 0.1);
 }
 </style>

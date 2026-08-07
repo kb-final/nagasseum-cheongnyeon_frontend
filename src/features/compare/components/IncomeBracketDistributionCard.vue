@@ -1,34 +1,115 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 
-import { formatWon } from '@/shared/utils/formatter'
+import {
+  INCOME_BRACKET_BAND_LABEL,
+  INCOME_BRACKET_LABEL,
+  INCOME_BRACKET_ORDER,
+  INCOME_BRACKET_SHORT_LABEL,
+} from '@/shared/constants/compareDistribution'
 
-import SegmentBarList from '@/features/compare/components/SegmentBarList.vue'
+import flagImage from '@/features/compare/assets/flag.png'
+
+const MAX_SEGMENTS = 8
+
+const BRACKET_UPPER_BOUNDS = [
+  ['UNDER_1M', 1_000_000],
+  ['M1_TO_2M', 2_000_000],
+  ['M2_TO_3M', 3_000_000],
+  ['M3_TO_4M', 4_000_000],
+  ['M4_TO_5M', 5_000_000],
+]
+
+function bracketKeyForIncome(income) {
+  const bound = BRACKET_UPPER_BOUNDS.find(([, upper]) => income < upper)
+  return bound ? bound[0] : 'OVER_5M'
+}
 
 const props = defineProps({
   brackets: { type: Array, required: true },
   myMonthlyIncome: { type: Number, default: null },
 })
 
+const myBracketKey = computed(() =>
+  props.myMonthlyIncome != null ? bracketKeyForIncome(props.myMonthlyIncome) : null,
+)
+
+const orderedBrackets = computed(() =>
+  [...props.brackets].sort(
+    (a, b) => INCOME_BRACKET_ORDER.indexOf(a.bracket) - INCOME_BRACKET_ORDER.indexOf(b.bracket),
+  ),
+)
+
+const maxRatio = computed(() => Math.max(...orderedBrackets.value.map((item) => item.ratio), 1))
+
 const barItems = computed(() =>
-  props.brackets.map((item) => ({
+  orderedBrackets.value.map((item) => ({
     key: item.bracket,
-    label: item.bracket,
+    label: INCOME_BRACKET_LABEL[item.bracket] ?? item.bracket,
+    shortLabel: INCOME_BRACKET_SHORT_LABEL[item.bracket] ?? item.bracket,
     ratio: item.ratio,
-    badge: item.isMine ? '내 구간' : null,
-    highlighted: item.isMine,
+    highlighted: item.bracket === myBracketKey.value,
+    segmentCount: Math.max(1, Math.round((item.ratio / maxRatio.value) * MAX_SEGMENTS)),
   })),
 )
+
+const myBracket = computed(
+  () => props.brackets.find((item) => item.bracket === myBracketKey.value) ?? null,
+)
+
+const peopleOutOf10 = computed(() =>
+  myBracket.value ? Math.max(1, Math.round(myBracket.value.ratio / 10)) : 0,
+)
+
+const myBandLabel = computed(() =>
+  myBracket.value ? (INCOME_BRACKET_BAND_LABEL[myBracket.value.bracket] ?? '') : '',
+)
+
+const isHintOpen = ref(false)
 </script>
 
 <template>
-  <div class="card">
+  <div class="card" @click="isHintOpen = false">
     <p class="card__title">소득 구간 분포</p>
-    <p v-if="myMonthlyIncome != null" class="card__desc">
-      내 월 소득은 <b>{{ formatWon(myMonthlyIncome) }}</b
-      >이에요
+
+    <p v-if="myBracket" class="card__desc">
+      또래 10명 중 <b>{{ peopleOutOf10 }}명</b>은 나와 같은 <b>{{ myBandLabel }}</b> 구간에 있어요!
     </p>
-    <SegmentBarList :items="barItems" />
+    <div v-else class="card__hint-row">
+      <span class="card__desc">내 위치를 보려면 월 소득 정보가 필요해요</span>
+      <button
+        type="button"
+        class="card__hint"
+        aria-label="월 소득 정보가 필요한 이유"
+        @click.stop="isHintOpen = !isHintOpen"
+      >
+        ?
+      </button>
+      <div v-if="isHintOpen" class="tooltip" role="tooltip">
+        마이페이지에서 월 소득 정보를 등록하면 내 구간에 깃발을 꽂아드려요.
+      </div>
+    </div>
+
+    <div class="chart" :style="{ '--max-count': MAX_SEGMENTS }">
+      <div
+        v-for="(item, index) in barItems"
+        :key="item.key"
+        class="chart__col"
+        :style="{ '--i': index }"
+      >
+        <div
+          class="chart__bar"
+          :class="{ 'chart__bar--highlight': item.highlighted }"
+          :style="{ '--count': item.segmentCount }"
+          :title="item.label"
+        >
+          <img v-if="item.highlighted" class="chart__flag" :src="flagImage" alt="내 구간" />
+          <span class="chart__value">{{ item.ratio }}%</span>
+        </div>
+        <span class="chart__label">{{ item.shortLabel }}</span>
+      </div>
+    </div>
+    <p class="chart__unit">단위: 만원</p>
   </div>
 </template>
 
@@ -36,18 +117,20 @@ const barItems = computed(() =>
 .card {
   --cream: #f6f8d9;
   --ink: #10130f;
+  --ink-muted: #4e5c50;
   --forest: #1d6b3f;
-  --forest-soft: #7fae89;
-  --segment: #d9dcc0;
-  --segment-on: var(--forest-soft);
-  --segment-on-highlight: var(--forest);
-  --badge: #ffd939;
+  --bar-body: #b8b8ac;
+  --bar-line: #d6d6c9;
+  --bar-body-mine: #165231;
+  --bar-line-mine: #1d6b3f;
 
   border-radius: 20px;
   padding: 16px;
   background: var(--cream);
   color: var(--ink);
   line-height: 1.45;
+  animation: card-rise 0.35s ease-out both;
+  animation-delay: 0.12s;
 }
 
 .card__title {
@@ -63,5 +146,174 @@ const barItems = computed(() =>
 .card__desc b {
   font-weight: inherit;
   color: var(--forest);
+}
+
+.card__hint-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 8px;
+}
+
+.card__hint-row .card__desc {
+  margin: 0;
+}
+
+.card__hint {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 13px;
+  height: 13px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--ink-muted);
+  border-radius: 50%;
+  background: none;
+  color: var(--ink-muted);
+  font-size: 9px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.tooltip {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 1;
+  width: max-content;
+  max-width: 220px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #1c1c1c;
+  color: #f0f2ef;
+  font-size: 11px;
+  line-height: 1.4;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.tooltip::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 14px;
+  border: 5px solid transparent;
+  border-bottom-color: #1c1c1c;
+}
+
+.chart {
+  --segment: 8px;
+  --segment-gap: 2px;
+
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: calc(var(--max-count) * (var(--segment) + var(--segment-gap)) - var(--segment-gap));
+  margin-top: 44px;
+}
+
+.chart__col {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+}
+
+.chart__bar {
+  position: relative;
+  width: 70%;
+  height: calc(var(--count) * (var(--segment) + var(--segment-gap)) - var(--segment-gap));
+  background: repeating-linear-gradient(
+    to top,
+    var(--bar-body) 0 var(--segment),
+    var(--bar-line) var(--segment) calc(var(--segment) + var(--segment-gap))
+  );
+  transform-origin: bottom;
+  animation: bar-grow 0.4s ease-out both;
+  animation-delay: calc(var(--i, 0) * 60ms + 0.12s);
+}
+
+@keyframes bar-grow {
+  from {
+    transform: scaleY(0);
+  }
+
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes value-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes flag-drop-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+.chart__bar--highlight {
+  background: repeating-linear-gradient(
+    to top,
+    var(--bar-body-mine) 0 var(--segment),
+    var(--bar-line-mine) var(--segment) calc(var(--segment) + var(--segment-gap))
+  );
+}
+
+.chart__flag {
+  position: absolute;
+  bottom: calc(100% + 17px);
+  left: 50%;
+  width: 14px;
+  height: 14px;
+  transform: translate(-50%, 0);
+  image-rendering: pixelated;
+  animation: flag-drop-in 0.3s ease-out both;
+  animation-delay: calc(var(--i, 0) * 60ms + 0.68s);
+}
+
+.chart__value {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 9.5px;
+  white-space: nowrap;
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+  animation: value-fade-in 0.25s ease-out both;
+  animation-delay: calc(var(--i, 0) * 60ms + 0.52s);
+}
+
+.chart__label {
+  margin-top: 6px;
+  font-size: 9.5px;
+  color: var(--ink-muted);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.chart__unit {
+  margin: 4px 0 0;
+  font-size: 10px;
+  color: var(--ink-muted);
+  text-align: right;
 }
 </style>

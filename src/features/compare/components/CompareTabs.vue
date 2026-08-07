@@ -60,6 +60,9 @@ defineEmits(['select'])
   font-weight: 600;
   color: var(--text);
   cursor: pointer;
+  transition:
+    background-color 0.18s ease,
+    color 0.18s ease;
 }
 
 .tabs__item--active {

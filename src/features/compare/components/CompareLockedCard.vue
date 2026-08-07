@@ -1,5 +1,13 @@
 <script setup>
+import { useRouter } from 'vue-router'
+import BaseButton from '@/shared/components/atoms/base/button/BaseButton.vue'
 import lockedImage from '@/features/compare/assets/locked.png'
+
+const router = useRouter()
+
+function goToAgreement() {
+  router.push({ name: 'my' })
+}
 </script>
 
 <template>
@@ -16,7 +24,7 @@ import lockedImage from '@/features/compare/assets/locked.png'
 
     <p class="locked__body">
       다른 사용자의 목표를 조회하고 싶으시다면 마이페이지에서<br />
-      <b>"목표 비교 데이터 제공"</b> 약관에 동의해주시기 바랍니다.
+      <b>"또래 비교 데이터 제공"</b> 약관에 동의해주세요.
     </p>
 
     <div class="locked__info">
@@ -26,12 +34,14 @@ import lockedImage from '@/features/compare/assets/locked.png'
         <li>비슷한 자산의 사용자 데이터를 볼 수 있어요</li>
       </ul>
     </div>
+
+    <BaseButton class="locked__cta" variant="primary" size="lg" @click="goToAgreement">
+      약관 동의하러 가기
+    </BaseButton>
   </section>
 </template>
 
 <style scoped>
-/* 폰트 크기는 rem이 아닌 px로 고정한다.
-   루트가 18px/16px로 바뀌면 픽셀 폰트가 그리드에서 어긋나 뭉개진다. */
 .locked {
   --badge: #ffd939;
   --on-pale: #556057;
@@ -47,8 +57,6 @@ import lockedImage from '@/features/compare/assets/locked.png'
   align-items: center;
   padding: 32px 0 0;
   text-align: center;
-  /* 루트의 145%는 18px 기준으로 계산된 26.1px이 그대로 상속된다.
-     단위 없는 값으로 덮어써야 각 요소가 제 폰트 크기로 줄 높이를 계산한다. */
   line-height: 1.45;
 }
 
@@ -82,8 +90,6 @@ import lockedImage from '@/features/compare/assets/locked.png'
   width: 54px;
 }
 
-/* 원 밖으로 살짝 걸치는 배지. 테두리는 배경색이라 원을 파낸 것처럼 보인다.
-   부모(.locked__art)에 overflow를 주면 튀어나온 부분이 잘리니 주의. */
 .locked__lock {
   position: absolute;
   top: 84px;
@@ -143,7 +149,6 @@ import lockedImage from '@/features/compare/assets/locked.png'
   color: var(--on-pale);
 }
 
-/* 본문보다 한 톤 진하게. 네모 점은 currentColor라 같이 따라온다. */
 .locked__info-title {
   display: flex;
   align-items: center;
@@ -178,5 +183,9 @@ import lockedImage from '@/features/compare/assets/locked.png'
 
 .locked__info-list li::before {
   content: '·';
+}
+
+.locked__cta {
+  margin-top: 20px;
 }
 </style>

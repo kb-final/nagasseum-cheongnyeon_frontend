@@ -1,7 +1,3 @@
-/**
- * 목표 탭과 자산 탭이 공유하는 에러 코드 → 화면 상태 매핑.
- * 목표 탭만 COMPARE_SNAPSHOT_NOT_FOUND(목표 없음)를 별도로 구분
- */
 export function resolveCompareError(error, { hasSnapshotCheck = false } = {}) {
   const status = error.response?.status
   const code = error.response?.data?.error?.code
@@ -9,9 +5,7 @@ export function resolveCompareError(error, { hasSnapshotCheck = false } = {}) {
   if (status === 403) return { status: 'no-consent' }
 
   if (status === 404) {
-    if (hasSnapshotCheck && code === 'COMPARE_SNAPSHOT_NOT_FOUND') {
-      return { status: 'no-snapshot' }
-    }
+    if (hasSnapshotCheck) return { status: 'no-snapshot' }
     return { status: 'no-asset' }
   }
 
