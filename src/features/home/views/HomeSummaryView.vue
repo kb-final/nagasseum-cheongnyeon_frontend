@@ -9,7 +9,6 @@ import { useMemberStore } from '@/features/member/store/memberStore'
 import { useAssetStore, FLOW_CONTEXT } from '@/features/asset'
 import GreetingHeader from '@/features/home/components/GreetingHeader.vue'
 import ClimbProgressCard from '@/features/home/components/ClimbProgressCard.vue'
-import EmptyGoalCard from '@/features/home/components/EmptyGoalCard.vue'
 import TotalAssetCard from '@/features/home/components/TotalAssetCard.vue'
 import AssetSummaryGrid from '@/features/home/components/AssetSummaryGrid.vue'
 import EmptyAssetCard from '@/features/home/components/EmptyAssetCard.vue'
@@ -42,13 +41,16 @@ function goToAssetLink() {
   <div class="home-summary-view">
     <template v-if="homeStore.loaded">
       <GreetingHeader :member="member" />
+
+      <!--
+        목표가 없어도 같은 카드를 그린다. 캐릭터만 출발점에 서고 아래 요약이 안내로 바뀐다.
+      -->
       <ClimbProgressCard
-        v-if="homeStore.goal"
         :climb="homeStore.climb"
         :goal="homeStore.goal"
         @view-goal="router.push(`/goals/${homeStore.goal.id}`)"
+        @create-goal="router.push('/diagnosis')"
       />
-      <EmptyGoalCard v-else @create-goal="router.push('/diagnosis')" />
 
       <template v-if="homeStore.assetSummary">
         <TotalAssetCard
