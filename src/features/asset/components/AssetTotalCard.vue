@@ -77,7 +77,6 @@ const syncedAtLabel = computed(() => {
   line-height: 1.3;
 }
 
-/* min-width를 0으로 둬야 안쪽 글자가 잘린다. flex 기본값은 auto라 안 줄어든다. */
 .asset-total-card__info {
   flex: 1;
   min-width: 0;
