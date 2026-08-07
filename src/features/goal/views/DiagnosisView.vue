@@ -57,10 +57,8 @@ async function onConfirm() {
   if (!saved) return
 
   isResultOpen.value = false
-  // 수정은 원래 보고 있던 목표 상세로 돌려보내고, 생성은 홈으로 보낸다.
-  router.push(
-    isEditMode.value ? { name: 'goal-detail', params: { goalId: props.goalId } } : { name: 'home' },
-  )
+  // 수정도 생성과 같이 홈으로 보낸다. 홈은 진입할 때마다 요약을 다시 불러오므로 바뀐 목표가 바로 보인다.
+  router.push({ name: 'home' })
 }
 </script>
 
