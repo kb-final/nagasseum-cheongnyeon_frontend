@@ -105,17 +105,13 @@ async function onSubmitMonthlySaving(monthlySaving) {
         @change-saving="isSavingModalOpen = true"
       />
 
-      <BaseButton variant="primary" @click="goToEditGoal">목표 수정하기</BaseButton>
-
       <p v-if="goalStore.updateError" class="goal-detail-view__error">
         월 저축 계획을 수정하지 못했어요.
       </p>
 
-      <MarketPriceAlertCard
-        v-if="goalStore.marketAlert"
-        :market-alert="goalStore.marketAlert"
-        @edit-goal="router.push('/goal')"
-      />
+      <MarketPriceAlertCard v-if="goalStore.marketAlert" :market-alert="goalStore.marketAlert" />
+
+      <BaseButton variant="primary" @click="goToEditGoal">목표 수정하기</BaseButton>
 
       <MonthlySavingEditModal
         v-model="isSavingModalOpen"

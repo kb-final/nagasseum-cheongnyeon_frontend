@@ -60,11 +60,7 @@ function goToAssetLink() {
         :policies="homeStore.recommendedPolicies"
         @view-all="router.push('/policy')"
       />
-      <MarketPriceAlertCard
-        v-if="homeStore.marketAlert"
-        :market-alert="homeStore.marketAlert"
-        @edit-goal="router.push('/goal')"
-      />
+      <MarketPriceAlertCard v-if="homeStore.marketAlert" :market-alert="homeStore.marketAlert" />
     </template>
 
     <div v-else-if="homeStore.isLoading" class="home-summary-view__skeleton">

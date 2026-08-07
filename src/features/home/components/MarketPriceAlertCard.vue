@@ -3,7 +3,6 @@ import { computed } from 'vue'
 
 import BaseCard from '@/shared/components/atoms/base/card/BaseCard.vue'
 import BaseBadge from '@/shared/components/atoms/base/badge/BaseBadge.vue'
-import BaseButton from '@/shared/components/atoms/base/button/BaseButton.vue'
 import {
   formatEok,
   formatManwon,
@@ -14,8 +13,6 @@ import {
 const props = defineProps({
   marketAlert: { type: Object, required: true },
 })
-
-defineEmits(['edit-goal'])
 
 const subtitle = computed(() => {
   const [year, month] = props.marketAlert.updatedYm.split('-')
@@ -121,12 +118,6 @@ const diffAmountText = computed(() => {
         <span class="market-alert__compare-eta">{{ formatYearMonth(marketAlert.reflectEta) }}</span>
       </div>
     </div>
-
-    <p class="market-alert__hint">
-      현재 시세에 맞게 목표를 변경하시려면<br />목표 수정하기를 눌러주세요
-    </p>
-
-    <BaseButton variant="dark" size="lg" @click="$emit('edit-goal')">목표 수정하기</BaseButton>
   </BaseCard>
 </template>
 
@@ -281,12 +272,5 @@ const diffAmountText = computed(() => {
   font-size: 11px;
   color: var(--color-mint-deep, #16281c);
   opacity: 0.7;
-}
-
-.market-alert__hint {
-  font-size: 12px;
-  color: var(--color-mint-deep, #16281c);
-  opacity: 0.7;
-  text-align: center;
 }
 </style>
