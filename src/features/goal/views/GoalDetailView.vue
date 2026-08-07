@@ -12,6 +12,7 @@ import { useToast } from '@/shared/composables/useToast'
 import GoalProgressCard from '@/features/goal/components/GoalProgressCard.vue'
 import SavingForecastCard from '@/features/goal/components/SavingForecastCard.vue'
 import MonthlySavingEditModal from '@/features/goal/components/MonthlySavingEditModal.vue'
+import MarketPriceAlertCard from '@/features/home/components/MarketPriceAlertCard.vue'
 import { useGoalStore } from '@/features/goal/store/goalStore'
 
 const props = defineProps({
@@ -45,6 +46,7 @@ const climbLevel = computed(() => {
 
 onMounted(() => {
   goalStore.loadGoalDetail(props.goalId)
+  goalStore.loadMarketAlert()
 })
 
 // 목표 수정은 UC-12(진단 폼)를 재사용하는 것이 기획 상 흐름이다.
@@ -108,6 +110,12 @@ async function onSubmitMonthlySaving(monthlySaving) {
       <p v-if="goalStore.updateError" class="goal-detail-view__error">
         월 저축 계획을 수정하지 못했어요.
       </p>
+
+      <MarketPriceAlertCard
+        v-if="goalStore.marketAlert"
+        :market-alert="goalStore.marketAlert"
+        @edit-goal="router.push('/goal')"
+      />
 
       <MonthlySavingEditModal
         v-model="isSavingModalOpen"

@@ -1,10 +1,10 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 
-import { formatAreaRange } from '@/shared/utils/formatter'
 import { HOUSING_TYPE_LABEL, DEAL_TYPE_LABEL } from '@/shared/constants/housing'
 
 import { fetchGoalMarketTrend, fetchGoalSummary } from '@/features/goal/api/goalApi'
+import { toMarketAlertViewModel } from '@/features/goal/utils/marketAlertViewModel'
 import { getAssetSummary } from '@/features/asset/api/assetApi'
 import { fetchRecommendedPolicies } from '@/features/home/api/homeApi'
 
@@ -37,23 +37,6 @@ function toClimbViewModel(goalSummary) {
     remainingAmount: goalSummary.progress.remainingAmount,
     // 최근 자산 증가액은 이번 API 명세에 없는 지표라 임시로 0 처리
     recentIncreaseAmount: 0,
-  }
-}
-
-// GET /goals/market-trend 응답 -> MarketPriceAlertCard가 쓰는 marketAlert 뷰모델
-function toMarketAlertViewModel(marketTrend) {
-  return {
-    regionName: marketTrend.regionName,
-    housingType: HOUSING_TYPE_LABEL[marketTrend.housingType] ?? marketTrend.housingType,
-    dealType: DEAL_TYPE_LABEL[marketTrend.dealType] ?? marketTrend.dealType,
-    areaLabel: formatAreaRange(marketTrend.areaMin, marketTrend.areaMax),
-    updatedYm: marketTrend.updatedYm,
-    changeAmount: marketTrend.changeAmount,
-    targetAmount: marketTrend.targetAmount,
-    initialMiddleAmount: marketTrend.initialMiddleAmount,
-    currentMiddleAmount: marketTrend.currentMiddleAmount,
-    maintainEta: marketTrend.maintainEta,
-    reflectEta: marketTrend.reflectEta,
   }
 }
 
