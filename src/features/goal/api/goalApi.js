@@ -38,7 +38,8 @@ export async function fetchGoalDetail(goalId) {
 }
 
 // 기존 목표 내용 조회. 상세 조회(detail)와 달리 수정 폼 재현에 필요한 원본 입력값
-// (특히 housing.regions 지역 "코드" 배열)을 내려주므로, 목표 수정 요청 본문을 만들 때 사용한다.
+// (특히 지역 "코드" regionCode)을 평평한 GoalResponse로 내려주므로, 목표 수정 요청 본문을
+// 만들 때 사용한다. 응답 필드 구성이 수정 요청 본문과 같아 그대로 되돌려 보낼 수 있다.
 export async function fetchGoal(goalId) {
   const { data } = await httpClient.get(`/api/v1/goals/${goalId}`)
   return data.data

@@ -60,8 +60,9 @@ onMounted(() => {
 
 // 목표 수정은 UC-12(진단 폼)를 재사용하는 것이 기획 상 흐름이다.
 // 값이 채워진 전용 수정 폼은 별도 작업으로 분리되어 있어, 지금은 진단 화면으로 보낸다.
+// goal-edit 라우트로 보내야 진단 화면이 생성(POST)이 아니라 수정(PUT)으로 저장한다.
 function goToEditGoal() {
-  router.push({ name: 'diagnosis' })
+  router.push({ name: 'goal-edit', params: { goalId: props.goalId } })
 }
 
 const isSavingModalOpen = ref(false)
