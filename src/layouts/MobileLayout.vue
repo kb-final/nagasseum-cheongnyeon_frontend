@@ -81,6 +81,7 @@ function handleTabChange(index) {
 
 .mobile-layout__nav {
   position: fixed;
+  z-index: 10;
   bottom: 12px;
   left: 50%;
   width: calc(100% - 32px);

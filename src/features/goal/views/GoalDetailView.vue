@@ -3,9 +3,10 @@ import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 import AppHeader from '@/shared/components/molecules/AppHeader.vue'
-import BaseBadge from '@/shared/components/atoms/base/badge/BaseBadge.vue'
 import BaseSkeleton from '@/shared/components/atoms/feedback/Skeleton/BaseSkeleton.vue'
 import { formatEok, formatManwon, formatYearMonthKo } from '@/shared/utils/formatter'
+import { HOUSING_TYPE_LABEL, DEAL_TYPE_LABEL } from '@/shared/constants/housing'
+import { findRegionBySigunguCode } from '@/shared/constants/regions'
 import { useToast } from '@/shared/composables/useToast'
 
 import GoalProgressCard from '@/features/goal/components/GoalProgressCard.vue'
@@ -24,7 +25,23 @@ const toast = useToast()
 
 const detail = computed(() => goalStore.goalDetail)
 
+// 상세 조회 응답에는 title 필드가 없어서 "강남구 오피스텔 전세" 형태로 직접 조합한다.
+const conditionTitle = computed(() => {
+  if (!detail.value) return ''
+
+  const { regionCode, housingType, dealType } = detail.value.housing
+  const sigunguName = findRegionBySigunguCode(regionCode)?.sigunguName ?? ''
+  return [
+    sigunguName,
+    HOUSING_TYPE_LABEL[housingType] ?? housingType,
+    DEAL_TYPE_LABEL[dealType] ?? dealType,
+  ]
+    .filter(Boolean)
+    .join(' ')
+})
+
 // 조건 요약: "10~20평 · 보증금 3억~6억 · 목표 시점 2028년 9월"
+// 지역/매물유형/거래유형은 바로 위 제목(conditionTitle)에 이미 나오니 여기서는 중복하지 않는다.
 const conditionSummary = computed(() => {
   if (!detail.value) return ''
 
@@ -34,13 +51,6 @@ const conditionSummary = computed(() => {
     `보증금 ${formatEok(depositMin)}~${formatEok(depositMax)}`,
     `목표 시점 ${formatYearMonthKo(detail.value.targetDate)}`,
   ].join(' · ')
-})
-
-// 상세 조회 응답에는 등반 레벨이 없어서 달성률 25%p 구간으로 환산해 표시한다.
-// 백엔드가 레벨을 내려주면 그 값으로 교체해야 한다.
-const climbLevel = computed(() => {
-  if (!detail.value) return 1
-  return Math.min(Math.floor(detail.value.progress.achievementRate / 25) + 1, 4)
 })
 
 onMounted(() => {
@@ -74,7 +84,7 @@ async function onSubmitMonthlySaving(monthlySaving) {
 
 <template>
   <div class="goal-detail-view">
-    <AppHeader title="목표 상세" @back="router.back()">
+    <AppHeader title="목표 상세" :show-back="false">
       <template #action>
         <button
           v-if="detail"
@@ -89,10 +99,7 @@ async function onSubmitMonthlySaving(monthlySaving) {
 
     <template v-if="detail">
       <div class="goal-detail-view__summary">
-        <div class="goal-detail-view__title-row">
-          <h2 class="goal-detail-view__title">{{ detail.housing.title }}</h2>
-          <BaseBadge variant="mint">Lv.{{ climbLevel }} 등반가</BaseBadge>
-        </div>
+        <h2 class="goal-detail-view__title">{{ conditionTitle }}</h2>
         <p class="goal-detail-view__condition">{{ conditionSummary }}</p>
       </div>
 
@@ -151,12 +158,6 @@ async function onSubmitMonthlySaving(monthlySaving) {
   display: flex;
   flex-direction: column;
   gap: 6px;
-}
-
-.goal-detail-view__title-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }
 
 .goal-detail-view__title {

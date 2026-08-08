@@ -191,8 +191,7 @@ export const mockGoalDetail = {
   goalType: 'HOUSING',
   status: 'ACTIVE',
   housing: {
-    title: '강남구 오피스텔 전세',
-    regionName: '강남구',
+    regionCode: '11680',
     housingType: 'OFFICETEL',
     dealType: 'JEONSE',
     areaMin: 10,

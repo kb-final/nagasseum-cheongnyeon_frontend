@@ -17,11 +17,15 @@ const props = defineProps({
 const subtitle = computed(() => {
   const [year, month] = props.marketAlert.updatedYm.split('-')
   const a = props.marketAlert
-  return `${a.regionName} · ${a.housingType} · ${a.dealType} · ${a.areaLabel} · ${year}년 ${Number(month)}월 갱신`
+  return {
+    condition: `${a.regionName} · ${a.housingType} · ${a.dealType} · ${a.areaLabel}`,
+    date: `${year}년 ${Number(month)}월 갱신`,
+  }
 })
 
 // 점 3개의 최소/최대 금액을 기준으로 가로 위치(%)를 계산한다.
-// 값이 바뀌면(최소/최대가 바뀌면) 위치도 자동으로 다시 계산됨. 8~92% 범위에 배치해 점이 카드 가장자리에 붙지 않게 함.
+// 값이 바뀌면(최소/최대가 바뀌면) 위치도 자동으로 다시 계산됨. 18~82% 범위에 배치해
+// 라벨 텍스트(줄바꿈 없는 한 줄)가 카드 가장자리에서 잘리지 않을 만큼 여백을 둠.
 // 금액이 같은 점들은 dot·라벨을 하나로 합치고(원래 순서대로 라벨을 이어붙임), 병합된 dot은 mint-deep 고정색으로 표시한다.
 const timeline = computed(() => {
   const a = props.marketAlert
@@ -46,10 +50,10 @@ const timeline = computed(() => {
   }
 
   return grouped.map((group) => ({
-    label: group.labels.join(' · '),
+    labels: group.labels,
     amount: group.amount,
     variant: group.labels.length > 1 ? 'merged' : group.variant,
-    percent: range === 0 ? 50 : 8 + ((group.amount - min) / range) * 84,
+    percent: range === 0 ? 50 : 18 + ((group.amount - min) / range) * 64,
   }))
 })
 
@@ -71,19 +75,27 @@ const diffAmountText = computed(() => {
   <BaseCard class="market-alert">
     <div class="market-alert__header">
       <h2 class="market-alert__title">매물 시세 변화</h2>
-      <BaseBadge variant="point">{{ formatChangeAmount(marketAlert.changeAmount) }}</BaseBadge>
+      <BaseBadge v-if="marketAlert.changeAmount !== 0" variant="point">
+        {{ formatChangeAmount(marketAlert.changeAmount) }}
+      </BaseBadge>
+      <BaseBadge v-else variant="neutral">변화 없음</BaseBadge>
     </div>
-    <p class="market-alert__subtitle">{{ subtitle }}</p>
+    <p class="market-alert__subtitle">{{ subtitle.condition }}</p>
 
     <div class="market-alert__timeline">
       <div
         v-for="point in timeline"
-        :key="point.label"
+        :key="point.amount"
         class="market-alert__point"
         :style="{ left: `${point.percent}%` }"
       >
         <span class="market-alert__dot" :class="`market-alert__dot--${point.variant}`" />
-        <span class="market-alert__point-label">{{ point.label }}</span>
+        <span class="market-alert__point-label">
+          <template v-for="(labelText, idx) in point.labels" :key="labelText">
+            <span v-if="idx > 0" class="market-alert__point-sep">·</span>
+            <span>{{ labelText }}</span>
+          </template>
+        </span>
         <span class="market-alert__point-amount">{{ formatEok(point.amount) }}</span>
       </div>
     </div>
@@ -118,6 +130,12 @@ const diffAmountText = computed(() => {
         <span class="market-alert__compare-eta">{{ formatYearMonth(marketAlert.reflectEta) }}</span>
       </div>
     </div>
+
+    <p class="market-alert__hint">
+      현재 시세에 맞게 목표를 변경하시려면<br />우측 상단의 수정하기 버튼을 눌러주세요
+    </p>
+
+    <p class="market-alert__updated">{{ subtitle.date }}</p>
   </BaseCard>
 </template>
 
@@ -125,7 +143,7 @@ const diffAmountText = computed(() => {
 .market-alert {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   background: var(--color-card-highlight, #f7ffd1);
 }
 
@@ -141,16 +159,34 @@ const diffAmountText = computed(() => {
   color: var(--color-mint-deep, #16281c);
 }
 
+.market-alert__updated {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-mint-deep, #16281c);
+  text-align: right;
+  opacity: 0.7;
+}
+
 .market-alert__subtitle {
+  margin-top: -4px;
   font-size: 12px;
   color: var(--color-mint-deep, #16281c);
   opacity: 0.7;
 }
 
+.market-alert__hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-mint-deep, #16281c);
+  text-align: center;
+  opacity: 0.7;
+}
+
 .market-alert__timeline {
   position: relative;
-  height: 64px;
+  height: 96px;
   padding-top: 6px;
+  overflow: hidden;
 }
 
 .market-alert__timeline::before {
@@ -172,7 +208,6 @@ const diffAmountText = computed(() => {
   align-items: center;
   gap: 4px;
   transform: translateX(-50%);
-  white-space: nowrap;
 }
 
 .market-alert__dot {
@@ -204,15 +239,26 @@ const diffAmountText = computed(() => {
 }
 
 .market-alert__point-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   font-size: 11px;
+  line-height: 1.3;
   color: var(--color-mint-deep, #16281c);
+  text-align: center;
+  white-space: nowrap;
   opacity: 0.7;
+}
+
+.market-alert__point-sep {
+  opacity: 0.6;
 }
 
 .market-alert__point-amount {
   font-size: 13px;
   font-weight: 700;
   color: var(--color-mint-deep, #16281c);
+  white-space: nowrap;
 }
 
 .market-alert__diff {
