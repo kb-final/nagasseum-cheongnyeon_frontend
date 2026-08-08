@@ -44,14 +44,16 @@ export const useMemberStore = defineStore('member', () => {
     }
   }
 
-  async function updateProfile({ nickname, incomeBracket }) {
+  async function updateProfile({ nickname, incomeBracket, monthlyIncome, occupationType }) {
     isLoading.value = true
     error.value = null
 
     try {
-      await updateMyInfo({ nickname, incomeBracket })
+      await updateMyInfo({ nickname, incomeBracket, monthlyIncome, occupationType })
       if (nickname != null) profile.value.nickname = nickname
       if (incomeBracket != null) profile.value.incomeBracket = incomeBracket
+      if (monthlyIncome != null) profile.value.monthlyIncome = monthlyIncome
+      if (occupationType != null) profile.value.occupationType = occupationType
     } catch (e) {
       error.value = e
     } finally {

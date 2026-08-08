@@ -9,6 +9,11 @@ export async function updateAgreement(type, agreed) {
   await httpClient.patch(`/api/v1/members/me/agreements/${type}`, { agreed })
 }
 
-export async function updateMyInfo({ nickname, incomeBracket }) {
-  await httpClient.patch('/api/v1/members/me', { nickname, incomeBracket })
+export async function updateMyInfo({ nickname, incomeBracket, monthlyIncome, occupationType }) {
+  await httpClient.patch('/api/v1/members/me', {
+    nickname,
+    incomeBracket,
+    monthlyIncome,
+    occupationType,
+  })
 }
