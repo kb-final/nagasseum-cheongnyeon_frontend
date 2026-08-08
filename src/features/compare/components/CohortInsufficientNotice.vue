@@ -25,16 +25,12 @@ defineEmits(['widen'])
     </div>
 
     <template #action>
-      <button
-        v-if="canWiden"
-        type="button"
-        class="state-card__cta state-card__cta--button"
-        @click="$emit('widen')"
-      >
-        비교 범위 넓히기
+      <button type="button" class="state-card__cta state-card__cta--button" @click="$emit('widen')">
+        {{ canWiden ? '비교 범위 넓히기' : '비교 기준 수정하기' }}
       </button>
-      <p v-else class="state-card__hint">
-        비교 범위를 가장 넓게 잡아도 아직 또래가 모이지 않았어요.<br />조금 뒤에 다시 확인해주세요.
+      <p v-if="!canWiden" class="state-card__hint">
+        자산·나이 범위를 가장 넓게 잡아도 또래가 모이지 않았어요.<br />추가 조건을 해제하면 도움이
+        될 수 있어요.
       </p>
     </template>
   </StateNoticeCard>
