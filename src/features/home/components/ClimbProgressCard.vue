@@ -6,11 +6,6 @@ import { formatWon, formatEok } from '@/shared/utils/formatter'
 
 import climbBackground from '@/assets/images/climb-bg.png'
 import climberImage from '@/assets/images/climber.png'
-import lockSignImage from '@/assets/images/lockSign.png'
-import signTorchOff from '@/assets/images/signTorchOff.png'
-import signTorchOn from '@/assets/images/signTorchOn.png'
-import torchOff from '@/assets/images/torchOff.png'
-import torchOn from '@/assets/images/torchOn.png'
 
 /**
  * 목표가 없으면 climb·goal이 null로 온다. 그때도 일러스트는 그대로 보여주고
@@ -25,66 +20,30 @@ defineEmits(['view-goal', 'create-goal'])
 
 const hasGoal = computed(() => Boolean(props.goal && props.climb))
 
-/* ------------------------------------------------------------------
- * 일러스트 좌표
- *
- * 모든 값은 배경 이미지(climb-bg.png, 1720x2662) 기준 백분율이다.
- * 배경을 바꾸면 여기도 같이 바꿔야 해서 한곳에 모아둔다.
- * ------------------------------------------------------------------ */
-
 /**
  * 길 위의 기준점. 달성률을 좌표로 바꾸는 데 쓴다.
  *
- * <p>길이 지그재그라 달성률을 좌표로 바로 환산할 수 없다. 배경의 길 픽셀에서
- * 10% 간격으로 중심점을 뽑아뒀고, 그 사이는 직선으로 잇는다.
+ * <p>값은 배경 이미지(climb-bg.png) 기준 백분율이다. 길이 지그재그라 달성률을 좌표로
+ * 바로 환산할 수 없어서, 배경의 길 픽셀에서 10% 간격으로 중심점을 뽑아뒀다.
+ * 그 사이는 직선으로 잇는다.
  */
 const PATH = [
-  { at: 0, left: 54.2, top: 100.0 },
-  { at: 10, left: 47.9, top: 95.5 },
-  { at: 20, left: 42.3, top: 91.9 },
-  { at: 30, left: 37.4, top: 88.3 },
-  { at: 40, left: 31.8, top: 84.4 },
-  { at: 50, left: 36.0, top: 79.0 },
-  { at: 60, left: 44.4, top: 73.5 },
-  { at: 70, left: 52.8, top: 68.1 },
-  { at: 80, left: 52.1, top: 62.1 },
-  { at: 90, left: 47.9, top: 56.5 },
-  { at: 100, left: 53.6, top: 53.5 },
+  { at: 0, left: 50.8, top: 98.7 },
+  { at: 10, left: 55.9, top: 90.4 },
+  { at: 20, left: 61.1, top: 82.2 },
+  { at: 30, left: 62.4, top: 74.9 },
+  { at: 40, left: 55.9, top: 69.3 },
+  { at: 50, left: 49.5, top: 64.4 },
+  { at: 60, left: 40.5, top: 59.1 },
+  { at: 70, left: 36.6, top: 52.8 },
+  { at: 80, left: 45.6, top: 47.5 },
+  { at: 90, left: 52.1, top: 42.6 },
+  { at: 100, left: 52.7, top: 34.0 },
 ]
-
-/**
- * 길가의 등불. `at`은 이 등불이 서 있는 지점의 달성률이라, 캐릭터가 지나가면 켜진다.
- * `left`/`top`은 등불 기둥 바닥의 좌표다. 켜짐/꺼짐 이미지 크기가 달라서
- * 이미지 모서리가 아니라 기둥 바닥을 기준점으로 잡아야 불꽃이 안 튄다.
- */
-const TORCHES = [{ at: 40, left: 18.0, top: 84.4 }]
-
-/** 두 번째 등불. 표지판 위에 달려 있어 이미지가 따로다. */
-const SIGN_TORCH = { at: 75, left: 66.5, top: 67.5 }
-
-/** 집 앞 자물쇠 표지판. 길 위에 놓여 길을 막는다. 100% 완주해야 사라진다. */
-const LOCK_SIGN = { left: 50.0, top: 57.3 }
 
 const progress = computed(() =>
   hasGoal.value ? Math.min(100, Math.max(0, props.climb.progressPercent)) : 0,
 )
-
-const torches = computed(() =>
-  TORCHES.map((torch) => ({ ...torch, lit: progress.value >= torch.at })),
-)
-
-const signTorchLit = computed(() => progress.value >= SIGN_TORCH.at)
-
-/** 100%가 되면 자물쇠가 풀린다. 이 화면에서 유일하게 사라지는 요소다. */
-const unlocked = computed(() => progress.value >= 100)
-
-/**
- * 캐릭터 이름표.
- *
- * <p>목표가 없으면 달성률이라는 개념 자체가 없다. 0%라고 쓰면 "목표의 0%"로 읽혀서
- * 없는 목표가 있는 것처럼 보인다.
- */
-const climberLabel = computed(() => (hasGoal.value ? `나 ${progress.value}%` : '출발'))
 
 /** 기준점 두 개를 찾아 그 사이를 비례로 나눈다. */
 const climberPosition = computed(() => {
@@ -122,9 +81,6 @@ const climberPosition = computed(() => {
  *   경기도 부천시         → 부천시
  *   경기도 고양시 덕양구    → 고양시 덕양구
  * </pre>
- *
- * <p>맨 앞 한 덩어리만 떼는 이유는 세 단계인 지역 때문이다. 마지막만 남기면
- * "덕양구"가 되어 어느 시인지 알 수 없다.
  */
 function shortRegionName(regionName) {
   const parts = String(regionName ?? '')
@@ -165,37 +121,9 @@ const segments = computed(() => {
 <template>
   <div class="climb-progress-card">
     <div class="climb-card__illustration">
-      <!-- 오각형 모양은 이미지 자체의 투명 영역이라 clip-path가 따로 필요 없다. -->
       <img class="climb-card__bg" :src="climbBackground" alt="" />
 
-      <img
-        v-for="torch in torches"
-        :key="torch.at"
-        class="climb-card__torch"
-        :class="{ 'climb-card__torch--lit': torch.lit }"
-        :style="{ left: `${torch.left}%`, top: `${torch.top}%` }"
-        :src="torch.lit ? torchOn : torchOff"
-        alt=""
-      />
-
-      <img
-        class="climb-card__sign-torch"
-        :class="{ 'climb-card__torch--lit': signTorchLit }"
-        :style="{ left: `${SIGN_TORCH.left}%`, top: `${SIGN_TORCH.top}%` }"
-        :src="signTorchLit ? signTorchOn : signTorchOff"
-        alt=""
-      />
-
-      <img
-        v-if="!unlocked"
-        class="climb-card__lock"
-        :style="{ left: `${LOCK_SIGN.left}%`, top: `${LOCK_SIGN.top}%` }"
-        :src="lockSignImage"
-        alt="아직 잠겨 있어요"
-      />
-
       <div class="climb-card__climber" :style="climberPosition">
-        <span class="climb-card__climber-label">{{ climberLabel }}</span>
         <img class="climb-card__climber-img" :src="climberImage" alt="" />
       </div>
     </div>
@@ -221,7 +149,6 @@ const segments = computed(() => {
       <template v-else>
         <div class="climb-card__status">
           <span>정상까지 {{ 100 - progress }}% 남음</span>
-          <span class="climb-card__increase">+{{ formatWon(climb.recentIncreaseAmount) }}</span>
         </div>
 
         <button type="button" class="climb-card__goal-summary" @click="$emit('view-goal')">
@@ -274,84 +201,26 @@ const segments = computed(() => {
 }
 
 /*
-  등불·표지판은 배경 위에 얹는다. 배경에 그려 넣으면 끌 수가 없다.
-  기준점(left/top)은 기둥 바닥이라 translate로 그 자리까지 끌어올린다.
-  가로 값이 -50%가 아닌 건 기둥이 이미지 한가운데가 아니기 때문이다.
-*/
-/* 표지판 등불보다 작아야 해서 원본의 2/3 정도로 줄여 그린다. */
-.climb-card__torch {
-  position: absolute;
-  width: 3.4%;
-  transform: translate(-47.2%, -100%);
-}
-
-.climb-card__sign-torch {
-  position: absolute;
-  width: 8.37%;
-  transform: translate(-21.9%, -100%);
-}
-
-/* 켜진 등불만 아주 약하게 깜빡인다. transform은 자리 잡는 데 쓰고 있어 밝기로 준다. */
-.climb-card__torch--lit {
-  animation: torch-flicker 0.8s steps(2, end) infinite alternate;
-}
-
-@keyframes torch-flicker {
-  from {
-    filter: brightness(1);
-  }
-  to {
-    filter: brightness(1.18);
-  }
-}
-
-.climb-card__lock {
-  position: absolute;
-  width: 15.81%;
-  transform: translate(-50%, -50%);
-}
-
-/*
-  폭은 (스프라이트 원본 폭 ÷ 1720) × 100 으로 준다. 배경과 같은 배율이어야
-  픽셀 크기가 맞는다. 캐릭터 스프라이트가 88px이면 5.12%다.
-  이름표는 nowrap이라 이 폭을 넘겨도 가운데를 기준으로 양쪽으로 삐져나온다.
+  캐릭터 폭은 (스프라이트 원본 폭 ÷ 배경 원본 폭) × 100 으로 준다.
 */
 .climb-card__climber {
   position: absolute;
-  width: 9%;
+  width: 6.87%;
   /* 발끝이 길에 닿아야 해서 아래쪽을 기준으로 잡는다. */
   transform: translate(-50%, -100%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
   /* 달성률이 오르면 길을 따라 걸어 올라가는 것처럼 보인다. */
   transition:
     left 0.9s ease-in-out,
     top 0.9s ease-in-out;
 }
 
-.climb-card__climber-label {
-  padding: 1px 5px;
-  background: var(--color-card-highlight, #f7ffd1);
-  border: 2px solid #1b2416;
-  color: #1b2416;
-  font-size: 10px;
-  font-weight: 700;
-  white-space: nowrap;
-  line-height: 1.4;
-}
-
 .climb-card__climber-img {
+  display: block;
   width: 100%;
 }
 
-/* 화면 움직임을 꺼둔 사용자에게는 깜빡이지 않는다. */
+/* 화면 움직임을 꺼둔 사용자에게는 움직이지 않는다. */
 @media (prefers-reduced-motion: reduce) {
-  .climb-card__torch--lit {
-    animation: none;
-  }
-
   .climb-card__climber {
     transition: none;
   }
@@ -360,28 +229,28 @@ const segments = computed(() => {
 /* ── 아래 요약 카드 ────────────────────────────────────────── */
 
 /*
-  글자색 세 단계.
-    --ink        목표 제목, 퍼센트          제일 진하게
-    --ink-muted  보조 정보                  회녹색
-    --accent     증가액                     게이지 채움색과 같은 초록
+  글자색 두 단계.
+    --ink        목표 제목, 퍼센트   제일 진하게
+    --ink-muted  보조 정보           회녹색
 
   opacity 대신 색을 직접 준다. 투명도로 흐리게 하면 배경색이 바뀔 때 같이 흔들린다.
 */
 .climb-card__body {
   --ink: #12281c;
   --ink-muted: #6f8b79;
-  --accent: var(--color-progress-fill, #1d6b3f);
 
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
+  padding: 12px 14px;
   background: var(--color-mint-pale, #cdedd3);
-  border-radius: 0 0 16px 16px;
+  border-radius: 0;
+  letter-spacing: 0.02em;
   /*
     루트의 145%는 18px 기준으로 계산된 26.1px이 그대로 상속된다. 여기 글자는 11~15px이라
     줄 사이가 과하게 벌어진다. 단위 없는 값으로 덮어써야 각 글자 크기에 맞춰 계산된다.
   */
-  line-height: 1.35;
+  line-height: 1.25;
 }
 
 /* ── 목표가 없을 때 ──────────────────────────────────────── */
@@ -406,7 +275,7 @@ const segments = computed(() => {
 .climb-card__empty {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 4px;
 }
 
 /* 목표가 있을 때의 목표 제목과 같은 크기. 이 카드에서 제일 큰 글자다. */
@@ -425,12 +294,11 @@ const segments = computed(() => {
 
 /*
   가로를 꽉 채운다. 이 화면에서 할 수 있는 일이 이것 하나뿐이라 작게 둘 이유가 없다.
-  글자를 노랑으로 두면 등불·캐릭터 이름표와 같은 색이라 위 일러스트와 이어진다.
 */
 .climb-card__empty-cta {
   width: 100%;
-  margin-top: 5px;
-  padding: 11px 0;
+  margin-top: 4px;
+  padding: 9px 0;
   border: none;
   border-radius: 999px;
   background: var(--ink);
@@ -448,22 +316,16 @@ const segments = computed(() => {
   align-items: center;
   justify-content: space-between;
   /* 목표 요약과 나누는 점선. 색 블록을 하나 더 두는 것보다 가볍다. */
-  padding-bottom: 8px;
+  padding-bottom: 6px;
   border-bottom: 2px dashed #a9c6af;
   font-size: 12px;
   color: var(--ink-muted);
 }
 
-/* 늘어난 금액은 게이지 채움색과 같은 초록. 좋은 소식이라 눈에 걸려야 한다. */
-.climb-card__increase {
-  color: var(--accent);
-  font-weight: 700;
-}
-
 .climb-card__goal-summary {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   width: 100%;
   /* 브라우저가 button에 기본 좌우 여백을 준다. 안 지우면 점선 위 글자보다 안쪽으로 밀린다. */
   padding: 0;
@@ -481,7 +343,7 @@ const segments = computed(() => {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 700;
   color: var(--ink);
 }
@@ -512,8 +374,7 @@ const segments = computed(() => {
 
 .climb-card__segment {
   flex: 1;
-  height: 13px;
-  border-radius: 4px;
+  height: 11px;
 }
 
 .climb-card__segment--empty {

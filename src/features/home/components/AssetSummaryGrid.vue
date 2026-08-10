@@ -60,11 +60,13 @@ const tiles = computed(() => [
 
   display: flex;
   flex-direction: column;
-  gap: 5px;
-  padding: 12px;
+  gap: 3px;
+  padding: 10px;
+  border-radius: 0;
   background: var(--color-mint-pale, #cdedd3);
+  letter-spacing: 0.02em;
   /* 루트에서 상속되는 26.1px 고정 줄 높이를 글자 크기에 맞춰 다시 계산시킨다. */
-  line-height: 1.3;
+  line-height: 1.25;
 }
 
 /*

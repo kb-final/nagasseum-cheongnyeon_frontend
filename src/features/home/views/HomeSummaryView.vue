@@ -44,6 +44,8 @@ function goToAssetLink() {
 
       <!--
         목표가 없어도 같은 카드를 그린다. 캐릭터만 출발점에 서고 아래 요약이 안내로 바뀐다.
+        목표를 세우면 이 산을 오르게 된다는 걸 그림으로 보여주려는 것이다.
+        (기존 EmptyGoalCard는 이 화면에서 더 쓰지 않는다)
       -->
       <ClimbProgressCard
         :climb="homeStore.climb"
@@ -78,7 +80,8 @@ function goToAssetLink() {
 .home-summary-view {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
+  padding-bottom: 24px;
 }
 
 .home-summary-view__skeleton {
