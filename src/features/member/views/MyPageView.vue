@@ -10,11 +10,18 @@ import BaseProfileIcon from '@/shared/components/atoms/base/icon/BaseProfileIcon
 import BaseChevronIcon from '@/shared/components/atoms/base/icon/BaseChevronIcon.vue'
 
 import { useMemberStore, AGREEMENT_TYPE } from '@/features/member/store/memberStore'
+import { useTheme } from '@/shared/composables/useTheme'
 
 const router = useRouter()
 const memberStore = useMemberStore()
+const { theme, toggleTheme } = useTheme()
 
 const isLogoutModalOpen = ref(false)
+
+const isDarkTheme = computed({
+  get: () => theme.value === 'dark',
+  set: () => toggleTheme(),
+})
 
 const notificationAgreed = computed({
   get: () => memberStore.profile?.notificationAgreed ?? false,
@@ -132,6 +139,17 @@ function confirmLogout() {
     </section>
 
     <section class="my-page-view__section">
+      <h2 class="my-page-view__section-title">테마 설정</h2>
+      <div class="my-page-view__row my-page-view__row--toggle">
+        <div class="my-page-view__row-text">
+          <span class="my-page-view__row-label">다크 모드</span>
+          <span class="my-page-view__row-desc">Light/Dark 테마를 전환해요</span>
+        </div>
+        <BaseToggle v-model="isDarkTheme" />
+      </div>
+    </section>
+
+    <section class="my-page-view__section">
       <h2 class="my-page-view__section-title">앱 정보</h2>
       <router-link :to="{ name: 'terms' }" class="my-page-view__row">
         <span class="my-page-view__row-label">이용약관</span>
@@ -189,7 +207,7 @@ function confirmLogout() {
 .my-page-view__nickname {
   margin: 12px 0 0;
   font-size: 17px;
-  color: var(--text-h, #ffffff);
+  color: var(--color-text-primary, #ffffff);
 }
 
 .my-page-view__badges {
@@ -225,7 +243,7 @@ function confirmLogout() {
 .my-page-view__exp-label {
   font-size: 9.5px;
   letter-spacing: 0.5px;
-  color: var(--text, #9aa09a);
+  color: var(--color-text-secondary, #9aa09a);
 }
 
 /* 칸 사이를 띄워 눈금처럼 보이게 한다. 홈 등반 카드와 같은 방식이다. */
@@ -239,7 +257,7 @@ function confirmLogout() {
   flex: 1;
   height: 11px;
   border-radius: 3px;
-  background: var(--border, #262626);
+  background: var(--color-border, #262626);
 }
 
 .my-page-view__exp-segment--filled {
@@ -253,7 +271,7 @@ function confirmLogout() {
 
 .my-page-view__exp-value {
   font-size: 10px;
-  color: var(--text, #9aa09a);
+  color: var(--color-text-secondary, #9aa09a);
   font-variant-numeric: tabular-nums;
 }
 
@@ -276,7 +294,7 @@ function confirmLogout() {
   width: 100%;
   padding: 16px 4px;
   border: none;
-  border-top: 1px solid var(--border, #262626);
+  border-top: 1px solid var(--color-border, #262626);
   background: none;
   color: inherit;
   text-decoration: none;
@@ -289,16 +307,16 @@ function confirmLogout() {
 
 .my-page-view__row-label {
   font-size: 13.9px;
-  color: var(--text-h, #ffffff);
+  color: var(--color-text-primary, #ffffff);
 }
 
 .my-page-view__row-value {
   font-size: 13.2px;
-  color: var(--text, #9aa09a);
+  color: var(--color-text-secondary, #9aa09a);
 }
 
 .my-page-view__chevron {
-  color: var(--text, #9aa09a);
+  color: var(--color-text-secondary, #9aa09a);
 }
 
 .my-page-view__row--toggle {
@@ -313,7 +331,7 @@ function confirmLogout() {
 
 .my-page-view__row-desc {
   font-size: 11.1px;
-  color: var(--text, #9aa09a);
+  color: var(--color-text-secondary, #9aa09a);
 }
 
 .my-page-view__logout-desc {
