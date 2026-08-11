@@ -353,6 +353,10 @@ onMounted(async () => {
   --c-on-color-value: #16281c;
 
   /* 맨 아래 안내 상자. 읽고 넘어가는 문구라 양쪽 테마 모두 배경보다 살짝만 밝게 둔다. */
+  /* 잠금 화면 안내 상자처럼 옅은 바탕이 필요한 곳 */
+  --c-pale-bg: #9fd8ab;
+  --c-pale-ink: #16281c;
+
   --c-disclaimer-bg: #1b1f1a;
   --c-disclaimer-ink: #e8f0e6;
   --c-disclaimer-body: #7fa398;
@@ -409,6 +413,9 @@ onMounted(async () => {
   --c-on-color-soft: #e8f4ea;
   --c-on-color-track: #eff1eb;
   --c-on-color-value: var(--color-heading-accent);
+
+  --c-pale-bg: #e8f4ea;
+  --c-pale-ink: var(--color-heading-accent);
 
   --c-disclaimer-bg: #e8ebe4;
   --c-disclaimer-ink: var(--color-text-primary);

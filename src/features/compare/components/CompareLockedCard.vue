@@ -44,8 +44,9 @@ function goToAgreement() {
 <style scoped>
 .locked {
   --badge: var(--c-value);
-  --on-pale: var(--c-on-accent);
-  --on-pale-strong: var(--c-on-accent);
+  /* 안내 상자는 양쪽 테마 모두 옅은 바탕에 진한 글씨로 둔다. */
+  --on-pale: var(--c-pale-ink);
+  --on-pale-strong: var(--c-pale-ink);
 
   --art-face: var(--c-accent-soft);
   --art-line: var(--c-accent-mid);
@@ -144,7 +145,7 @@ function goToAgreement() {
   margin-top: 32px;
   border-radius: 12px;
   padding: 14px 16px;
-  background: var(--c-accent);
+  background: var(--c-pale-bg);
   text-align: left;
   color: var(--on-pale);
 }
