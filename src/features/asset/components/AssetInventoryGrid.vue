@@ -144,12 +144,13 @@ const itemCount = computed(() =>
 
 .inventory__title {
   font-size: 13px;
-  color: #e8f0e6;
+  font-weight: 700;
+  color: var(--c-ink);
 }
 
 .inventory__count {
   font-size: 12px;
-  color: #7fa398;
+  color: var(--c-ink-faint);
   font-variant-numeric: tabular-nums;
 }
 
@@ -168,12 +169,13 @@ const itemCount = computed(() =>
 
 .inventory__group-name {
   font-size: 12px;
-  color: #9fd8ab;
+  font-weight: 700;
+  color: var(--c-accent);
 }
 
 .inventory__group-total {
   font-size: 11px;
-  color: #7fa398;
+  color: var(--c-ink-muted);
   font-variant-numeric: tabular-nums;
 }
 
@@ -186,9 +188,10 @@ const itemCount = computed(() =>
 .inventory__empty {
   margin: 0;
   padding: 28px 0;
-  border: 1px solid #334234;
-  background: #171b16;
-  color: #7fa398;
+  border: 1px solid var(--c-line);
+  border-radius: 14px;
+  background: var(--c-card);
+  color: var(--c-ink-muted);
   font-size: 12px;
   line-height: 1.7;
   text-align: center;

@@ -19,7 +19,9 @@ const totalBalance = computed(() =>
   <!-- 대출이 없으면 배너 자체를 띄우지 않는다. -->
   <section v-if="loans.length > 0" class="debt">
     <div class="debt__head">
-      <img class="debt__icon" :src="loanIcon" alt="" />
+      <span class="debt__slot">
+        <img class="debt__icon" :src="loanIcon" alt="" />
+      </span>
       <span class="debt__title">디버프 · 대출</span>
       <span class="debt__total">-{{ formatWon(totalBalance) }}</span>
     </div>
@@ -42,32 +44,45 @@ const totalBalance = computed(() =>
   flex-direction: column;
   gap: 8px;
   padding: 11px 12px;
-  border: 1px solid #5c2f28;
-  background: #1e1512;
+  border: 1px solid var(--c-danger-line);
+  border-radius: 14px;
+  background: var(--c-danger-soft);
   line-height: 1.35;
 }
 
 .debt__head {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+}
+
+/* 아이템 타일과 같은 이유로 아이콘 뒤에 진한 칸을 깐다. 여기만 붉은 칸을 쓴다. */
+.debt__slot {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--c-danger-slot);
 }
 
 .debt__icon {
-  width: 22px;
-  height: 22px;
+  width: 18px;
+  height: 18px;
   image-rendering: pixelated;
 }
 
 .debt__title {
   flex: 1;
-  color: #e2735f;
+  color: var(--c-danger);
   font-size: 12px;
   font-weight: 700;
 }
 
 .debt__total {
-  color: #e2735f;
+  color: var(--c-danger);
   font-size: 12px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
@@ -92,14 +107,14 @@ const totalBalance = computed(() =>
 
 .debt__item-name {
   overflow: hidden;
-  color: #c7b3ad;
+  color: var(--c-ink-muted);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .debt__item-amount {
   flex: none;
-  color: #c7b3ad;
+  color: var(--c-ink-muted);
   font-variant-numeric: tabular-nums;
 }
 </style>

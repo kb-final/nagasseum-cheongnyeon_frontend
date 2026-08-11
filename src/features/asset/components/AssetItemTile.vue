@@ -53,7 +53,9 @@ const label = computed(() => TYPE_LABELS[props.type] || props.type || '기타')
 
 <template>
   <div class="item-tile">
-    <img class="item-tile__icon" :src="icon" alt="" />
+    <span class="item-tile__slot">
+      <img class="item-tile__icon" :src="icon" alt="" />
+    </span>
 
     <div class="item-tile__body">
       <p class="item-tile__name">{{ name }}</p>
@@ -73,16 +75,32 @@ const label = computed(() => TYPE_LABELS[props.type] || props.type || '기타')
   align-items: center;
   gap: 10px;
   padding: 9px 11px;
-  border: 1px solid #334234;
-  background: #171b16;
+  border: 1px solid var(--c-line);
+  border-radius: 10px;
+  background: var(--c-card);
   /* 루트의 145%가 26.1px 고정으로 상속된다. 글자가 작아 그대로 두면 너무 벌어진다. */
   line-height: 1.3;
 }
 
-.item-tile__icon {
+/*
+  아이콘 그림 자체는 연한 민트 한 색이라 흰 카드 위에서는 거의 안 보인다.
+  그림 파일을 다시 칠하는 대신 뒤에 진한 칸을 깔았다. 색이 변수라 다크로 되돌릴 때도
+  이 칸 색만 바뀌고 그림은 그대로 쓰면 된다. 아이템 칸처럼 보이는 효과도 있다.
+*/
+.item-tile__slot {
   flex: none;
-  width: 30px;
-  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--c-slot);
+}
+
+.item-tile__icon {
+  width: 22px;
+  height: 22px;
   image-rendering: pixelated;
 }
 
@@ -97,7 +115,7 @@ const label = computed(() => TYPE_LABELS[props.type] || props.type || '기타')
 .item-tile__name {
   overflow: hidden;
   margin: 0;
-  color: #e8f0e6;
+  color: var(--c-ink);
   font-size: 12px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -114,15 +132,16 @@ const label = computed(() => TYPE_LABELS[props.type] || props.type || '기타')
 .item-tile__type {
   flex: none;
   padding: 1px 5px;
-  background: rgba(159, 216, 171, 0.14);
-  color: #9fd8ab;
+  border-radius: 4px;
+  background: var(--c-accent-soft);
+  color: var(--c-accent);
   font-size: 9.5px;
   font-weight: 700;
 }
 
 .item-tile__institution {
   overflow: hidden;
-  color: #7fa398;
+  color: var(--c-ink-faint);
   font-size: 10px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -130,7 +149,7 @@ const label = computed(() => TYPE_LABELS[props.type] || props.type || '기타')
 
 .item-tile__amount {
   flex: none;
-  color: #ffd939;
+  color: var(--c-value);
   font-size: 12.5px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;

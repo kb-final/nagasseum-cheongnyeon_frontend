@@ -45,13 +45,13 @@ watch(() => props.cohortAverageNetAssets, countUpTo, { immediate: true })
 
 <style scoped>
 .card {
-  --ink: #e8f0e6;
-  --ink-muted: #7fa398;
+  --ink: var(--c-ink);
+  --ink-muted: var(--c-ink-muted);
 
-  border: 1px solid #334234;
-  border-radius: 0;
+  border: 1px solid var(--c-line);
+  border-radius: 14px;
   padding: 16px;
-  background: #171b16;
+  background: var(--c-card);
   color: var(--ink);
   line-height: 1.45;
   animation: card-rise 0.35s ease-out both;
@@ -67,7 +67,7 @@ watch(() => props.cohortAverageNetAssets, countUpTo, { immediate: true })
   margin: 8px 0 0;
   font-size: 26px;
   font-weight: 700;
-  color: #ffd939;
+  color: var(--c-value);
   font-variant-numeric: tabular-nums;
 }
 
