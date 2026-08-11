@@ -44,10 +44,14 @@ const filledCount = (ratio) => Math.round((ratio / 100) * SEGMENT_COUNT)
   --mint: var(--c-accent);
   --mint-soft: var(--c-accent-mid);
   --segment: var(--c-track);
-  /* 순위 배지. 밝은 배경이라 세 개를 같은 연초록으로 두고 숫자 색으로만 구분한다. */
-  --rank-1: var(--c-accent-soft);
-  --rank-2: var(--c-accent-soft);
-  --rank-3: var(--c-accent-soft);
+  /*
+    순위 배지는 금·은·동. 메달 색이라 테마를 타지 않고 라이트·다크 모두 같은 값을 쓴다.
+    셋 다 밝은 색이라 숫자는 진한 초록으로 고정한다.
+  */
+  --rank-1: #ffd939;
+  --rank-2: #c9d1d3;
+  --rank-3: #d99a5b;
+  --rank-ink: #16281c;
 
   border: 1px solid var(--c-line);
   border-radius: 14px;
@@ -87,7 +91,7 @@ const filledCount = (ratio) => Math.round((ratio / 100) * SEGMENT_COUNT)
   justify-content: center;
   width: 24px;
   height: 24px;
-  color: var(--c-accent);
+  color: var(--rank-ink);
   font-size: 12px;
 }
 

@@ -223,7 +223,7 @@ function apply() {
   --ink-muted: var(--c-ink-muted);
   --track: var(--c-track);
   --track-fill: var(--c-accent);
-  --dark: var(--c-ink); /* 툴팁 전용 */
+  --dark: var(--c-tooltip-bg); /* 툴팁 전용 */
   --on-dark: rgba(255, 255, 255, 0.72);
 
   position: relative;
@@ -399,7 +399,7 @@ function apply() {
   top: 1px;
   width: 4px;
   height: 8px;
-  border: solid #ffffff;
+  border: solid var(--c-on-accent);
   border-width: 0 2px 2px 0;
   transform: rotate(45deg);
 }
@@ -489,6 +489,6 @@ function apply() {
 
 .sheet__actions :deep(.base-button--primary) {
   background: var(--c-accent);
-  color: #ffffff;
+  color: var(--c-on-accent);
 }
 </style>

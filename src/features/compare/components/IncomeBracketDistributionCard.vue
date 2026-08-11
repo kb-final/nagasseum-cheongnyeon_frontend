@@ -187,8 +187,8 @@ const isHintOpen = ref(false)
   max-width: 220px;
   padding: 8px 10px;
   border-radius: 8px;
-  background: var(--c-ink);
-  color: #ffffff;
+  background: var(--c-tooltip-bg);
+  color: #f0f2ef;
   font-size: 11px;
   line-height: 1.4;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
@@ -200,7 +200,7 @@ const isHintOpen = ref(false)
   bottom: 100%;
   left: 14px;
   border: 5px solid transparent;
-  border-bottom-color: var(--c-ink);
+  border-bottom-color: var(--c-tooltip-bg);
 }
 
 .chart {

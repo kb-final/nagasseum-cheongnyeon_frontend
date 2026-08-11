@@ -31,16 +31,16 @@ defineProps({
   display: inline-flex;
   padding: 3px 9px;
   border-radius: 999px;
-  background: rgba(193, 68, 46, 0.1);
-  color: #c1442e;
+  background: var(--c-danger-soft);
+  color: var(--c-danger);
   font-size: 10px;
   font-weight: 600;
   margin-bottom: 9px;
 }
 
 .state-card__eyebrow--wait {
-  background: var(--c-box);
-  color: #8a6d00;
+  background: var(--c-warn-bg);
+  color: var(--c-warn);
 }
 
 .state-card__title {

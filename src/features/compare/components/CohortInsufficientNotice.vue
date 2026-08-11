@@ -71,7 +71,7 @@ defineEmits(['widen'])
   padding: 8px 15px;
   border-radius: 999px;
   background: var(--c-accent);
-  color: #ffffff;
+  color: var(--c-on-accent);
   font-size: 12px;
   font-weight: 700;
   text-decoration: none;

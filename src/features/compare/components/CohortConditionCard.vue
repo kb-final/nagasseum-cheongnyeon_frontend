@@ -40,7 +40,7 @@ defineEmits(['edit'])
 .cohort-card {
   --surface: var(--c-card);
   --chip-bg: var(--c-accent-soft);
-  --chip-text: var(--c-accent);
+  --chip-text: var(--c-value);
   --mint: var(--c-accent);
 
   border: 1px solid var(--c-line);

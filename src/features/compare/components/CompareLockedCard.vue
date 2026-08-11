@@ -43,9 +43,9 @@ function goToAgreement() {
 
 <style scoped>
 .locked {
-  --badge: var(--c-accent);
-  --on-pale: #ffffff;
-  --on-pale-strong: #ffffff;
+  --badge: var(--c-value);
+  --on-pale: var(--c-on-accent);
+  --on-pale-strong: var(--c-on-accent);
 
   --art-face: var(--c-accent-soft);
   --art-line: var(--c-accent-mid);

@@ -67,7 +67,7 @@ watch(() => props.cohortAverageNetAssets, countUpTo, { immediate: true })
   margin: 8px 0 0;
   font-size: 26px;
   font-weight: 700;
-  color: var(--c-accent);
+  color: var(--c-value);
   font-variant-numeric: tabular-nums;
 }
 

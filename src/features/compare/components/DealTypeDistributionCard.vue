@@ -39,7 +39,7 @@ const barItems = computed(() =>
   --segment: var(--c-track);
   --segment-on: var(--c-accent-mid);
   --segment-on-highlight: var(--mint);
-  --badge: var(--c-accent-soft);
+  --badge: var(--c-badge-bg);
 
   border: 1px solid var(--c-line);
   border-radius: 14px;

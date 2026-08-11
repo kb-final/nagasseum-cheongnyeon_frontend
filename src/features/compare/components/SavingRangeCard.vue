@@ -128,7 +128,7 @@ const bandWidthPct = computed(() => (isReady.value ? rangeEndPct.value - rangeSt
   transform: translateX(-50%);
   white-space: nowrap;
   font-size: 12px;
-  color: var(--c-accent);
+  color: var(--c-value);
   transition: left 0.7s cubic-bezier(0.22, 0.9, 0.32, 1) 0.5s;
 }
 
