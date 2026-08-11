@@ -218,13 +218,13 @@ function apply() {
 }
 
 .sheet {
-  --surface: #becfc7;
-  --ink: #16281c;
-  --ink-muted: #4e5c50;
-  --track: #16281c;
-  --track-fill: #e3ffe8;
-  --dark: #1c1c1c;
-  --on-dark: #9aa09a;
+  --surface: var(--c-card);
+  --ink: var(--c-ink);
+  --ink-muted: var(--c-ink-muted);
+  --track: var(--c-track);
+  --track-fill: var(--c-accent);
+  --dark: var(--c-ink); /* 툴팁 전용 */
+  --on-dark: rgba(255, 255, 255, 0.72);
 
   position: relative;
   display: flex;
@@ -237,7 +237,7 @@ function apply() {
   background: var(--surface);
   color: var(--ink);
   line-height: 1.45;
-  box-shadow: 0 -12px 32px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 -12px 32px rgba(16, 19, 15, 0.12);
 }
 
 .sheet__handle {
@@ -246,7 +246,7 @@ function apply() {
   height: 4px;
   margin: 0 auto 14px;
   border-radius: 999px;
-  background: rgba(22, 40, 28, 0.2);
+  background: var(--c-line);
 }
 
 .sheet__scroll {
@@ -266,7 +266,7 @@ function apply() {
 .field {
   padding: 14px;
   border-radius: 14px;
-  background: rgba(22, 40, 28, 0.06);
+  background: var(--c-bg);
 }
 
 .field + .field {
@@ -367,8 +367,9 @@ function apply() {
   gap: 7px;
   border-radius: 999px;
   padding: 7px 12px;
-  background: var(--dark);
-  color: #f0f2ef;
+  border: 1px solid var(--c-line);
+  background: var(--c-bg);
+  color: var(--c-ink);
   font-size: 12px;
   cursor: pointer;
   transition: opacity 0.15s ease;
@@ -381,7 +382,7 @@ function apply() {
   width: 15px;
   height: 15px;
   margin: 0;
-  border: 1.5px solid rgba(240, 242, 239, 0.4);
+  border: 1.5px solid var(--c-ink-faint);
   border-radius: 5px;
   cursor: pointer;
 }
@@ -398,7 +399,7 @@ function apply() {
   top: 1px;
   width: 4px;
   height: 8px;
-  border: solid var(--ink);
+  border: solid #ffffff;
   border-width: 0 2px 2px 0;
   transform: rotate(45deg);
 }
@@ -421,7 +422,7 @@ function apply() {
   height: 13px;
   margin: 0;
   padding: 0;
-  border: 1px solid rgba(240, 242, 239, 0.5);
+  border: 1px solid var(--c-ink-faint);
   border-radius: 50%;
   background: none;
   color: inherit;
@@ -443,7 +444,7 @@ function apply() {
   color: #f0f2ef;
   font-size: 11px;
   line-height: 1.4;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 4px 12px rgba(16, 19, 15, 0.18);
 }
 
 .tooltip::after {
@@ -459,11 +460,11 @@ function apply() {
   margin: 16px 0 0;
   padding: 10px 12px;
   border-radius: 10px;
-  background: var(--dark);
+  background: var(--c-bg);
   text-align: center;
   font-size: 11px;
   line-height: 1.5;
-  color: var(--on-dark);
+  color: var(--c-ink-muted);
 }
 
 .sheet__actions {
@@ -473,6 +474,21 @@ function apply() {
   gap: 10px;
   margin-top: 14px;
   padding-top: 14px;
-  border-top: 1px solid rgba(22, 40, 28, 0.1);
+  border-top: 1px solid var(--c-line);
+}
+
+/*
+  BaseButton은 공용 컴포넌트라 손대지 않고 이 시트 안에서만 색을 덮어쓴다.
+  기본값(secondary #2a2a2a)이 밝은 시트 위에서 검은 덩어리로 보인다.
+*/
+.sheet__actions :deep(.base-button--secondary) {
+  border: 1px solid var(--c-line);
+  background: var(--c-bg);
+  color: var(--c-ink);
+}
+
+.sheet__actions :deep(.base-button--primary) {
+  background: var(--c-accent);
+  color: #ffffff;
 }
 </style>

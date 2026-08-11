@@ -39,19 +39,20 @@ const filledCount = (ratio) => Math.round((ratio / 100) * SEGMENT_COUNT)
 /* 폰트 크기는 rem이 아닌 px로 고정한다.
    루트가 18px/16px로 바뀌면 픽셀 폰트가 그리드에서 어긋나 뭉개진다. */
 .card {
-  --ink: #e8f0e6;
-  --ink-muted: #7fa398;
-  --mint: #9fd8ab;
-  --mint-soft: #4f7a5c;
-  --segment: #263029;
-  --rank-1: #ffd939;
-  --rank-2: #c7ccc8;
-  --rank-3: #c9a26b;
+  --ink: var(--c-ink);
+  --ink-muted: var(--c-ink-muted);
+  --mint: var(--c-accent);
+  --mint-soft: var(--c-accent-mid);
+  --segment: var(--c-track);
+  /* 순위 배지. 밝은 배경이라 세 개를 같은 연초록으로 두고 숫자 색으로만 구분한다. */
+  --rank-1: var(--c-accent-soft);
+  --rank-2: var(--c-accent-soft);
+  --rank-3: var(--c-accent-soft);
 
-  border: 1px solid #334234;
-  border-radius: 0;
+  border: 1px solid var(--c-line);
+  border-radius: 14px;
   padding: 16px;
-  background: #171b16;
+  background: var(--c-card);
   color: var(--ink);
   /* 루트의 145%는 18px 기준으로 계산된 26.1px이 그대로 상속된다.
      단위 없는 값으로 덮어써야 각 요소가 제 폰트 크기로 줄 높이를 계산한다. */
@@ -86,7 +87,7 @@ const filledCount = (ratio) => Math.round((ratio / 100) * SEGMENT_COUNT)
   justify-content: center;
   width: 24px;
   height: 24px;
-  color: #171b16;
+  color: var(--c-accent);
   font-size: 12px;
 }
 

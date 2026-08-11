@@ -38,13 +38,13 @@ defineEmits(['edit'])
 
 <style scoped>
 .cohort-card {
-  --surface: #171b16;
-  --chip-bg: #232823;
-  --chip-text: #ffd939;
-  --mint: #9fd8ab;
+  --surface: var(--c-card);
+  --chip-bg: var(--c-accent-soft);
+  --chip-text: var(--c-accent);
+  --mint: var(--c-accent);
 
-  border: 1px solid var(--border);
-  border-radius: 20px;
+  border: 1px solid var(--c-line);
+  border-radius: 14px;
   padding: 16px;
   background: var(--surface);
   line-height: 1.45;
@@ -57,9 +57,12 @@ defineEmits(['edit'])
   justify-content: space-between;
 }
 
+/* main.css의 h1,h2가 흰색이라 밝은 카드에서 안 보인다. 여기서 덮어쓴다. */
+/* main.css의 h1,h2가 흰색이라 밝은 카드에서 글자가 사라진다. 여기서 덮어쓴다. */
 .cohort-card__title {
   margin: 0;
   font-size: 14px;
+  color: var(--c-ink);
 }
 
 .cohort-card__edit {
@@ -95,10 +98,10 @@ defineEmits(['edit'])
   align-items: center;
   gap: 8px;
   margin: 12px 0 0;
-  border: 1px solid var(--border);
+  border: 1px solid var(--c-line);
   border-radius: 14px;
   padding: 7px 12px;
-  background: var(--bg);
+  background: var(--c-box);
   font-size: 13px;
   color: var(--mint);
 }

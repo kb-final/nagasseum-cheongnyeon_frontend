@@ -42,8 +42,8 @@ defineEmits(['select'])
   gap: 6px;
   padding: 4px;
   border-radius: 14px;
-  background: var(--card-bg, #161616);
-  border: 1px solid var(--border);
+  background: var(--c-card);
+  border: 1px solid var(--c-line);
 }
 
 .tabs__item {
@@ -58,7 +58,7 @@ defineEmits(['select'])
   font-family: inherit;
   font-size: 13px;
   font-weight: 600;
-  color: var(--text);
+  color: var(--c-ink-muted);
   cursor: pointer;
   transition:
     background-color 0.18s ease,
@@ -66,8 +66,8 @@ defineEmits(['select'])
 }
 
 .tabs__item--active {
-  background: var(--accent);
-  color: var(--color-mint-deep);
+  background: var(--c-accent-soft);
+  color: var(--c-accent);
 }
 
 .tabs__lock {

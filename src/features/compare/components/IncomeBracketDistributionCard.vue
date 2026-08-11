@@ -115,18 +115,18 @@ const isHintOpen = ref(false)
 
 <style scoped>
 .card {
-  --ink: #e8f0e6;
-  --ink-muted: #7fa398;
-  --mint: #9fd8ab;
-  --bar-body: #263029;
-  --bar-line: #171b16;
+  --ink: var(--c-ink);
+  --ink-muted: var(--c-ink-muted);
+  --mint: var(--c-accent);
+  --bar-body: var(--c-accent-mid);
+  --bar-line: var(--c-card);
   --bar-body-mine: var(--mint);
-  --bar-line-mine: #171b16;
+  --bar-line-mine: var(--c-card);
 
-  border: 1px solid #334234;
-  border-radius: 0;
+  border: 1px solid var(--c-line);
+  border-radius: 14px;
   padding: 16px;
-  background: #171b16;
+  background: var(--c-card);
   color: var(--ink);
   line-height: 1.45;
   animation: card-rise 0.35s ease-out both;
@@ -187,8 +187,8 @@ const isHintOpen = ref(false)
   max-width: 220px;
   padding: 8px 10px;
   border-radius: 8px;
-  background: #1c1c1c;
-  color: #f0f2ef;
+  background: var(--c-ink);
+  color: #ffffff;
   font-size: 11px;
   line-height: 1.4;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
@@ -200,7 +200,7 @@ const isHintOpen = ref(false)
   bottom: 100%;
   left: 14px;
   border: 5px solid transparent;
-  border-bottom-color: #1c1c1c;
+  border-bottom-color: var(--c-ink);
 }
 
 .chart {

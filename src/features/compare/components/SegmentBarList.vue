@@ -63,8 +63,8 @@ const rows = computed(() =>
   height: 12px;
   border-radius: 999px;
   padding: 0 5px;
-  background: var(--badge, #ffd939);
-  color: #171b16;
+  background: var(--badge, var(--c-accent-soft));
+  color: var(--c-accent);
   font-size: 10px;
   line-height: 1;
 }

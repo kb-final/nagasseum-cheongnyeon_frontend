@@ -236,6 +236,7 @@ onMounted(async () => {
               <AchievementHistogramCard
                 :my-rate="activeComparison.achievement.mine"
                 :cohort-average-rate="activeComparison.achievement.cohortAverage"
+                :buckets="activeComparison.achievement.buckets"
               />
 
               <div class="stat-pair">
@@ -290,7 +291,39 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+/*
+  비교 화면 색을 여기 한 곳에 모은다. CSS 변수는 scoped 여부와 상관없이
+  자식 컴포넌트까지 내려가므로, 카드들은 이 이름만 가져다 쓴다.
+  다크로 되돌릴 땐 아래 11줄만 바꾸면 되고 컴포넌트는 손댈 것이 없다.
+
+    다크 값
+    --c-bg #111111        --c-card #171b16       --c-line #334234
+    --c-ink #e8f0e6       --c-ink-muted #7fa398  --c-ink-faint #7f8a7d
+    --c-accent #9fd8ab    --c-accent-mid #4f7a5c --c-accent-soft #263029
+    --c-track #263029     --c-box #171b16
+*/
 .compare-view {
+  --c-bg: #f7f8f4;
+  --c-card: #ffffff;
+  --c-line: #e3e7df;
+  --c-ink: #10130f;
+  --c-ink-muted: #5b6358;
+  --c-ink-faint: #8f968c;
+  --c-accent: #1d6b3f;
+  --c-accent-mid: #a9c9b0;
+  --c-accent-soft: #e8f4ea;
+  --c-track: #eff1eb;
+  --c-box: #e8ebe4;
+
+  /*
+    앱 배경(--bg)이 아직 어두워서 이 화면만 밝게 덮는다. MobileLayout의 여백
+    (16px 16px 96px)을 음수 마진으로 상쇄한 뒤 같은 값을 다시 준다.
+    앱 전체가 라이트로 바뀌면 이 세 줄은 지우면 된다.
+  */
+  margin: -16px -16px -96px;
+  padding: 16px 16px 96px;
+  background: var(--c-bg);
+
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -310,13 +343,13 @@ onMounted(async () => {
   margin: 0;
   font-size: 17px;
   font-weight: 700;
-  color: var(--text-h);
+  color: var(--c-ink);
 }
 
 .compare-view__header p {
   margin: 0;
   font-size: 11.5px;
-  color: var(--text);
+  color: var(--c-ink-muted);
 }
 
 .compare-view__desc {
@@ -327,8 +360,8 @@ onMounted(async () => {
   display: inline-flex;
   padding: 2px 9px;
   border-radius: 999px;
-  background: rgba(255, 217, 57, 0.16);
-  color: #ffd939;
+  background: var(--c-box);
+  color: #8a6d00;
   font-size: 10.5px;
   font-weight: 600;
 }
@@ -344,7 +377,7 @@ onMounted(async () => {
   padding: 24px 0;
   text-align: center;
   font-size: 13px;
-  color: var(--text);
+  color: var(--c-ink-muted);
 }
 
 .tab-fade-enter-active,
@@ -371,11 +404,11 @@ onMounted(async () => {
 }
 
 .stat-card {
-  --ink-muted: #7fa398;
+  --ink-muted: var(--c-ink-muted);
 
-  border: 1px solid #334234;
-  border-radius: 0;
-  background: #171b16;
+  border: 1px solid var(--c-line);
+  border-radius: 14px;
+  background: var(--c-card);
   padding: 14px;
   animation: card-rise 0.35s ease-out both;
   animation-delay: 0.12s;
@@ -390,19 +423,19 @@ onMounted(async () => {
   margin-top: 2px;
   font-size: 18px;
   line-height: 1.2;
-  color: #ffd939;
+  color: var(--c-ink);
   font-variant-numeric: tabular-nums;
 }
 
 .disclaimer {
-  --surface: #171b16;
-  --body: #7f8a7d;
+  --surface: var(--c-box);
+  --body: var(--c-ink-muted);
 
   margin: 4px 0;
   padding: 12px 14px;
   border-radius: 12px;
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: none;
   text-align: center;
   font-size: 12px;
   line-height: 1.55;
@@ -417,7 +450,7 @@ onMounted(async () => {
   justify-content: center;
   gap: 5px;
   margin: 0;
-  color: var(--text-h);
+  color: var(--c-ink);
 }
 
 .disclaimer__icon {
@@ -437,8 +470,8 @@ onMounted(async () => {
   align-items: center;
   padding: 8px 15px;
   border-radius: 999px;
-  background: var(--accent);
-  color: var(--color-mint-deep);
+  background: var(--c-accent);
+  color: #ffffff;
   font-size: 12px;
   font-weight: 700;
   text-decoration: none;

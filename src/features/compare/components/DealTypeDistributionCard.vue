@@ -33,18 +33,18 @@ const barItems = computed(() =>
 
 <style scoped>
 .card {
-  --ink: #e8f0e6;
-  --ink-muted: #7fa398;
-  --mint: #9fd8ab;
-  --segment: #263029;
-  --segment-on: #4f7a5c;
+  --ink: var(--c-ink);
+  --ink-muted: var(--c-ink-muted);
+  --mint: var(--c-accent);
+  --segment: var(--c-track);
+  --segment-on: var(--c-accent-mid);
   --segment-on-highlight: var(--mint);
-  --badge: #ffd939;
+  --badge: var(--c-accent-soft);
 
-  border: 1px solid #334234;
-  border-radius: 0;
+  border: 1px solid var(--c-line);
+  border-radius: 14px;
   padding: 16px;
-  background: #171b16;
+  background: var(--c-card);
   color: var(--ink);
   line-height: 1.45;
   animation: card-rise 0.35s ease-out both;

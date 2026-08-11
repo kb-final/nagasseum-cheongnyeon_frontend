@@ -47,19 +47,19 @@ defineEmits(['widen'])
 .gauge__track {
   flex: 1;
   height: 6px;
-  background: var(--border);
+  background: var(--c-track);
   overflow: hidden;
 }
 
 .gauge__fill {
   display: block;
   height: 100%;
-  background: var(--color-point);
+  background: var(--c-accent);
 }
 
 .gauge__label {
   font-size: 10.5px;
-  color: var(--text);
+  color: var(--c-ink-muted);
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
@@ -70,8 +70,8 @@ defineEmits(['widen'])
   align-items: center;
   padding: 8px 15px;
   border-radius: 999px;
-  background: var(--accent);
-  color: var(--color-mint-deep);
+  background: var(--c-accent);
+  color: #ffffff;
   font-size: 12px;
   font-weight: 700;
   text-decoration: none;
@@ -87,7 +87,7 @@ defineEmits(['widen'])
   margin: 12px 0 0;
   font-size: 11px;
   line-height: 1.6;
-  color: var(--text);
+  color: var(--c-ink-muted);
   opacity: 0.75;
 }
 </style>
