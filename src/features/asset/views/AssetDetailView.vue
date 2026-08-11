@@ -96,7 +96,7 @@ onMounted(() => {
     여백(16px 16px 96px)을 음수 마진으로 상쇄한 뒤 같은 값을 다시 준다.
   */
   margin: -16px -16px -96px;
-  padding: 16px 16px 96px;
+  padding: 16px 16px 110px;
   background: var(--c-bg);
 
   display: flex;
