@@ -21,20 +21,6 @@ defineEmits(['refresh'])
  * 붙여줘서 크기를 나눌 수 없다.
  */
 const amount = computed(() => formatNumber(props.assetSummary.totalAssets))
-
-// 오늘이면 "오늘 HH:mm", 아니면 "MM.DD HH:mm"으로 표시
-const syncedAtLabel = computed(() => {
-  const synced = new Date(props.assetSummary.syncedAt)
-  const now = new Date()
-  const time = synced.toLocaleTimeString('ko-KR', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  })
-  const isToday = synced.toDateString() === now.toDateString()
-  if (isToday) return `오늘 ${time}`
-  return `${synced.getMonth() + 1}.${synced.getDate()} ${time}`
-})
 </script>
 
 <template>
@@ -47,12 +33,11 @@ const syncedAtLabel = computed(() => {
       <RouterLink class="total-asset-card__detail" to="/assets">자세히 ▷</RouterLink>
     </div>
 
-    <p class="total-asset-card__amount">
-      {{ amount }}<span class="total-asset-card__unit">원</span>
-    </p>
+    <div class="total-asset-card__main">
+      <p class="total-asset-card__amount">
+        {{ amount }}<span class="total-asset-card__unit">원</span>
+      </p>
 
-    <div class="total-asset-card__footer">
-      <span class="total-asset-card__synced">마지막 갱신 · {{ syncedAtLabel }}</span>
       <BaseButton
         variant="secondary"
         class="total-asset-card__refresh-btn"
@@ -75,13 +60,16 @@ const syncedAtLabel = computed(() => {
 
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
+  padding: 12px 14px;
+  border-radius: 0;
   background: var(--color-card-highlight, #f7ffd1);
+  letter-spacing: 0.02em;
   /*
     루트의 145%는 18px 기준으로 계산된 26.1px이 그대로 상속된다. 여기 글자는 12~28px이라
     줄 사이가 들쭉날쭉해진다. 단위 없는 값으로 덮어써야 각 글자 크기에 맞춰 계산된다.
   */
-  line-height: 1.3;
+  line-height: 1.25;
 }
 
 .total-asset-card__top {
@@ -111,9 +99,17 @@ const syncedAtLabel = computed(() => {
   text-decoration: none;
 }
 
+.total-asset-card__main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
 .total-asset-card__amount {
   margin: 0;
   font-size: 28px;
+  line-height: 1.1;
   font-weight: 700;
   color: var(--ink);
   font-variant-numeric: tabular-nums;
@@ -126,25 +122,15 @@ const syncedAtLabel = computed(() => {
   font-weight: 400;
 }
 
-.total-asset-card__footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.total-asset-card__synced {
-  font-size: 12px;
-  color: var(--ink-muted);
-}
-
 .total-asset-card :deep(.total-asset-card__refresh-btn) {
   display: inline-flex;
   align-items: center;
   gap: 5px;
+  flex: none;
   width: auto;
   height: 30px;
   padding: 0 12px;
-  border-radius: 15px;
+  border-radius: 0;
   background: #12281c;
   color: var(--color-card-highlight, #f7ffd1);
   font-size: 12px;
