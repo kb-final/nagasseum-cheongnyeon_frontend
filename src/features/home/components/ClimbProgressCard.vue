@@ -230,20 +230,18 @@ const segments = computed(() => {
 
 /*
   글자색 두 단계.
-    --ink        목표 제목, 퍼센트   제일 진하게
-    --ink-muted  보조 정보           회녹색
+    --climb-card-ink        목표 제목, 퍼센트   제일 진하게
+    --climb-card-ink-muted  보조 정보           회녹색
 
   opacity 대신 색을 직접 준다. 투명도로 흐리게 하면 배경색이 바뀔 때 같이 흔들린다.
+  (main.css의 [data-theme] 블록에서 테마별 값을 정의한다.)
 */
 .climb-card__body {
-  --ink: #12281c;
-  --ink-muted: #6f8b79;
-
   display: flex;
   flex-direction: column;
   gap: 6px;
   padding: 12px 14px;
-  background: var(--color-mint-pale, #cdedd3);
+  background: var(--climb-card-surface, #cdedd3);
   border-radius: 0;
   letter-spacing: 0.02em;
   /*
@@ -259,8 +257,8 @@ const segments = computed(() => {
   flex: none;
   padding: 3px 8px;
   border-radius: 999px;
-  background: var(--ink);
-  color: #ffd939;
+  background: var(--climb-card-ink, #12281c);
+  color: var(--color-accent, #ffd939);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -269,7 +267,7 @@ const segments = computed(() => {
 .climb-card__quest-label {
   flex: 1;
   margin-left: 8px;
-  color: var(--ink-muted);
+  color: var(--climb-card-ink-muted, #6f8b79);
 }
 
 .climb-card__empty {
@@ -283,13 +281,13 @@ const segments = computed(() => {
   margin: 0;
   font-size: 15px;
   font-weight: 700;
-  color: var(--ink);
+  color: var(--climb-card-ink, #12281c);
 }
 
 .climb-card__empty-desc {
   margin: 0;
   font-size: 11px;
-  color: var(--ink-muted);
+  color: var(--climb-card-ink-muted, #6f8b79);
 }
 
 /*
@@ -301,8 +299,8 @@ const segments = computed(() => {
   padding: 9px 0;
   border: none;
   border-radius: 999px;
-  background: var(--ink);
-  color: #ffd939;
+  background: var(--climb-card-ink, #12281c);
+  color: var(--color-accent, #ffd939);
   font: inherit;
   font-size: 13.5px;
   font-weight: 700;
@@ -317,9 +315,9 @@ const segments = computed(() => {
   justify-content: space-between;
   /* 목표 요약과 나누는 점선. 색 블록을 하나 더 두는 것보다 가볍다. */
   padding-bottom: 6px;
-  border-bottom: 2px dashed #a9c6af;
+  border-bottom: 2px dashed var(--color-progress-inactive, #a9c6af);
   font-size: 12px;
-  color: var(--ink-muted);
+  color: var(--climb-card-ink-muted, #6f8b79);
 }
 
 .climb-card__goal-summary {
@@ -345,14 +343,14 @@ const segments = computed(() => {
   gap: 8px;
   font-size: 17px;
   font-weight: 700;
-  color: var(--ink);
+  color: var(--climb-card-ink, #12281c);
 }
 
 .climb-card__goal-detail-link {
   flex: none;
   font-size: 11.5px;
   font-weight: 400;
-  color: var(--ink-muted);
+  color: var(--climb-card-ink-muted, #6f8b79);
 }
 
 /*
@@ -362,7 +360,7 @@ const segments = computed(() => {
 .climb-card__goal-remaining {
   margin: 0;
   font-size: 11px;
-  color: var(--ink-muted);
+  color: var(--climb-card-ink-muted, #6f8b79);
 }
 
 /* 퍼센트를 게이지 오른쪽 끝에 붙인다. 아래에 따로 두면 줄만 하나 늘어난다. */
@@ -378,15 +376,15 @@ const segments = computed(() => {
 }
 
 .climb-card__segment--empty {
-  background: #a9c6af;
+  background: var(--color-progress-inactive, #a9c6af);
 }
 
 .climb-card__segment--filled {
-  background: var(--color-progress-fill, #1d6b3f);
+  background: var(--color-progress-active, #1d6b3f);
 }
 
 .climb-card__segment--current {
-  background: #ffd939;
+  background: var(--color-accent, #ffd939);
 }
 
 .climb-card__percent {
@@ -394,7 +392,7 @@ const segments = computed(() => {
   margin-left: 5px;
   font-size: 11.5px;
   font-weight: 700;
-  color: var(--ink);
+  color: var(--climb-card-ink, #12281c);
   font-variant-numeric: tabular-nums;
 }
 </style>

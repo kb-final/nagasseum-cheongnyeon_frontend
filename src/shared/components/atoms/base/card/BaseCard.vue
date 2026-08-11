@@ -14,7 +14,7 @@ defineProps({
 .base-card {
   box-sizing: border-box;
   width: 100%;
-  background: var(--card-bg, #161616);
+  background: var(--color-surface, #161616);
 }
 
 .base-card--lg {
