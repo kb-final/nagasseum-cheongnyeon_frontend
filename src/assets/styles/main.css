@@ -54,6 +54,10 @@ html {
   --color-nav-active: #16281c;
   --color-nav-inactive: #3e5a49;
 
+  /* 카드 없이 페이지 배경 위에 바로 놓이는 강조 제목/라벨용. 다크에서는 기존 밝은
+     민트색을 유지하고, 라이트에서는 밝은 배경에서도 읽히는 진한 초록을 쓴다. */
+  --color-heading-accent: #e3ffe8;
+
   /* 카드마다 다크 모드에서만 고유한 색을 유지해야 하는 곳에 쓰는 전용 토큰 */
   --climb-card-surface: #cdedd3;
   --climb-card-ink: #12281c;
@@ -113,6 +117,8 @@ html {
   --color-nav-active: #16281c;
   --color-nav-inactive: #3e5a49;
 
+  --color-heading-accent: #e3ffe8;
+
   --climb-card-surface: #cdedd3;
   --climb-card-ink: #12281c;
   --climb-card-ink-muted: #6f8b79;
@@ -150,6 +156,8 @@ html {
   --color-nav-active: #1d6b3f;
   --color-nav-inactive: #6f766d;
 
+  --color-heading-accent: #1d6b3f;
+
   --climb-card-surface: #f6f3c4;
   --climb-card-ink: #10130f;
   --climb-card-ink-muted: #5b6358;
@@ -185,7 +193,7 @@ body {
 h1,
 h2 {
   font-weight: 500;
-  color: var(--text-h);
+  color: var(--color-text-primary);
 }
 
 /* 카드가 등장할 때 공통으로 쓰는 페이드 + 살짝 떠오르는 진입 모션.

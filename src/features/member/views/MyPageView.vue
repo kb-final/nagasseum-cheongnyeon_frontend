@@ -284,7 +284,7 @@ function confirmLogout() {
   padding: 0 4px;
   font-size: 12.3px;
   font-weight: 400;
-  color: var(--color-mint-strong, #c1e8c8);
+  color: var(--color-heading-accent, #c1e8c8);
 }
 
 .my-page-view__row {

@@ -149,7 +149,7 @@ async function onSubmitMonthlySaving(monthlySaving) {
   padding: 0;
   border: none;
   background: none;
-  color: #7fa398;
+  color: var(--color-text-tertiary, #7fa398);
   font-size: 13px;
   cursor: pointer;
 }
@@ -158,19 +158,20 @@ async function onSubmitMonthlySaving(monthlySaving) {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  margin-left: 4px;
 }
 
 .goal-detail-view__title {
   margin: 0;
   font-size: 20px;
   font-weight: 400;
-  color: var(--accent, #e3ffe8);
+  color: var(--color-heading-accent, #e3ffe8);
 }
 
 .goal-detail-view__condition {
   margin: 0;
   font-size: 13px;
-  color: #888888;
+  color: var(--color-text-tertiary, #888888);
 }
 
 .goal-detail-view__skeleton {
@@ -181,7 +182,7 @@ async function onSubmitMonthlySaving(monthlySaving) {
 
 .goal-detail-view__error {
   padding: 24px 0;
-  color: var(--text, #9aa09a);
+  color: var(--color-text-secondary, #9aa09a);
   text-align: center;
 }
 </style>

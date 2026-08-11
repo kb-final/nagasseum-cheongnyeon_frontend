@@ -70,8 +70,8 @@ defineEmits(['click'])
 }
 
 .base-button--highlight {
-  background: var(--color-card-highlight, #f7ffd1);
-  color: #111111;
+  background: var(--color-text-primary, #f7ffd1);
+  color: var(--color-app-bg, #111111);
 }
 
 .base-button--dark {
