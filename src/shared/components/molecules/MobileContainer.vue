@@ -20,6 +20,6 @@ defineProps({
 .mobile-container--full-height {
   position: relative;
   min-height: 100vh;
-  background: var(--bg, #111111);
+  background: var(--color-app-bg, #111111);
 }
 </style>

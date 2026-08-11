@@ -51,19 +51,17 @@ const amount = computed(() => formatNumber(props.assetSummary.totalAssets))
 
 <style scoped>
 /*
-  글자색 두 단계. 금액·라벨은 --ink, 보조 정보는 --ink-muted.
+  글자색 두 단계. 금액·라벨은 진하게, 보조 정보는 흐리게.
   opacity 대신 색을 직접 준다. 투명도로 흐리게 하면 배경색이 바뀔 때 같이 흔들린다.
+  (main.css의 [data-theme] 블록에서 테마별 값을 정의한다.)
 */
 .total-asset-card {
-  --ink: #12281c;
-  --ink-muted: #8a8f63;
-
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 12px;
   padding: 12px 14px;
-  border-radius: 0;
-  background: var(--color-card-highlight, #f7ffd1);
+  border-radius: 16px;
+  background: var(--total-asset-surface, #f7ffd1);
   letter-spacing: 0.02em;
   /*
     루트의 145%는 18px 기준으로 계산된 26.1px이 그대로 상속된다. 여기 글자는 12~28px이라
@@ -83,7 +81,7 @@ const amount = computed(() => formatNumber(props.assetSummary.totalAssets))
   align-items: center;
   gap: 5px;
   font-size: 13px;
-  color: var(--ink);
+  color: var(--total-asset-label, #12281c);
 }
 
 /* 픽셀 그림은 브라우저가 부드럽게 늘리면 뿌옇게 뭉갠다. 크기도 정수 배율로 맞춘다. */
@@ -95,7 +93,7 @@ const amount = computed(() => formatNumber(props.assetSummary.totalAssets))
 
 .total-asset-card__detail {
   font-size: 12px;
-  color: var(--ink-muted);
+  color: var(--total-asset-detail, #8a8f63);
   text-decoration: none;
 }
 
@@ -111,7 +109,7 @@ const amount = computed(() => formatNumber(props.assetSummary.totalAssets))
   font-size: 28px;
   line-height: 1.1;
   font-weight: 700;
-  color: var(--ink);
+  color: var(--climb-card-ink, #12281c);
   font-variant-numeric: tabular-nums;
 }
 
@@ -130,9 +128,9 @@ const amount = computed(() => formatNumber(props.assetSummary.totalAssets))
   width: auto;
   height: 30px;
   padding: 0 12px;
-  border-radius: 0;
-  background: #12281c;
-  color: var(--color-card-highlight, #f7ffd1);
+  border-radius: 999px;
+  background: var(--climb-card-ink, #12281c);
+  color: var(--total-asset-surface, #f7ffd1);
   font-size: 12px;
   font-weight: 400;
 }

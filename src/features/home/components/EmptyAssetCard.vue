@@ -21,20 +21,20 @@ defineEmits(['link-asset'])
   gap: 8px;
   padding: 32px 20px 24px;
   text-align: center;
-  background: var(--color-card-highlight, #f7ffd1);
+  background: var(--empty-asset-surface, #f7ffd1);
 }
 
 .empty-asset-card__heading {
   font-size: 16px;
   font-weight: 700;
-  color: var(--color-mint-deep, #16281c);
+  color: var(--empty-asset-heading, #16281c);
 }
 
 .empty-asset-card__desc {
   margin-bottom: 8px;
   font-size: 13px;
   line-height: 1.5;
-  color: var(--color-mint-deep, #16281c);
+  color: var(--empty-asset-heading, #16281c);
   opacity: 0.7;
 }
 </style>

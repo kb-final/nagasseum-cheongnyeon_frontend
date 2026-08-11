@@ -51,19 +51,17 @@ const tiles = computed(() => [
 }
 
 /*
-  글자색 두 단계. 금액은 --ink, 라벨과 보조 설명은 --ink-muted.
+  글자색 두 단계. 금액은 진하게, 라벨과 보조 설명은 흐리게.
   opacity 대신 색을 직접 준다. 투명도로 흐리게 하면 배경색이 바뀔 때 같이 흔들린다.
+  (main.css의 [data-theme] 블록에서 테마별 값을 정의한다.)
 */
 .asset-summary-grid__tile {
-  --ink: #12281c;
-  --ink-muted: #6f8b79;
-
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 8px;
   padding: 10px;
-  border-radius: 0;
-  background: var(--color-mint-pale, #cdedd3);
+  border-radius: 16px;
+  background: var(--asset-tile-surface, #cdedd3);
   letter-spacing: 0.02em;
   /* 루트에서 상속되는 26.1px 고정 줄 높이를 글자 크기에 맞춰 다시 계산시킨다. */
   line-height: 1.25;
@@ -75,14 +73,14 @@ const tiles = computed(() => [
 */
 .asset-summary-grid__label {
   font-size: 12px;
-  color: #4f6f5b;
+  color: var(--asset-tile-label, #4f6f5b);
 }
 
 .asset-summary-grid__amount {
   overflow: hidden;
   font-size: 14px;
   font-weight: 700;
-  color: var(--ink);
+  color: var(--climb-card-ink, #12281c);
   text-overflow: ellipsis;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
@@ -97,6 +95,6 @@ const tiles = computed(() => [
 
 .asset-summary-grid__sub {
   font-size: 11px;
-  color: var(--ink-muted);
+  color: var(--asset-tile-ink-muted, #6f8b79);
 }
 </style>

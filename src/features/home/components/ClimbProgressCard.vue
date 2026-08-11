@@ -2,7 +2,6 @@
 import { computed } from 'vue'
 
 import BaseCard from '@/shared/components/atoms/base/card/BaseCard.vue'
-import { formatWon, formatEok } from '@/shared/utils/formatter'
 
 import climbBackground from '@/assets/images/climb-bg.png'
 import climberImage from '@/assets/images/climber.png'
@@ -16,7 +15,7 @@ const props = defineProps({
   goal: { type: Object, default: null },
 })
 
-defineEmits(['view-goal', 'create-goal'])
+defineEmits(['create-goal'])
 
 const hasGoal = computed(() => Boolean(props.goal && props.climb))
 
@@ -71,37 +70,6 @@ const climberPosition = computed(() => {
 /* ------------------------------------------------------------------ */
 
 /**
- * 카드 한 줄에 들어갈 만큼 줄인 지역명.
- *
- * <p>서버는 "서울특별시 강남구"처럼 시도까지 붙여서 준다. 한 줄에 주거형태·거래유형·
- * 금액까지 같이 들어가야 해서 시도는 뗀다.
- *
- * <pre>
- *   서울특별시 강남구      → 강남구
- *   경기도 부천시         → 부천시
- *   경기도 고양시 덕양구    → 고양시 덕양구
- * </pre>
- */
-function shortRegionName(regionName) {
-  const parts = String(regionName ?? '')
-    .trim()
-    .split(/\s+/)
-
-  return parts.length > 1 ? parts.slice(1).join(' ') : parts.join(' ')
-}
-
-const goalTitle = computed(() =>
-  hasGoal.value
-    ? `${shortRegionName(props.goal.regionName)} ${props.goal.housingType} ${props.goal.dealType} ${formatEok(props.goal.targetAmount)}`
-    : '',
-)
-
-// "2028-03-31" -> "2028.03"
-const targetEta = computed(() =>
-  hasGoal.value ? props.goal.targetDate.slice(0, 7).replace('-', '.') : '',
-)
-
-/**
  * 게이지 10칸의 상태.
  *
  * <p>다 채운 칸은 진한 초록, 채우는 중인 한 칸은 노랑, 나머지는 빈 칸이다.
@@ -148,27 +116,17 @@ const segments = computed(() => {
 
       <template v-else>
         <div class="climb-card__status">
-          <span>정상까지 {{ 100 - progress }}% 남음</span>
+          <span>목표 금액의 {{ progress }}% 달성</span>
         </div>
 
-        <button type="button" class="climb-card__goal-summary" @click="$emit('view-goal')">
-          <div class="climb-card__goal-summary-top">
-            <span class="climb-card__goal-title">▲ {{ goalTitle }}</span>
-            <span class="climb-card__goal-detail-link">자세히 ▷</span>
-          </div>
-          <p class="climb-card__goal-remaining">
-            정상까지 {{ formatWon(climb.remainingAmount) }} · ETA {{ targetEta }}
-          </p>
-          <div class="climb-card__segments">
-            <span
-              v-for="(state, i) in segments"
-              :key="i"
-              class="climb-card__segment"
-              :class="`climb-card__segment--${state}`"
-            />
-            <span class="climb-card__percent">{{ progress }}%</span>
-          </div>
-        </button>
+        <div class="climb-card__segments">
+          <span
+            v-for="(state, i) in segments"
+            :key="i"
+            class="climb-card__segment"
+            :class="`climb-card__segment--${state}`"
+          />
+        </div>
       </template>
     </BaseCard>
   </div>
@@ -179,12 +137,18 @@ const segments = computed(() => {
   display: flex;
   flex-direction: column;
   gap: 0;
+  /* 일러스트+진행바 띠가 시각적으로 하나의 카드라, 그림자도 둘을 합친 바깥 테두리 기준으로
+     한 번만 준다. 안쪽 BaseCard(.climb-card__body) 자체 그림자는 아래에서 꺼둔다. */
+  border-radius: 16px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
 }
 
 /* ── 일러스트 ─────────────────────────────────────────────── */
 
 .climb-card__illustration {
   position: relative;
+  overflow: hidden;
+  border-radius: 16px 16px 0 0;
   /* 배경 이미지가 높이를 정한다. 값을 따로 주면 이미지와 좌표가 어긋난다. */
   line-height: 0;
 }
@@ -230,21 +194,23 @@ const segments = computed(() => {
 
 /*
   글자색 두 단계.
-    --ink        목표 제목, 퍼센트   제일 진하게
-    --ink-muted  보조 정보           회녹색
+    --climb-card-ink        목표 제목, 퍼센트   제일 진하게
+    --climb-card-ink-muted  보조 정보           회녹색
 
   opacity 대신 색을 직접 준다. 투명도로 흐리게 하면 배경색이 바뀔 때 같이 흔들린다.
+  (main.css의 [data-theme] 블록에서 테마별 값을 정의한다.)
 */
 .climb-card__body {
-  --ink: #12281c;
-  --ink-muted: #6f8b79;
-
   display: flex;
   flex-direction: column;
   gap: 6px;
   padding: 12px 14px;
-  background: var(--color-mint-pale, #cdedd3);
-  border-radius: 0;
+  background: var(--climb-card-surface, #cdedd3);
+  /* 위쪽은 일러스트와 맞닿아 이미 둥글어서(.climb-card__illustration) 각지게 두고,
+     카드 바깥 아래쪽 두 모서리만 다른 카드처럼 둥글린다. */
+  border-radius: 0 0 16px 16px;
+  /* 그림자는 .climb-progress-card가 일러스트까지 합쳐 한 번만 준다. */
+  box-shadow: none;
   letter-spacing: 0.02em;
   /*
     루트의 145%는 18px 기준으로 계산된 26.1px이 그대로 상속된다. 여기 글자는 11~15px이라
@@ -259,8 +225,8 @@ const segments = computed(() => {
   flex: none;
   padding: 3px 8px;
   border-radius: 999px;
-  background: var(--ink);
-  color: #ffd939;
+  background: var(--climb-card-ink, #12281c);
+  color: var(--color-accent, #ffd939);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -269,7 +235,7 @@ const segments = computed(() => {
 .climb-card__quest-label {
   flex: 1;
   margin-left: 8px;
-  color: var(--ink-muted);
+  color: var(--climb-card-ink-muted, #6f8b79);
 }
 
 .climb-card__empty {
@@ -283,13 +249,13 @@ const segments = computed(() => {
   margin: 0;
   font-size: 15px;
   font-weight: 700;
-  color: var(--ink);
+  color: var(--climb-card-ink, #12281c);
 }
 
 .climb-card__empty-desc {
   margin: 0;
   font-size: 11px;
-  color: var(--ink-muted);
+  color: var(--climb-card-ink-muted, #6f8b79);
 }
 
 /*
@@ -301,8 +267,8 @@ const segments = computed(() => {
   padding: 9px 0;
   border: none;
   border-radius: 999px;
-  background: var(--ink);
-  color: #ffd939;
+  background: var(--climb-card-ink, #12281c);
+  color: var(--color-accent, #ffd939);
   font: inherit;
   font-size: 13.5px;
   font-weight: 700;
@@ -311,58 +277,15 @@ const segments = computed(() => {
 
 /* ── 목표가 있을 때 ──────────────────────────────────────── */
 
+/* 목표 제목/자세히/남은 금액은 진행 중인 목표 카드(ActiveGoalCard)로 옮겼다.
+   여기는 달성률 한 줄 + 게이지만 남는다. */
 .climb-card__status {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  /* 목표 요약과 나누는 점선. 색 블록을 하나 더 두는 것보다 가볍다. */
-  padding-bottom: 6px;
-  border-bottom: 2px dashed #a9c6af;
-  font-size: 12px;
-  color: var(--ink-muted);
-}
-
-.climb-card__goal-summary {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  width: 100%;
-  /* 브라우저가 button에 기본 좌우 여백을 준다. 안 지우면 점선 위 글자보다 안쪽으로 밀린다. */
-  padding: 0;
-  border: none;
-  background: transparent;
-  font: inherit;
-  color: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-
-/* 이 카드에서 제일 큰 글자. 목표가 무엇인지가 한눈에 들어와야 한다. */
-.climb-card__goal-summary-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  font-size: 17px;
+  font-size: 13px;
   font-weight: 700;
-  color: var(--ink);
-}
-
-.climb-card__goal-detail-link {
-  flex: none;
-  font-size: 11.5px;
-  font-weight: 400;
-  color: var(--ink-muted);
-}
-
-/*
-  p의 기본 위아래 여백(1em)이 살아 있으면 gap 위에 한 줄이 더 붙는다.
-  점선 아래만 한 칸 띄운 것처럼 보이던 원인이다.
-*/
-.climb-card__goal-remaining {
-  margin: 0;
-  font-size: 11px;
-  color: var(--ink-muted);
+  color: var(--climb-card-ink, #12281c);
 }
 
 /* 퍼센트를 게이지 오른쪽 끝에 붙인다. 아래에 따로 두면 줄만 하나 늘어난다. */
@@ -375,26 +298,18 @@ const segments = computed(() => {
 .climb-card__segment {
   flex: 1;
   height: 11px;
+  border-radius: 2px;
 }
 
 .climb-card__segment--empty {
-  background: #a9c6af;
+  background: var(--color-progress-inactive, #a9c6af);
 }
 
 .climb-card__segment--filled {
-  background: var(--color-progress-fill, #1d6b3f);
+  background: var(--color-progress-active, #1d6b3f);
 }
 
 .climb-card__segment--current {
-  background: #ffd939;
-}
-
-.climb-card__percent {
-  flex: none;
-  margin-left: 5px;
-  font-size: 11.5px;
-  font-weight: 700;
-  color: var(--ink);
-  font-variant-numeric: tabular-nums;
+  background: var(--color-accent, #ffd939);
 }
 </style>

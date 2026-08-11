@@ -33,7 +33,7 @@ defineEmits(['create-goal'])
 .empty-goal__title {
   font-size: 15px;
   font-weight: 700;
-  color: var(--text-h, #ffffff);
+  color: var(--color-text-primary, #ffffff);
 }
 
 .empty-goal__card {
@@ -54,13 +54,13 @@ defineEmits(['create-goal'])
 .empty-goal__heading {
   font-size: 16px;
   font-weight: 700;
-  color: var(--text-h, #ffffff);
+  color: var(--color-text-primary, #ffffff);
 }
 
 .empty-goal__desc {
   margin-bottom: 8px;
   font-size: 13px;
   line-height: 1.5;
-  color: var(--text, #9aa09a);
+  color: var(--color-text-secondary, #9aa09a);
 }
 </style>

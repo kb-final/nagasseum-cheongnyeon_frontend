@@ -30,7 +30,7 @@ defineProps({
   overflow: hidden;
   font-size: 20px;
   font-weight: 700;
-  color: var(--text-h, #ffffff);
+  color: var(--color-text-primary, #ffffff);
   text-overflow: ellipsis;
   white-space: nowrap;
 }

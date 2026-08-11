@@ -144,7 +144,7 @@ const diffAmountText = computed(() => {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  background: var(--color-card-highlight, #f7ffd1);
+  background: var(--color-surface, #f7ffd1);
 }
 
 .market-alert__header {
@@ -156,13 +156,13 @@ const diffAmountText = computed(() => {
 .market-alert__title {
   font-size: 15px;
   font-weight: 700;
-  color: var(--color-mint-deep, #16281c);
+  color: var(--color-text-primary, #16281c);
 }
 
 .market-alert__updated {
   margin: 0;
   font-size: 12px;
-  color: var(--color-mint-deep, #16281c);
+  color: var(--color-text-primary, #16281c);
   text-align: right;
   opacity: 0.7;
 }
@@ -170,14 +170,14 @@ const diffAmountText = computed(() => {
 .market-alert__subtitle {
   margin-top: -4px;
   font-size: 12px;
-  color: var(--color-mint-deep, #16281c);
+  color: var(--color-text-primary, #16281c);
   opacity: 0.7;
 }
 
 .market-alert__hint {
   margin: 0;
   font-size: 12px;
-  color: var(--color-mint-deep, #16281c);
+  color: var(--color-text-primary, #16281c);
   text-align: center;
   opacity: 0.7;
 }
@@ -214,7 +214,7 @@ const diffAmountText = computed(() => {
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background: var(--color-card-highlight, #f7ffd1);
+  background: var(--color-surface, #f7ffd1);
   border: 2px solid rgba(22, 40, 28, 0.3);
 }
 
@@ -244,7 +244,7 @@ const diffAmountText = computed(() => {
   align-items: center;
   font-size: 11px;
   line-height: 1.3;
-  color: var(--color-mint-deep, #16281c);
+  color: var(--color-text-primary, #16281c);
   text-align: center;
   white-space: nowrap;
   opacity: 0.7;
@@ -257,13 +257,13 @@ const diffAmountText = computed(() => {
 .market-alert__point-amount {
   font-size: 13px;
   font-weight: 700;
-  color: var(--color-mint-deep, #16281c);
+  color: var(--color-text-primary, #16281c);
   white-space: nowrap;
 }
 
 .market-alert__diff {
   font-size: 13px;
-  color: var(--color-mint-deep, #16281c);
+  color: var(--color-text-primary, #16281c);
 }
 
 .market-alert__diff-amount {
@@ -283,13 +283,13 @@ const diffAmountText = computed(() => {
   align-items: center;
   gap: 8px;
   padding: 10px;
-  background: var(--color-card-sub, #effab8);
+  background: var(--color-app-bg, #effab8);
   border-radius: 10px;
 }
 
 .market-alert__compare-arrow {
   flex-shrink: 0;
-  color: var(--color-mint-deep, #16281c);
+  color: var(--color-text-primary, #16281c);
   opacity: 0.7;
   font-size: 13px;
 }
@@ -304,19 +304,24 @@ const diffAmountText = computed(() => {
 
 .market-alert__compare-label {
   font-size: 11px;
-  color: var(--color-mint-deep, #16281c);
+  color: var(--color-text-primary, #16281c);
   opacity: 0.7;
 }
 
 .market-alert__compare-value {
   font-size: 15px;
   font-weight: 700;
-  color: var(--color-mint-deep, #16281c);
+  color: var(--color-text-primary, #16281c);
+}
+
+/* "반영 시" 쪽만 초록으로 강조한다(레퍼런스 이미지 기준). */
+.market-alert__compare-box:last-child .market-alert__compare-value {
+  color: var(--color-primary, #16281c);
 }
 
 .market-alert__compare-eta {
   font-size: 11px;
-  color: var(--color-mint-deep, #16281c);
+  color: var(--color-text-primary, #16281c);
   opacity: 0.7;
 }
 </style>

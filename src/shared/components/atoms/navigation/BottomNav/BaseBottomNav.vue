@@ -47,13 +47,13 @@ defineEmits(['update:modelValue'])
   border: none;
   border-radius: 22px;
   background: transparent;
-  color: var(--color-nav-inactive-icon, #3e5a49);
+  color: var(--color-nav-inactive, #3e5a49);
   cursor: pointer;
 }
 
 .bottom-nav__item--active {
   background: var(--color-nav-active-bg, #e3ffe8);
-  color: var(--color-nav-active-icon, #16281c);
+  color: var(--color-nav-active, #16281c);
 }
 
 .bottom-nav__icon {
