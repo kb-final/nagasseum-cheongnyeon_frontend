@@ -149,7 +149,7 @@ const label = computed(() => TYPE_LABELS[props.type] || props.type || '기타')
 
 .item-tile__amount {
   flex: none;
-  color: var(--c-ink);
+  color: var(--c-value);
   font-size: 12.5px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;

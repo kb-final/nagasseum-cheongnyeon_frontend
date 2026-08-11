@@ -74,9 +74,9 @@ const syncedAtLabel = computed(() => {
   align-items: center;
   gap: 12px;
   padding: 14px 16px;
-  border: 1px solid var(--c-accent-mid);
+  border: 1px solid var(--c-hero-line);
   border-radius: 14px;
-  background: var(--c-accent-soft);
+  background: var(--c-hero-bg);
   line-height: 1.3;
 }
 
@@ -94,7 +94,7 @@ const syncedAtLabel = computed(() => {
   gap: 5px;
   font-size: 12px;
   font-weight: 700;
-  color: var(--c-accent);
+  color: var(--c-hero-ink);
 }
 
 .asset-total-card__label-icon {
@@ -105,7 +105,7 @@ const syncedAtLabel = computed(() => {
 
 /* 원래 이름은 괄호 안에 작게.*/
 .asset-total-card__label-sub {
-  color: var(--c-ink-muted);
+  color: var(--c-hero-muted);
   font-weight: 400;
 }
 
@@ -115,13 +115,13 @@ const syncedAtLabel = computed(() => {
   font-size: 26px;
   line-height: 1.1;
   font-weight: 700;
-  color: var(--c-ink);
+  color: var(--c-hero-ink);
   font-variant-numeric: tabular-nums;
 }
 
 .asset-total-card__synced {
   font-size: 11px;
-  color: var(--c-ink-muted);
+  color: var(--c-hero-muted);
 }
 
 .asset-total-card :deep(.asset-total-card__refresh-btn) {
@@ -134,8 +134,8 @@ const syncedAtLabel = computed(() => {
   padding: 0 10px;
   border: none;
   border-radius: 8px;
-  background: var(--c-accent);
-  color: #ffffff;
+  background: var(--c-hero-btn-bg);
+  color: var(--c-hero-btn-ink);
   font-size: 11.5px;
   font-weight: 400;
 }
