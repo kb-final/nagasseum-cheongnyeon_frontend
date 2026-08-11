@@ -42,6 +42,15 @@ export function formatEok(amount) {
   return `${eok}억`
 }
 
+// "1억 2,000만원" 형태로 표기 (억 단위 몫 + 만원 단위 나머지). 나머지가 0이면 "1억"만 표기
+export function formatEokManwon(amount) {
+  const eok = Math.floor(amount / 100000000)
+  const manwon = Math.round((amount % 100000000) / 10000)
+
+  if (manwon === 0) return `${eok}억`
+  return `${eok}억 ${manwon.toLocaleString('ko-KR')}만원`
+}
+
 // "2027-08" -> "2027년 8월". null/undefined면 계산 불가 문구로 대체 (홈 화면 예상 달성 시점처럼 null이 올 수 있는 필드용)
 export function formatYearMonth(yearMonth, fallback = '예상 시점 계산 불가') {
   if (!yearMonth) return fallback

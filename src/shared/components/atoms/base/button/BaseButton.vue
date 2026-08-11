@@ -60,8 +60,8 @@ defineEmits(['click'])
 }
 
 .base-button--primary {
-  background: var(--accent, #aa3bff);
-  color: var(--color-mint-deep, #16281c);
+  background: var(--base-button-primary-bg, #e3ffe8);
+  color: var(--base-button-primary-text, #16281c);
 }
 
 .base-button--secondary {
@@ -70,8 +70,8 @@ defineEmits(['click'])
 }
 
 .base-button--highlight {
-  background: var(--color-card-highlight, #f7ffd1);
-  color: #111111;
+  background: var(--color-text-primary, #f7ffd1);
+  color: var(--color-app-bg, #111111);
 }
 
 .base-button--dark {

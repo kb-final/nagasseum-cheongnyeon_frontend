@@ -31,8 +31,8 @@ defineProps({
 }
 
 .base-badge--mint {
-  background: var(--color-mint-strong, #c1e8c8);
-  color: var(--color-mint-deep, #16281c);
+  background: var(--base-badge-mint-bg, #c1e8c8);
+  color: var(--base-badge-mint-text, #16281c);
 }
 
 .base-badge--neutral {

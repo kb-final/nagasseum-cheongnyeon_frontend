@@ -35,6 +35,46 @@ html {
   --color-kakao-bg: #fee500;
   --color-kakao-text: #191600;
 
+  /*
+    Light/Dark 테마 시맨틱 토큰. 여기 정의된 값은 JS 실행 전(초기 페인트) 안전망이며
+    실제 테마별 값은 아래 [data-theme] 블록에서 덮어쓴다. 기본값은 다크 기준.
+  */
+  --color-app-bg: #111111;
+  --color-surface: #161616;
+  --color-surface-soft: #cdedd3;
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #9aa09a;
+  --color-text-tertiary: #6f766d;
+  --color-primary: #1d6b3f;
+  --color-primary-soft: #e3ffe8;
+  --color-accent: #ffd939;
+  --color-border: #262626;
+  --color-progress-active: #1d6b3f;
+  --color-progress-inactive: #a9c6af;
+  --color-nav-active: #16281c;
+  --color-nav-inactive: #3e5a49;
+
+  /* 카드 없이 페이지 배경 위에 바로 놓이는 강조 제목/라벨용. 다크에서는 기존 밝은
+     민트색을 유지하고, 라이트에서는 밝은 배경에서도 읽히는 진한 초록을 쓴다. */
+  --color-heading-accent: #e3ffe8;
+
+  /* 카드마다 다크 모드에서만 고유한 색을 유지해야 하는 곳에 쓰는 전용 토큰 */
+  --climb-card-surface: #cdedd3;
+  --climb-card-ink: #12281c;
+  --climb-card-ink-muted: #6f8b79;
+  --asset-tile-surface: #cdedd3;
+  --asset-tile-label: #4f6f5b;
+  --asset-tile-ink-muted: #6f8b79;
+  --total-asset-surface: #f7ffd1;
+  --total-asset-label: #12281c;
+  --total-asset-detail: #8a8f63;
+  --empty-asset-surface: #f7ffd1;
+  --empty-asset-heading: #16281c;
+  --base-badge-mint-bg: #c1e8c8;
+  --base-badge-mint-text: #16281c;
+  --base-button-primary-bg: #e3ffe8;
+  --base-button-primary-text: #16281c;
+
   --sans: 'NeoDunggeunmo', system-ui, 'Segoe UI', Roboto, sans-serif;
 
   font: 18px/145% var(--sans);
@@ -50,6 +90,89 @@ html {
   @media (max-width: 1024px) {
     font-size: 16px;
   }
+}
+
+/*
+  실제 테마 전환은 <html data-theme="..."> 속성으로 이루어진다.
+  (src/shared/composables/useTheme.js) 다크 블록은 현재 화면과 동일하게,
+  라이트 블록은 homev2.png 레퍼런스 값으로 채운다.
+*/
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --color-app-bg: #111111;
+  --color-surface: #161616;
+  --color-surface-soft: #cdedd3;
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #9aa09a;
+  --color-text-tertiary: #6f766d;
+  --color-primary: #1d6b3f;
+  --color-primary-soft: #e3ffe8;
+  --color-accent: #ffd939;
+  --color-border: #262626;
+  --color-progress-active: #1d6b3f;
+  --color-progress-inactive: #a9c6af;
+  --color-nav-bg: #a6c7b7;
+  --color-nav-active-bg: #e3ffe8;
+  --color-nav-active: #16281c;
+  --color-nav-inactive: #3e5a49;
+
+  --color-heading-accent: #e3ffe8;
+
+  --climb-card-surface: #cdedd3;
+  --climb-card-ink: #12281c;
+  --climb-card-ink-muted: #6f8b79;
+  --asset-tile-surface: #cdedd3;
+  --asset-tile-label: #4f6f5b;
+  --asset-tile-ink-muted: #6f8b79;
+  --total-asset-surface: #f7ffd1;
+  --total-asset-label: #12281c;
+  --total-asset-detail: #8a8f63;
+  --empty-asset-surface: #f7ffd1;
+  --empty-asset-heading: #16281c;
+  --base-badge-mint-bg: #c1e8c8;
+  --base-badge-mint-text: #16281c;
+  --base-button-primary-bg: #e3ffe8;
+  --base-button-primary-text: #16281c;
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --color-app-bg: #f7f8f4;
+  --color-surface: #ffffff;
+  --color-surface-soft: #f6f3c4;
+  --color-text-primary: #10130f;
+  --color-text-secondary: #5b6358;
+  --color-text-tertiary: #8f968c;
+  --color-primary: #1d6b3f;
+  --color-primary-soft: #e8f4ea;
+  --color-accent: #ffd939;
+  --color-border: #e3e7e0;
+  --color-progress-active: #1d6b3f;
+  --color-progress-inactive: #a9c9b0;
+  --color-nav-bg: #ffffff;
+  --color-nav-active-bg: #e8f4ea;
+  --color-nav-active: #1d6b3f;
+  --color-nav-inactive: #6f766d;
+
+  --color-heading-accent: #1d6b3f;
+
+  --climb-card-surface: #f6f3c4;
+  --climb-card-ink: #10130f;
+  --climb-card-ink-muted: #5b6358;
+  --asset-tile-surface: #ffffff;
+  --asset-tile-label: #8f968c;
+  --asset-tile-ink-muted: #8f968c;
+  --total-asset-surface: #ffffff;
+  --total-asset-label: #5b6358;
+  --total-asset-detail: #8f968c;
+  --empty-asset-surface: #ffffff;
+  --empty-asset-heading: #10130f;
+  --base-badge-mint-bg: #ffd939;
+  --base-badge-mint-text: #10130f;
+  --base-button-primary-bg: #1d6b3f;
+  --base-button-primary-text: #ffffff;
 }
 
 * {
@@ -70,7 +193,7 @@ body {
 h1,
 h2 {
   font-weight: 500;
-  color: var(--text-h);
+  color: var(--color-text-primary);
 }
 
 /* 카드가 등장할 때 공통으로 쓰는 페이드 + 살짝 떠오르는 진입 모션.

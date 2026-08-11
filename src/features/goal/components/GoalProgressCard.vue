@@ -77,7 +77,7 @@ function segmentModifier(index) {
   gap: 12px;
   padding: 16px;
   border-radius: 16px;
-  background: var(--accent, #e3ffe8);
+  background: var(--color-surface, #161616);
 }
 
 .goal-progress-card__header {
@@ -88,14 +88,14 @@ function segmentModifier(index) {
 
 .goal-progress-card__label {
   font-size: 13px;
-  color: #2f6b4f;
+  color: var(--color-text-secondary, #9aa09a);
 }
 
 .goal-progress-card__rate {
   font-size: 26px;
   font-weight: 400;
   line-height: 1;
-  color: #0b3b24;
+  color: var(--color-primary, #1d6b3f);
 }
 
 .goal-progress-card__segments {
@@ -110,15 +110,15 @@ function segmentModifier(index) {
 }
 
 .goal-progress-card__segment--filled {
-  background: var(--color-progress-fill, #1d6b3f);
+  background: var(--color-progress-active, #1d6b3f);
 }
 
 .goal-progress-card__segment--current {
-  background: #ffd939;
+  background: var(--color-accent, #ffd939);
 }
 
 .goal-progress-card__segment--empty {
-  background: #b6d4bd;
+  background: var(--color-progress-inactive, #b6d4bd);
 }
 
 .goal-progress-card__stats {
@@ -133,23 +133,29 @@ function segmentModifier(index) {
   flex-direction: column;
   gap: 4px;
   padding: 10px 12px;
-  border: 1px solid #ebebeb;
+  border: 1px solid var(--color-border, #ebebeb);
   border-radius: 10px;
-  background: #ffffff;
+  background: var(--color-app-bg, #ffffff);
 }
 
+/* 남은 금액 박스만 옅은 초록 배경으로 강조한다. */
 .goal-progress-card__stat--wide {
   flex-basis: 100%;
+  background: var(--color-primary-soft, #e3ffe8);
+}
+
+.goal-progress-card__stat--wide .goal-progress-card__stat-value {
+  color: var(--color-primary, #1d6b3f);
 }
 
 .goal-progress-card__stat-label {
   font-size: 11px;
-  color: #2f6b4f;
+  color: var(--color-text-tertiary, #2f6b4f);
 }
 
 .goal-progress-card__stat-value {
   font-size: 15px;
   font-weight: 400;
-  color: #0b3b24;
+  color: var(--color-text-primary, #0b3b24);
 }
 </style>

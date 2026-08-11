@@ -152,7 +152,10 @@ function forecastNote(forecast) {
       </li>
     </ul>
 
-    <BaseButton variant="highlight" @click="$emit('change-saving')"
+    <BaseButton
+      variant="highlight"
+      class="saving-forecast-card__cta"
+      @click="$emit('change-saving')"
       >고정 저축액 변경하기</BaseButton
     >
   </section>
@@ -164,16 +167,16 @@ function forecastNote(forecast) {
   flex-direction: column;
   gap: 16px;
   padding: 16px;
-  border: 1px solid var(--border, #262626);
+  border: 1px solid var(--color-border, #262626);
   border-radius: 16px;
-  background: #272727;
+  background: var(--color-surface, #272727);
 }
 
 .saving-forecast-card__title {
   margin: 0;
   font-size: 14px;
   font-weight: 400;
-  color: var(--accent, #e3ffe8);
+  color: var(--color-heading-accent, #e3ffe8);
 }
 
 .saving-forecast-card__status {
@@ -183,7 +186,7 @@ function forecastNote(forecast) {
   margin: 0;
   padding: 12px 14px;
   border-radius: 12px;
-  background: var(--color-card-highlight, #f7ffd1);
+  background: var(--color-app-bg, #f7ffd1);
 }
 
 .saving-forecast-card__status-row {
@@ -194,20 +197,20 @@ function forecastNote(forecast) {
 }
 
 .saving-forecast-card__status-row dt {
-  color: #3f3f3f;
+  color: var(--color-text-secondary, #3f3f3f);
 }
 
 .saving-forecast-card__status-row dd {
   margin: 0;
-  color: #727272;
+  color: var(--color-text-primary, #727272);
 }
 
 .saving-forecast-card__status-value--average {
-  color: #29d23a;
+  color: var(--color-primary, #29d23a);
 }
 
 .saving-forecast-card__status-value--latest {
-  color: #237f33;
+  color: var(--color-primary, #237f33);
 }
 
 .saving-forecast-card__gauge {
@@ -217,7 +220,7 @@ function forecastNote(forecast) {
 .saving-forecast-card__track {
   position: relative;
   height: 6px;
-  background: #243624;
+  background: var(--color-progress-inactive, #243624);
 }
 
 .saving-forecast-card__fill {
@@ -225,7 +228,7 @@ function forecastNote(forecast) {
   top: 0;
   left: 0;
   height: 100%;
-  background: #9fd8ab;
+  background: var(--color-progress-active, #9fd8ab);
 }
 
 .saving-forecast-card__runner {
@@ -243,7 +246,7 @@ function forecastNote(forecast) {
   width: 12px;
   height: 14px;
   border: 1px solid rgba(16, 19, 15, 0.14);
-  background: #9fd8ab;
+  background: var(--color-progress-active, #9fd8ab);
   transform: translateX(-50%);
 }
 
@@ -274,13 +277,13 @@ function forecastNote(forecast) {
 /* 등반가 머리 위에 오도록 마커(28px) 높이만큼 띄운다 */
 .saving-forecast-card__latest-label {
   top: -34px;
-  color: #ffd939;
+  color: var(--color-accent, #ffd939);
 }
 
 .saving-forecast-card__average-label,
 .saving-forecast-card__flag-label {
   top: 16px;
-  color: #888888;
+  color: var(--color-text-tertiary, #888888);
 }
 
 .saving-forecast-card__forecasts {
@@ -301,18 +304,24 @@ function forecastNote(forecast) {
 
 .saving-forecast-card__forecast-label {
   font-size: 12px;
-  color: #999999;
+  color: var(--color-text-tertiary, #999999);
 }
 
 .saving-forecast-card__forecast-date {
   font-size: 13px;
-  color: #f5f5f5;
+  color: var(--color-text-primary, #f5f5f5);
 }
 
 .saving-forecast-card__forecast-note {
   margin: 2px 0 0;
   font-size: 11px;
-  color: #7fe3a0;
+  color: var(--color-primary, #7fe3a0);
   text-align: right;
+}
+
+.saving-forecast-card :deep(.saving-forecast-card__cta) {
+  height: 46px;
+  background: var(--color-primary-soft, #e8f4ea);
+  color: var(--color-primary, #1d6b3f);
 }
 </style>
