@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 import AppHeader from '@/shared/components/molecules/AppHeader.vue'
+import BaseCard from '@/shared/components/atoms/base/card/BaseCard.vue'
 import BaseToggle from '@/shared/components/atoms/form/Toggle/BaseToggle.vue'
 import BaseModal from '@/shared/components/atoms/feedback/Modal/BaseModal.vue'
 import BaseButton from '@/shared/components/atoms/base/button/BaseButton.vue'
@@ -106,63 +107,73 @@ function confirmLogout() {
 
     <section class="my-page-view__section">
       <h2 class="my-page-view__section-title">계정 관리</h2>
-      <button type="button" class="my-page-view__row" @click="goToEditInfo">
-        <span class="my-page-view__row-label">회원정보 수정</span>
-        <BaseChevronIcon class="my-page-view__chevron" />
-      </button>
-      <button type="button" class="my-page-view__row" @click="openLogoutModal">
-        <span class="my-page-view__row-label">로그아웃</span>
-        <BaseChevronIcon class="my-page-view__chevron" />
-      </button>
-      <button type="button" class="my-page-view__row" @click="goToAssetLink">
-        <span class="my-page-view__row-label">자산 연동 관리</span>
-        <BaseChevronIcon class="my-page-view__chevron" />
-      </button>
+      <BaseCard class="my-page-view__card">
+        <button type="button" class="my-page-view__row" @click="goToEditInfo">
+          <span class="my-page-view__row-label">회원정보 수정</span>
+          <BaseChevronIcon class="my-page-view__chevron" />
+        </button>
+        <button type="button" class="my-page-view__row" @click="openLogoutModal">
+          <span class="my-page-view__row-label">로그아웃</span>
+          <BaseChevronIcon class="my-page-view__chevron" />
+        </button>
+        <button type="button" class="my-page-view__row" @click="goToAssetLink">
+          <span class="my-page-view__row-label">자산 연동 관리</span>
+          <BaseChevronIcon class="my-page-view__chevron" />
+        </button>
+      </BaseCard>
     </section>
 
     <section class="my-page-view__section">
       <h2 class="my-page-view__section-title">알림 설정</h2>
-      <div class="my-page-view__row my-page-view__row--toggle">
-        <div class="my-page-view__row-text">
-          <span class="my-page-view__row-label">알림 받기</span>
-          <span class="my-page-view__row-desc">저축 현황, 정책 마감 등 주요 소식을 알려드려요</span>
+      <BaseCard class="my-page-view__card">
+        <div class="my-page-view__row my-page-view__row--toggle">
+          <div class="my-page-view__row-text">
+            <span class="my-page-view__row-label">알림 받기</span>
+            <span class="my-page-view__row-desc"
+              >저축 현황, 정책 마감 등 주요 소식을 알려드려요</span
+            >
+          </div>
+          <BaseToggle v-model="notificationAgreed" />
         </div>
-        <BaseToggle v-model="notificationAgreed" />
-      </div>
-      <div class="my-page-view__row my-page-view__row--toggle">
-        <div class="my-page-view__row-text">
-          <span class="my-page-view__row-label">[선택] 또래 비교 데이터 제공</span>
-          <span class="my-page-view__row-desc">또래 등반 통계에 익명으로 활용돼요</span>
+        <div class="my-page-view__row my-page-view__row--toggle">
+          <div class="my-page-view__row-text">
+            <span class="my-page-view__row-label">[선택] 또래 비교 데이터 제공</span>
+            <span class="my-page-view__row-desc">또래 등반 통계에 익명으로 활용돼요</span>
+          </div>
+          <BaseToggle v-model="compareDataAgreed" />
         </div>
-        <BaseToggle v-model="compareDataAgreed" />
-      </div>
+      </BaseCard>
     </section>
 
     <section class="my-page-view__section">
       <h2 class="my-page-view__section-title">테마 설정</h2>
-      <div class="my-page-view__row my-page-view__row--toggle">
-        <div class="my-page-view__row-text">
-          <span class="my-page-view__row-label">다크 모드</span>
-          <span class="my-page-view__row-desc">Light/Dark 테마를 전환해요</span>
+      <BaseCard class="my-page-view__card">
+        <div class="my-page-view__row my-page-view__row--toggle">
+          <div class="my-page-view__row-text">
+            <span class="my-page-view__row-label">다크 모드</span>
+            <span class="my-page-view__row-desc">Light/Dark 테마를 전환해요</span>
+          </div>
+          <BaseToggle v-model="isDarkTheme" />
         </div>
-        <BaseToggle v-model="isDarkTheme" />
-      </div>
+      </BaseCard>
     </section>
 
     <section class="my-page-view__section">
       <h2 class="my-page-view__section-title">앱 정보</h2>
-      <router-link :to="{ name: 'terms' }" class="my-page-view__row">
-        <span class="my-page-view__row-label">이용약관</span>
-        <BaseChevronIcon class="my-page-view__chevron" />
-      </router-link>
-      <router-link :to="{ name: 'privacy' }" class="my-page-view__row">
-        <span class="my-page-view__row-label">개인정보 처리방침</span>
-        <BaseChevronIcon class="my-page-view__chevron" />
-      </router-link>
-      <div class="my-page-view__row my-page-view__row--static">
-        <span class="my-page-view__row-label">앱 버전</span>
-        <span class="my-page-view__row-value">1.0.0</span>
-      </div>
+      <BaseCard class="my-page-view__card">
+        <router-link :to="{ name: 'terms' }" class="my-page-view__row">
+          <span class="my-page-view__row-label">이용약관</span>
+          <BaseChevronIcon class="my-page-view__chevron" />
+        </router-link>
+        <router-link :to="{ name: 'privacy' }" class="my-page-view__row">
+          <span class="my-page-view__row-label">개인정보 처리방침</span>
+          <BaseChevronIcon class="my-page-view__chevron" />
+        </router-link>
+        <div class="my-page-view__row my-page-view__row--static">
+          <span class="my-page-view__row-label">앱 버전</span>
+          <span class="my-page-view__row-value">1.0.0</span>
+        </div>
+      </BaseCard>
     </section>
 
     <BaseModal v-model="isLogoutModalOpen" title="로그아웃 하시겠어요?">
@@ -280,11 +291,18 @@ function confirmLogout() {
 }
 
 .my-page-view__section-title {
-  margin: 0 0 4px;
+  margin: 0 0 8px;
   padding: 0 4px;
   font-size: 12.3px;
   font-weight: 400;
-  color: var(--color-heading-accent, #c1e8c8);
+  color: var(--color-text-secondary, #c1e8c8);
+}
+
+/* 계정 관리/알림 설정/앱 정보 등 행을 묶는 흰 카드. BaseCard가 이미 배경/모서리/그림자를 준다. */
+.my-page-view__card {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 20px;
 }
 
 .my-page-view__row {
@@ -292,13 +310,17 @@ function confirmLogout() {
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: 16px 4px;
+  padding: 16px 0;
   border: none;
-  border-top: 1px solid var(--color-border, #262626);
   background: none;
   color: inherit;
   text-decoration: none;
   cursor: pointer;
+}
+
+/* 카드 안에서 행끼리만 구분선을 두고, 첫 행 위에는 선을 두지 않는다. */
+.my-page-view__row + .my-page-view__row {
+  border-top: 1px solid var(--color-border, #262626);
 }
 
 .my-page-view__row--static {
