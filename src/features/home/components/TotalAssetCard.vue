@@ -58,9 +58,9 @@ const amount = computed(() => formatNumber(props.assetSummary.totalAssets))
 .total-asset-card {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 12px;
   padding: 12px 14px;
-  border-radius: 0;
+  border-radius: 16px;
   background: var(--total-asset-surface, #f7ffd1);
   letter-spacing: 0.02em;
   /*
@@ -128,7 +128,7 @@ const amount = computed(() => formatNumber(props.assetSummary.totalAssets))
   width: auto;
   height: 30px;
   padding: 0 12px;
-  border-radius: 0;
+  border-radius: 999px;
   background: var(--climb-card-ink, #12281c);
   color: var(--total-asset-surface, #f7ffd1);
   font-size: 12px;

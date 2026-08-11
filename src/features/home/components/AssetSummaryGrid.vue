@@ -58,9 +58,9 @@ const tiles = computed(() => [
 .asset-summary-grid__tile {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 8px;
   padding: 10px;
-  border-radius: 0;
+  border-radius: 16px;
   background: var(--asset-tile-surface, #cdedd3);
   letter-spacing: 0.02em;
   /* 루트에서 상속되는 26.1px 고정 줄 높이를 글자 크기에 맞춰 다시 계산시킨다. */

@@ -9,6 +9,7 @@ import { useMemberStore } from '@/features/member/store/memberStore'
 import { useAssetStore, FLOW_CONTEXT } from '@/features/asset'
 import GreetingHeader from '@/features/home/components/GreetingHeader.vue'
 import ClimbProgressCard from '@/features/home/components/ClimbProgressCard.vue'
+import ActiveGoalCard from '@/features/home/components/ActiveGoalCard.vue'
 import TotalAssetCard from '@/features/home/components/TotalAssetCard.vue'
 import AssetSummaryGrid from '@/features/home/components/AssetSummaryGrid.vue'
 import EmptyAssetCard from '@/features/home/components/EmptyAssetCard.vue'
@@ -50,9 +51,10 @@ function goToAssetLink() {
       <ClimbProgressCard
         :climb="homeStore.climb"
         :goal="homeStore.goal"
-        @view-goal="router.push(`/goals/${homeStore.goal.id}`)"
         @create-goal="router.push('/diagnosis')"
       />
+
+      <ActiveGoalCard v-if="homeStore.goal" :goal="homeStore.goal" :climb="homeStore.climb" />
 
       <template v-if="homeStore.assetSummary">
         <TotalAssetCard

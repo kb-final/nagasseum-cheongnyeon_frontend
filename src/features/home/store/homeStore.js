@@ -15,7 +15,7 @@ const PLACEHOLDER_MEMBER_BADGE = {
   hasUnreadNotification: true,
 }
 
-// GET /goals/summary 응답 -> ClimbProgressCard/EmptyGoalCard가 쓰는 goal 뷰모델
+// GET /goals/summary 응답 -> ClimbProgressCard/ActiveGoalCard가 쓰는 goal 뷰모델
 function toGoalViewModel(goalSummary) {
   return {
     id: goalSummary.goalId,
@@ -28,10 +28,11 @@ function toGoalViewModel(goalSummary) {
   }
 }
 
-// GET /goals/summary 응답 -> ClimbProgressCard가 쓰는 climb(달성률) 뷰모델
+// GET /goals/summary 응답 -> ClimbProgressCard/ActiveGoalCard가 쓰는 climb(달성률) 뷰모델
 function toClimbViewModel(goalSummary) {
   return {
     progressPercent: Math.round(goalSummary.progress.achievementRate),
+    currentAmount: goalSummary.progress.currentAmount,
     remainingAmount: goalSummary.progress.remainingAmount,
     // 최근 자산 증가액은 이번 API 명세에 없는 지표라 임시로 0 처리
     recentIncreaseAmount: 0,
