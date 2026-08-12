@@ -125,13 +125,13 @@ function handleSkip() {
   font-weight: 500;
   line-height: 1.44;
   letter-spacing: -0.4px;
-  color: var(--text-h, #ffffff);
+  color: var(--color-text-primary);
 }
 
 .deposit-info-view__subtitle {
   margin: 0;
   font-size: 13.1px;
-  color: var(--text, #9aa09a);
+  color: var(--color-text-secondary);
 }
 
 .deposit-info-view :deep(.base-input) {
@@ -144,7 +144,7 @@ function handleSkip() {
   top: 50%;
   right: 16px;
   transform: translateY(-50%);
-  color: var(--text, #9aa09a);
+  color: var(--color-text-secondary);
   font-size: 14px;
   pointer-events: none;
 }

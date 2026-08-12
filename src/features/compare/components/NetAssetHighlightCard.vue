@@ -1,7 +1,7 @@
 <script setup>
 import { ref, watch } from 'vue'
 
-import { formatManwon } from '@/shared/utils/formatter'
+import { formatEokManwon } from '@/shared/utils/formatter'
 
 const COUNT_UP_MS = 600
 
@@ -38,7 +38,7 @@ watch(() => props.cohortAverageNetAssets, countUpTo, { immediate: true })
 <template>
   <div class="card">
     <p class="card__title">나와 비슷한 사람들은 이만큼 모았어요</p>
-    <p class="card__value">{{ formatManwon(displayValue) }}</p>
+    <p class="card__value">{{ formatEokManwon(displayValue) }}</p>
     <p class="card__desc">비슷한 자산·나이대 사람들의 평균 순자산이에요</p>
   </div>
 </template>

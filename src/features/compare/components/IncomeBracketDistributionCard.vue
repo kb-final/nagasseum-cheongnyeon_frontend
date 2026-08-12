@@ -57,6 +57,21 @@ const myBracket = computed(
   () => props.brackets.find((item) => item.bracket === myBracketKey.value) ?? null,
 )
 
+/** 소득이 실제로 기록된 구간. UNKNOWN은 값이 아니라 빈칸이라 뺀다. */
+const knownBrackets = computed(() => props.brackets.filter((item) => item.bracket !== 'UNKNOWN'))
+
+/**
+ * 내 구간을 못 찾았을 때 왜 못 찾았는지.
+ *
+ * <p>원인이 두 가지인데 안내가 하나면 엉뚱한 곳으로 보내게 된다.
+ * 내가 안 넣은 것과 또래가 안 넣은 것은 사용자가 할 수 있는 일이 다르다.
+ */
+const missReason = computed(() => {
+  if (props.myMonthlyIncome == null) return 'ME'
+  if (knownBrackets.value.length === 0) return 'COHORT'
+  return 'EMPTY_BAND'
+})
+
 const peopleOutOf10 = computed(() =>
   myBracket.value ? Math.max(1, Math.round(myBracket.value.ratio / 10)) : 0,
 )
@@ -75,7 +90,7 @@ const isHintOpen = ref(false)
     <p v-if="myBracket" class="card__desc">
       또래 10명 중 <b>{{ peopleOutOf10 }}명</b>은 나와 같은 <b>{{ myBandLabel }}</b> 구간에 있어요!
     </p>
-    <div v-else class="card__hint-row">
+    <div v-else-if="missReason === 'ME'" class="card__hint-row">
       <span class="card__desc">내 위치를 보려면 월 소득 정보가 필요해요</span>
       <button
         type="button"
@@ -89,6 +104,10 @@ const isHintOpen = ref(false)
         마이페이지에서 월 소득 정보를 등록하면 내 구간에 깃발을 꽂아드려요.
       </div>
     </div>
+    <p v-else-if="missReason === 'COHORT'" class="card__desc">
+      아직 또래의 소득 정보가 모이지 않았어요
+    </p>
+    <p v-else class="card__desc">내 소득 구간에는 아직 또래가 없어요</p>
 
     <div class="chart" :style="{ '--max-count': MAX_SEGMENTS }">
       <div

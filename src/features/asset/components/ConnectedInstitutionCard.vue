@@ -44,15 +44,15 @@ defineEmits(['delete'])
 @media (hover: hover) and (pointer: fine) {
   .connected-institution-card:hover {
     transform: translateY(-2px);
-    border-color: var(--accent-border, rgba(227, 255, 232, 0.5));
-    background: var(--accent-bg, rgba(227, 255, 232, 0.1));
+    border-color: var(--color-primary);
+    background: var(--color-primary-soft);
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.24);
   }
 }
 
 .connected-institution-card:active {
   transform: scale(0.98);
-  background: var(--accent-bg, rgba(227, 255, 232, 0.1));
+  background: var(--color-primary-soft);
   transition-duration: 0.08s;
 }
 
@@ -66,7 +66,7 @@ defineEmits(['delete'])
   border: none;
   border-radius: 50%;
   background: none;
-  color: var(--text, #9aa09a);
+  color: var(--color-text-secondary);
   cursor: pointer;
   transition:
     color 0.18s ease,

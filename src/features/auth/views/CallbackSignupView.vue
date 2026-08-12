@@ -122,13 +122,13 @@ function handleSubmit() {
   font-weight: 500;
   line-height: 1.44;
   letter-spacing: -0.4px;
-  color: var(--text-h, #ffffff);
+  color: var(--color-text-primary);
 }
 
 .callback-signup-view__subtitle {
   margin: 0;
   font-size: 13.1px;
-  color: var(--text, #9aa09a);
+  color: var(--color-text-secondary);
 }
 
 .callback-signup-view__footer {

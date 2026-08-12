@@ -167,16 +167,22 @@ const router = useRouter()
   padding-bottom: 32px;
 }
 
+/*
+  legacy --text-h / --text / --border는 main.css의 [data-theme] 블록에 없어서 테마를
+  따라가지 않는다. 특히 --text-h(#ffffff 고정) 때문에 라이트에서 조 제목이 사라졌다.
+  공용 시맨틱 토큰으로 바꾼다.
+*/
+
 .privacy-view__effective-date {
   margin: 0 0 8px;
   padding: 0 4px;
   font-size: 12px;
-  color: var(--text, #9aa09a);
+  color: var(--color-text-secondary);
 }
 
 .privacy-view__section {
   padding: 16px 4px 0;
-  border-top: 1px solid var(--border, #262626);
+  border-top: 1px solid var(--color-border);
   margin-top: 16px;
 }
 
@@ -193,14 +199,14 @@ const router = useRouter()
   margin: 0 0 10px;
   font-size: 14px;
   font-weight: 500;
-  color: var(--text-h, #ffffff);
+  color: var(--color-text-primary);
 }
 
 .privacy-view__text {
   margin: 0;
   font-size: 13px;
   line-height: 1.6;
-  color: var(--text, #9aa09a);
+  color: var(--color-text-secondary);
 }
 
 .privacy-view__list {
@@ -211,7 +217,7 @@ const router = useRouter()
   gap: 10px;
   font-size: 13px;
   line-height: 1.6;
-  color: var(--text, #9aa09a);
+  color: var(--color-text-secondary);
 }
 
 .privacy-view__sub-list {
@@ -222,7 +228,7 @@ const router = useRouter()
   gap: 6px;
   font-size: 12.5px;
   line-height: 1.6;
-  color: var(--text, #9aa09a);
+  color: var(--color-text-secondary);
   list-style: circle;
 }
 
@@ -235,20 +241,20 @@ const router = useRouter()
   width: 100%;
   border-collapse: collapse;
   font-size: 12px;
-  color: var(--text, #9aa09a);
+  color: var(--color-text-secondary);
 }
 
 .privacy-view__table th,
 .privacy-view__table td {
   padding: 8px;
-  border: 1px solid var(--border, #262626);
+  border: 1px solid var(--color-border);
   text-align: left;
   white-space: nowrap;
 }
 
 .privacy-view__table th {
-  color: var(--text-h, #ffffff);
+  color: var(--color-text-primary);
   font-weight: 500;
-  background: var(--bg-elevated, rgba(255, 255, 255, 0.03));
+  background: var(--color-app-bg);
 }
 </style>
