@@ -63,14 +63,19 @@ function handleKakaoLogin() {
   font-size: 28px;
 }
 
+/*
+  색을 안 주면 루트의 --text(#9aa09a)를 물려받는다. 밝은 배경에서 2.5:1이라
+  제목이 부제보다 흐려 보였다.
+*/
 .login-view__title {
   font-size: 24px;
   font-weight: 700;
+  color: var(--color-text-primary);
 }
 
 .login-view__subtitle {
   font-size: 14px;
-  color: var(--muted, #8a8a8f);
+  color: var(--color-text-secondary);
 }
 
 .login-view__action {
@@ -84,7 +89,7 @@ function handleKakaoLogin() {
 
 .login-view__terms {
   font-size: 12px;
-  color: var(--muted, #8a8a8f);
+  color: var(--color-text-secondary);
 }
 
 .login-view__kakao-button {

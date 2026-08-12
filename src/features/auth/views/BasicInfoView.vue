@@ -155,13 +155,13 @@ async function handleNext() {
   font-weight: 500;
   line-height: 1.44;
   letter-spacing: -0.4px;
-  color: var(--text-h, #ffffff);
+  color: var(--color-text-primary);
 }
 
 .basic-info-view__subtitle {
   margin: 0;
   font-size: 13.1px;
-  color: var(--text, #9aa09a);
+  color: var(--color-text-secondary);
 }
 
 .basic-info-view__section {
@@ -180,13 +180,13 @@ async function handleNext() {
 .basic-info-view__section-title {
   font-size: 13.2px;
   font-weight: 500;
-  color: var(--text-h, #ffffff);
+  color: var(--color-text-primary);
 }
 
 .basic-info-view__section-helper {
   margin: -8px 0 0;
   font-size: 11.1px;
-  color: var(--text, #6e756f);
+  color: var(--color-text-secondary);
 }
 
 .basic-info-view__toggle-row {
@@ -199,13 +199,13 @@ async function handleNext() {
 .basic-info-view__toggle-title {
   margin: 0;
   font-size: 14.1px;
-  color: var(--text-h, #ffffff);
+  color: var(--color-text-primary);
 }
 
 .basic-info-view__toggle-desc {
   margin: 4px 0 0;
   font-size: 11.1px;
-  color: var(--text, #6e756f);
+  color: var(--color-text-secondary);
 }
 
 .basic-info-view__footer {

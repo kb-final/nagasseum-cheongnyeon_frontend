@@ -206,16 +206,22 @@ const router = useRouter()
   padding-bottom: 32px;
 }
 
+/*
+  legacy --text-h / --text / --border는 main.css의 [data-theme] 블록에 없어서 테마를
+  따라가지 않는다. 특히 --text-h(#ffffff 고정) 때문에 라이트에서 조 제목이 사라졌다.
+  공용 시맨틱 토큰으로 바꾼다.
+*/
+
 .terms-view__effective-date {
   margin: 0 0 8px;
   padding: 0 4px;
   font-size: 12px;
-  color: var(--text, #9aa09a);
+  color: var(--color-text-secondary);
 }
 
 .terms-view__section {
   padding: 16px 4px 0;
-  border-top: 1px solid var(--border, #262626);
+  border-top: 1px solid var(--color-border);
   margin-top: 16px;
 }
 
@@ -232,14 +238,14 @@ const router = useRouter()
   margin: 0 0 10px;
   font-size: 14px;
   font-weight: 500;
-  color: var(--text-h, #ffffff);
+  color: var(--color-text-primary);
 }
 
 .terms-view__text {
   margin: 0;
   font-size: 13px;
   line-height: 1.6;
-  color: var(--text, #9aa09a);
+  color: var(--color-text-secondary);
 }
 
 .terms-view__list {
@@ -250,7 +256,7 @@ const router = useRouter()
   gap: 10px;
   font-size: 13px;
   line-height: 1.6;
-  color: var(--text, #9aa09a);
+  color: var(--color-text-secondary);
 }
 
 .terms-view__sub-list {
@@ -261,12 +267,12 @@ const router = useRouter()
   gap: 6px;
   font-size: 12.5px;
   line-height: 1.6;
-  color: var(--text, #9aa09a);
+  color: var(--color-text-secondary);
   list-style: circle;
 }
 
 .terms-view__inline-link {
-  color: var(--color-mint-strong, #c1e8c8);
+  color: var(--color-heading-accent);
   text-decoration: underline;
 }
 </style>

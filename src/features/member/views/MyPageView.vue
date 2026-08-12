@@ -210,6 +210,11 @@ function confirmLogout() {
   justify-content: center;
   width: 76px;
   height: 76px;
+  /*
+    배경(#e3ffe8)이 라이트 페이지와 밝기가 비슷해 동그라미 경계가 안 보인다.
+    --color-progress-inactive는 게이지 빈 칸용 회색으로 바뀌어서 여기엔 안 맞는다.
+  */
+  border: 1px solid #a9c9b0;
   border-radius: 38px;
   background: var(--accent, #e3ffe8);
   color: var(--color-mint-deep, #16281c);
@@ -271,8 +276,12 @@ function confirmLogout() {
   background: var(--color-border, #262626);
 }
 
+/*
+  연민트(#c1e8c8)는 빈 칸(--color-border)과 라이트에서 1.07:1이라 몇 칸 찼는지
+  구분이 안 된다. 테마별로 뒤집히는 강조색을 쓴다.
+*/
 .my-page-view__exp-segment--filled {
-  background: var(--color-mint-strong, #c1e8c8);
+  background: var(--color-heading-accent);
 }
 
 /* 지금 서 있는 칸만 노란색. --filled 뒤에 와야 덮어쓴다. */

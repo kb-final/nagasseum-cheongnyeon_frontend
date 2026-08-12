@@ -222,13 +222,13 @@ onMounted(() => {
   margin: 0;
   font-size: 15.9px;
   font-weight: 500;
-  color: var(--text-h, #ffffff);
+  color: var(--color-text-primary);
 }
 
 .asset-auth-view__subtitle {
   margin: 0;
   font-size: 13.1px;
-  color: var(--text, #9aa09a);
+  color: var(--color-text-secondary);
 }
 
 .asset-auth-view__password-toggle {
@@ -242,7 +242,7 @@ onMounted(() => {
   padding: 0;
   border: none;
   background: none;
-  color: var(--text, #6e756f);
+  color: var(--color-text-secondary);
   cursor: pointer;
 }
 
@@ -259,7 +259,7 @@ onMounted(() => {
   margin: 0;
   font-size: 13.2px;
   font-weight: 500;
-  color: var(--text-h, #ffffff);
+  color: var(--color-text-primary);
 }
 
 .asset-auth-view__notice-icon {
@@ -274,7 +274,7 @@ onMounted(() => {
   padding: 0;
   list-style: none;
   font-size: 11.1px;
-  color: var(--text, #9aa09a);
+  color: var(--color-text-secondary);
 }
 
 .asset-auth-view__warning {
