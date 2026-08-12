@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 
 import BaseCard from '@/shared/components/atoms/base/card/BaseCard.vue'
-import { formatNumber } from '@/shared/utils/formatter'
+import { formatManwon } from '@/shared/utils/formatter'
 
 const props = defineProps({
   assetSummary: { type: Object, required: true },
@@ -35,9 +35,7 @@ const tiles = computed(() => [
   <div class="asset-summary-grid">
     <BaseCard v-for="tile in tiles" :key="tile.label" size="modal" class="asset-summary-grid__tile">
       <span class="asset-summary-grid__label">{{ tile.label }}</span>
-      <span class="asset-summary-grid__amount">
-        {{ formatNumber(tile.amount) }}<span class="asset-summary-grid__unit">원</span>
-      </span>
+      <span class="asset-summary-grid__amount">{{ formatManwon(tile.amount) }}</span>
       <span v-if="tile.sub" class="asset-summary-grid__sub">{{ tile.sub }}</span>
     </BaseCard>
   </div>
@@ -62,6 +60,7 @@ const tiles = computed(() => [
   padding: 10px;
   border-radius: 16px;
   background: var(--asset-tile-surface, #cdedd3);
+  font-family: var(--sans-normal);
   letter-spacing: 0.02em;
   /* 루트에서 상속되는 26.1px 고정 줄 높이를 글자 크기에 맞춰 다시 계산시킨다. */
   line-height: 1.25;
@@ -73,28 +72,23 @@ const tiles = computed(() => [
 */
 .asset-summary-grid__label {
   font-size: 12px;
-  color: var(--asset-tile-label, #4f6f5b);
+  font-weight: 700;
+  color: var(--total-asset-label, #12281c);
 }
 
 .asset-summary-grid__amount {
   overflow: hidden;
   font-size: 14px;
-  font-weight: 700;
-  color: var(--climb-card-ink, #12281c);
+  font-weight: 900;
+  color: var(--home-ink-text, #12281c);
   text-overflow: ellipsis;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
 
-/* 단위는 숫자보다 작고 가볍게. 세 칸이 좁아서 금액이 먼저 읽혀야 한다. */
-.asset-summary-grid__unit {
-  margin-left: 3px;
-  font-size: 11px;
-  font-weight: 400;
-}
-
 .asset-summary-grid__sub {
   font-size: 11px;
-  color: var(--asset-tile-ink-muted, #6f8b79);
+  font-weight: 700;
+  color: var(--total-asset-label, #12281c);
 }
 </style>

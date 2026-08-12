@@ -13,7 +13,9 @@ defineProps({
   -->
   <div class="greeting-header">
     <span class="greeting-header__hello">안녕하세요, {{ member.nickname }} 님</span>
-    <BaseBadge variant="mint">Lv.{{ member.level }} {{ member.levelTitle }}</BaseBadge>
+    <BaseBadge class="greeting-header__badge" variant="mint"
+      >Lv.{{ member.level }} {{ member.levelTitle }}</BaseBadge
+    >
   </div>
 </template>
 
@@ -21,17 +23,22 @@ defineProps({
 /* 벨이 빠져 오른쪽이 비었다. 가운데로 모아야 한쪽으로 쏠려 보이지 않는다. */
 .greeting-header {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   gap: 8px;
   min-width: 0;
 }
 
 .greeting-header__hello {
   overflow: hidden;
+  font-family: var(--sans-normal);
   font-size: 20px;
-  font-weight: 700;
-  color: var(--color-text-primary, #ffffff);
+  font-weight: 900;
+  color: var(--home-text-primary, #ffffff);
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.greeting-header :deep(.greeting-header__badge) {
+  font-weight: 700;
 }
 </style>
