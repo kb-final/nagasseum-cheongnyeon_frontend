@@ -37,7 +37,7 @@ const barItems = computed(() =>
   --ink-muted: var(--c-ink-muted);
   --mint: var(--c-accent);
   --segment: var(--c-track);
-  --segment-on: var(--c-accent-mid);
+  --segment-on: var(--c-bar-on);
   --segment-on-highlight: var(--mint);
   --badge: var(--c-badge-bg);
 
