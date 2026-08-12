@@ -64,16 +64,19 @@ const syncedAtLabel = computed(() => {
 </template>
 
 <style scoped>
+/*
+  이 화면에서 유일하게 색이 있는 카드다. 아래 아이템 목록이 전부 흰 카드라
+  총액까지 흰색이면 어디가 제목인지 안 보인다.
+  더 조용하게 하려면 background를 var(--c-card), border를 var(--c-line)로 바꾸면 된다.
+*/
 .asset-total-card {
-  --ink: #12281c;
-  --ink-muted: #8a8f63;
-
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 14px 16px;
-  border-radius: 0;
-  background: var(--color-card-highlight, #f7ffd1);
+  border: 1px solid var(--c-hero-line);
+  border-radius: 14px;
+  background: var(--c-hero-bg);
   line-height: 1.3;
 }
 
@@ -91,7 +94,7 @@ const syncedAtLabel = computed(() => {
   gap: 5px;
   font-size: 12px;
   font-weight: 700;
-  color: var(--ink);
+  color: var(--c-hero-ink);
 }
 
 .asset-total-card__label-icon {
@@ -102,7 +105,7 @@ const syncedAtLabel = computed(() => {
 
 /* 원래 이름은 괄호 안에 작게.*/
 .asset-total-card__label-sub {
-  color: var(--ink-muted);
+  color: var(--c-hero-muted);
   font-weight: 400;
 }
 
@@ -112,13 +115,13 @@ const syncedAtLabel = computed(() => {
   font-size: 26px;
   line-height: 1.1;
   font-weight: 700;
-  color: var(--ink);
+  color: var(--c-hero-ink);
   font-variant-numeric: tabular-nums;
 }
 
 .asset-total-card__synced {
   font-size: 11px;
-  color: var(--ink-muted);
+  color: var(--c-hero-muted);
 }
 
 .asset-total-card :deep(.asset-total-card__refresh-btn) {
@@ -129,12 +132,16 @@ const syncedAtLabel = computed(() => {
   width: auto;
   height: 26px;
   padding: 0 10px;
-  /* 카드·아이템 목록과 같이 각지게 */
-  border-radius: 0;
-  background: var(--ink);
-  color: var(--color-card-highlight, #f7ffd1);
+  border: none;
+  border-radius: 8px;
+  background: var(--c-hero-btn-bg);
+  color: var(--c-hero-btn-ink);
   font-size: 11.5px;
   font-weight: 400;
+}
+
+.asset-total-card :deep(.asset-total-card__refresh-btn:disabled) {
+  opacity: 0.55;
 }
 
 .asset-total-card__refresh-icon {

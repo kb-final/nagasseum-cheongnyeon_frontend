@@ -19,9 +19,9 @@ defineProps({
 
 <style scoped>
 .state-card {
-  border-radius: 18px;
-  background: var(--card-bg, #161616);
-  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--c-card);
+  border: 1px solid var(--c-line);
   padding: 16px;
   animation: card-rise 0.35s ease-out both;
   animation-delay: 0.18s;
@@ -31,30 +31,30 @@ defineProps({
   display: inline-flex;
   padding: 3px 9px;
   border-radius: 999px;
-  background: rgba(193, 68, 46, 0.16);
-  color: #e37a63;
+  background: var(--c-danger-soft);
+  color: var(--c-danger);
   font-size: 10px;
   font-weight: 600;
   margin-bottom: 9px;
 }
 
 .state-card__eyebrow--wait {
-  background: rgba(255, 217, 57, 0.16);
-  color: #ffd939;
+  background: var(--c-warn-bg);
+  color: var(--c-warn);
 }
 
 .state-card__title {
   margin: 0 0 5px;
   font-size: 13.5px;
   font-weight: 700;
-  color: var(--text-h);
+  color: var(--c-ink);
 }
 
 .state-card__body {
   margin: 0;
   font-size: 11.5px;
   line-height: 1.6;
-  color: var(--text);
+  color: var(--c-ink-muted);
 }
 
 .state-card__action {

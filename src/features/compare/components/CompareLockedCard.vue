@@ -43,14 +43,15 @@ function goToAgreement() {
 
 <style scoped>
 .locked {
-  --badge: #ffd939;
-  --on-pale: #556057;
-  --on-pale-strong: #2d3a30;
+  --badge: var(--c-value);
+  /* 안내 상자는 양쪽 테마 모두 옅은 바탕에 진한 글씨로 둔다. */
+  --on-pale: var(--c-pale-ink);
+  --on-pale-strong: var(--c-pale-ink);
 
-  --art-face: #2b312c;
-  --art-line: #7f8a7d;
-  --art-lock: #9fd8ab;
-  --art-gap: #111511;
+  --art-face: var(--c-accent-soft);
+  --art-line: var(--c-accent-mid);
+  --art-lock: var(--c-accent);
+  --art-gap: var(--c-bg);
 
   display: flex;
   flex-direction: column;
@@ -124,19 +125,19 @@ function goToAgreement() {
 .locked__title {
   margin: 10px 0 0;
   font-size: 17px;
-  color: var(--text-h);
+  color: var(--c-ink);
 }
 
 .locked__body {
   margin: 20px 0 0;
   font-size: 12px;
   line-height: 1.7;
-  color: var(--text);
+  color: var(--c-ink-muted);
 }
 
 .locked__body b {
   font-weight: inherit;
-  color: var(--text-h);
+  color: var(--c-ink);
 }
 
 .locked__info {
@@ -144,7 +145,7 @@ function goToAgreement() {
   margin-top: 32px;
   border-radius: 12px;
   padding: 14px 16px;
-  background: var(--accent);
+  background: var(--c-pale-bg);
   text-align: left;
   color: var(--on-pale);
 }

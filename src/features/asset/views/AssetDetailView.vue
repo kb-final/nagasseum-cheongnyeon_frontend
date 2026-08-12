@@ -43,9 +43,9 @@ onMounted(() => {
     </template>
 
     <div v-else-if="assetStore.isLoadingDetail" class="asset-detail-view__skeleton">
-      <BaseSkeleton height="140px" radius="16px" />
-      <BaseSkeleton height="220px" radius="16px" />
-      <BaseSkeleton height="220px" radius="16px" />
+      <BaseSkeleton height="140px" radius="14px" />
+      <BaseSkeleton height="220px" radius="14px" />
+      <BaseSkeleton height="220px" radius="14px" />
     </div>
 
     <p v-else-if="assetStore.detailError" class="asset-detail-view__error">
@@ -56,30 +56,98 @@ onMounted(() => {
 
 <style scoped>
 .asset-detail-view {
+  /*
+    자산 인벤토리 색. 비교 화면과 같은 이름을 쓴다.
+
+    다크는 원래 색을 그대로 둔다(민트·골드).
+    라이트만 main.css의 공용 테마 토큰에 붙인다. main.css는 건드리지 않는다.
+  */
+  --c-bg: #111111;
+  --c-card: #171b16;
+  --c-line: #334234;
+  --c-ink: #e8f0e6;
+  --c-ink-muted: #7fa398;
+  --c-ink-faint: #7fa398;
+  --c-accent: #9fd8ab;
+  --c-accent-mid: #4f7a5c;
+  --c-accent-soft: #263029;
+  --c-slot: #263029;
+  /* 금액은 다크에서만 금색. 라이트에서는 굵은 검정이 더 잘 읽힌다. */
+  --c-value: #ffd939;
+  --c-on-accent: #16281c;
+  --c-danger: #e2735f;
+  --c-danger-soft: #1e1512;
+  --c-danger-line: #5c2f28;
+  --c-danger-slot: #2b1a15;
+  /* 총자산 카드만 배경색이 따로 있다. */
+  --c-hero-bg: #f7ffd1;
+  --c-hero-line: #f7ffd1;
+  --c-hero-ink: #12281c;
+  --c-hero-muted: #8a8f63;
+  --c-hero-btn-bg: #12281c;
+  --c-hero-btn-ink: #f7ffd1;
+  /*
+    AppHeader가 쓰는 legacy 변수. 이 화면에서만 테마 토큰으로 바꿔 끼운다.
+  */
+  --text-h: var(--color-text-primary);
+
+  /*
+    앱 배경이 아직 테마를 따라가지 않아 이 화면만 직접 칠한다. MobileLayout의
+    여백(16px 16px 96px)을 음수 마진으로 상쇄한 뒤 같은 값을 다시 준다.
+  */
+  margin: -16px -16px -96px;
+  padding: 16px 16px 110px;
+  background: var(--c-bg);
+
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding-bottom: 24px;
+  gap: 14px;
+}
+
+:root[data-theme='light'] .asset-detail-view {
+  --c-bg: var(--color-app-bg);
+  --c-card: var(--color-surface);
+  --c-line: var(--color-border);
+  --c-ink: var(--color-text-primary);
+  --c-ink-muted: var(--color-text-secondary);
+  --c-ink-faint: var(--color-text-tertiary);
+  --c-accent: var(--color-heading-accent);
+  --c-accent-mid: var(--color-progress-inactive);
+  --c-accent-soft: #e8f4ea;
+  --c-slot: #1d6b3f;
+  --c-value: var(--color-text-primary);
+  --c-on-accent: #ffffff;
+  --c-danger: #c1442e;
+  --c-danger-soft: #fdeeea;
+  --c-danger-line: #f2cec5;
+  --c-danger-slot: #7a2c1e;
+  --c-hero-bg: #e8f4ea;
+  --c-hero-line: var(--color-progress-inactive);
+  --c-hero-ink: var(--color-text-primary);
+  --c-hero-muted: var(--color-text-secondary);
+  --c-hero-btn-bg: var(--color-heading-accent);
+  --c-hero-btn-ink: #ffffff;
 }
 
 .asset-detail-view__skeleton {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 
 .asset-detail-view__error {
   padding: 24px 0;
-  color: var(--text, #9aa09a);
+  color: var(--c-ink-muted);
   text-align: center;
 }
 
 .asset-detail-view__sync-error {
   margin: 0;
   padding: 9px 12px;
-  border: 1px solid #5c2f28;
-  background: #1e1512;
-  color: #e2735f;
+  border: 1px solid var(--c-danger-line);
+  border-radius: 10px;
+  background: var(--c-danger-soft);
+  color: var(--c-danger);
   font-size: 11.5px;
   line-height: 1.5;
 }
