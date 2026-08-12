@@ -116,7 +116,7 @@ const segments = computed(() => {
 
       <template v-else>
         <div class="climb-card__status">
-          <span>목표 금액의 {{ progress }}% 달성</span>
+          <span class="climb-card__status-text">목표 금액의 {{ progress }}% 달성</span>
         </div>
 
         <div class="climb-card__segments">
@@ -228,13 +228,14 @@ const segments = computed(() => {
   background: var(--climb-card-ink, #12281c);
   color: var(--color-accent, #ffd939);
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 900;
   letter-spacing: 0.06em;
 }
 
 .climb-card__quest-label {
   flex: 1;
   margin-left: 8px;
+  font-weight: 700;
   color: var(--climb-card-ink-muted, #6f8b79);
 }
 
@@ -248,13 +249,14 @@ const segments = computed(() => {
 .climb-card__empty-title {
   margin: 0;
   font-size: 15px;
-  font-weight: 700;
-  color: var(--climb-card-ink, #12281c);
+  font-weight: 900;
+  color: var(--home-ink-text, #12281c);
 }
 
 .climb-card__empty-desc {
   margin: 0;
   font-size: 11px;
+  font-weight: 700;
   color: var(--climb-card-ink-muted, #6f8b79);
 }
 
@@ -271,7 +273,7 @@ const segments = computed(() => {
   color: var(--color-accent, #ffd939);
   font: inherit;
   font-size: 13.5px;
-  font-weight: 700;
+  font-weight: 900;
   cursor: pointer;
 }
 
@@ -284,8 +286,13 @@ const segments = computed(() => {
   align-items: center;
   justify-content: space-between;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 900;
   color: var(--climb-card-ink, #12281c);
+}
+
+/* 왼쪽 정렬을 justify-content 계산에 기대지 않고 확실하게 고정한다. */
+.climb-card__status-text {
+  margin-right: auto;
 }
 
 /* 퍼센트를 게이지 오른쪽 끝에 붙인다. 아래에 따로 두면 줄만 하나 늘어난다. */
@@ -302,7 +309,7 @@ const segments = computed(() => {
 }
 
 .climb-card__segment--empty {
-  background: var(--color-progress-inactive, #a9c6af);
+  background: var(--climb-card-progress-inactive, #a9c6af);
 }
 
 .climb-card__segment--filled {

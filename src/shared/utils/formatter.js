@@ -11,6 +11,7 @@ export function formatCurrency(amount, locale = 'ko-KR', currency = 'KRW') {
 }
 
 export function formatManwon(amount, locale = 'ko-KR') {
+  if (amount === 0) return '0원'
   return `${Math.round(amount / 10000).toLocaleString(locale)}만원`
 }
 
@@ -36,19 +37,29 @@ export function formatYearMonthDot(date) {
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}`
 }
 
+// "2026-08-02T21:40:00+09:00" -> "2026.08.02 21:40" (자산 갱신 시각처럼 날짜+시각을 같이 보여줄 때 사용)
+export function formatDateTimeDot(date) {
+  const d = new Date(date)
+  const pad = (n) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}.${pad(d.getMonth() + 1)}.${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
 // "9.3억" 형태로 축약 표기 (억 단위 미만은 소수 첫째 자리까지, 불필요한 0은 생략)
 export function formatEok(amount) {
   const eok = Number((amount / 100000000).toFixed(1))
   return `${eok}억`
 }
 
-// "1억 2,000만원" 형태로 표기 (억 단위 몫 + 만원 단위 나머지). 나머지가 0이면 "1억"만 표기
-export function formatEokManwon(amount) {
+// "500,000,000" -> "5억", "210,000,000" -> "2억 1,000만원", "9,000,000" -> "900만원"
+// (억 단위와 만원 단위를 함께 써서 큰 금액을 한눈에 읽기 쉽게 표기. 진행 중인 목표 카드처럼
+// 목표/현재/남은 금액을 나란히 보여줄 때 사용)
+export function formatEokManwon(amount, locale = 'ko-KR') {
   const eok = Math.floor(amount / 100000000)
   const manwon = Math.round((amount % 100000000) / 10000)
 
+  if (eok === 0) return formatManwon(amount, locale)
   if (manwon === 0) return `${eok}억`
-  return `${eok}억 ${manwon.toLocaleString('ko-KR')}만원`
+  return `${eok}억 ${manwon.toLocaleString(locale)}만원`
 }
 
 // "2027-08" -> "2027년 8월". null/undefined면 계산 불가 문구로 대체 (홈 화면 예상 달성 시점처럼 null이 올 수 있는 필드용)

@@ -2,11 +2,10 @@
 import { computed } from 'vue'
 
 import BaseCard from '@/shared/components/atoms/base/card/BaseCard.vue'
-import BaseButton from '@/shared/components/atoms/base/button/BaseButton.vue'
-import { formatNumber } from '@/shared/utils/formatter'
+import BaseRefreshIcon from '@/shared/components/atoms/base/icon/BaseRefreshIcon.vue'
+import { formatNumber, formatDateTimeDot } from '@/shared/utils/formatter'
 
 import assetIcon from '@/assets/images/assetIcon.png'
-import refreshIcon from '@/assets/images/refreshIcon.png'
 
 const props = defineProps({
   assetSummary: { type: Object, required: true },
@@ -21,6 +20,7 @@ defineEmits(['refresh'])
  * 붙여줘서 크기를 나눌 수 없다.
  */
 const amount = computed(() => formatNumber(props.assetSummary.totalAssets))
+const syncedAt = computed(() => formatDateTimeDot(props.assetSummary.syncedAt))
 </script>
 
 <template>
@@ -30,21 +30,25 @@ const amount = computed(() => formatNumber(props.assetSummary.totalAssets))
         총 자산
         <img class="total-asset-card__label-icon" :src="assetIcon" alt="" />
       </span>
-      <RouterLink class="total-asset-card__detail" to="/assets">자세히 ▷</RouterLink>
+      <RouterLink class="total-asset-card__detail" to="/assets">자세히 ›</RouterLink>
     </div>
 
     <div class="total-asset-card__main">
       <p class="total-asset-card__amount">
         {{ amount }}<span class="total-asset-card__unit">원</span>
       </p>
+    </div>
 
-      <BaseButton
-        variant="secondary"
+    <div class="total-asset-card__meta">
+      <span class="total-asset-card__synced-at">{{ syncedAt }} 기준</span>
+      <button
+        type="button"
         class="total-asset-card__refresh-btn"
+        aria-label="자산 정보 갱신"
         @click="$emit('refresh')"
       >
-        <img class="total-asset-card__refresh-icon" :src="refreshIcon" alt="" />갱신
-      </BaseButton>
+        <BaseRefreshIcon :size="14" bold />
+      </button>
     </div>
   </BaseCard>
 </template>
@@ -58,10 +62,11 @@ const amount = computed(() => formatNumber(props.assetSummary.totalAssets))
 .total-asset-card {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 12px 14px;
-  border-radius: 16px;
+  gap: 4px;
+  /* BaseCard 기본 20px 패딩 중 아래쪽만 살짝 줄인다. */
+  padding-bottom: 12px;
   background: var(--total-asset-surface, #f7ffd1);
+  font-family: var(--sans-normal);
   letter-spacing: 0.02em;
   /*
     루트의 145%는 18px 기준으로 계산된 26.1px이 그대로 상속된다. 여기 글자는 12~28px이라
@@ -74,6 +79,9 @@ const amount = computed(() => formatNumber(props.assetSummary.totalAssets))
   display: flex;
   align-items: center;
   justify-content: space-between;
+  /* 카드 전체 gap을 4px로 좁혀서 금액 바로 아래 갱신 정보 줄을 붙였다.
+     라벨 줄과 금액 줄 사이는 그만큼 여기서 다시 벌려준다. */
+  margin-bottom: 8px;
 }
 
 .total-asset-card__label {
@@ -81,6 +89,7 @@ const amount = computed(() => formatNumber(props.assetSummary.totalAssets))
   align-items: center;
   gap: 5px;
   font-size: 13px;
+  font-weight: 700;
   color: var(--total-asset-label, #12281c);
 }
 
@@ -93,6 +102,7 @@ const amount = computed(() => formatNumber(props.assetSummary.totalAssets))
 
 .total-asset-card__detail {
   font-size: 12px;
+  font-weight: 700;
   color: var(--total-asset-detail, #8a8f63);
   text-decoration: none;
 }
@@ -100,16 +110,14 @@ const amount = computed(() => formatNumber(props.assetSummary.totalAssets))
 .total-asset-card__main {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
 }
 
 .total-asset-card__amount {
   margin: 0;
   font-size: 28px;
   line-height: 1.1;
-  font-weight: 700;
-  color: var(--climb-card-ink, #12281c);
+  font-weight: 900;
+  color: var(--home-ink-text, #12281c);
   font-variant-numeric: tabular-nums;
 }
 
@@ -117,27 +125,39 @@ const amount = computed(() => formatNumber(props.assetSummary.totalAssets))
 .total-asset-card__unit {
   margin-left: 5px;
   font-size: 16px;
-  font-weight: 400;
+  font-weight: 700;
 }
 
-.total-asset-card :deep(.total-asset-card__refresh-btn) {
-  display: inline-flex;
+/* 갱신 시각 + 새로고침 아이콘을 금액 아래 한 줄로, 오른쪽 정렬로 붙인다.
+   금액 줄과 살짝 더 떨어지도록 위쪽에 여백을 조금 더 준다. */
+.total-asset-card__meta {
+  display: flex;
   align-items: center;
-  gap: 5px;
-  flex: none;
-  width: auto;
-  height: 30px;
-  padding: 0 12px;
-  border-radius: 999px;
-  background: var(--climb-card-ink, #12281c);
-  color: var(--total-asset-surface, #f7ffd1);
-  font-size: 12px;
-  font-weight: 400;
+  justify-content: flex-end;
+  gap: 4px;
+  margin-top: 4px;
 }
 
-.total-asset-card__refresh-icon {
-  width: 11px;
-  height: 11px;
-  image-rendering: pixelated;
+.total-asset-card__synced-at {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--total-asset-detail, #8a8f63);
+}
+
+/* 검정 pill 버튼 대신 아이콘만 노출한다. 클릭 영역은 캡션 줄에 맞춰 28px로 줄이되
+   아이콘(14px)보다 넉넉하게 잡아 탭하기 편하게 둔다. */
+.total-asset-card__refresh-btn {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: none;
+  color: var(--total-asset-label, #12281c);
+  cursor: pointer;
 }
 </style>
