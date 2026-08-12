@@ -40,5 +40,6 @@ defineProps({
 
 .greeting-header :deep(.greeting-header__badge) {
   font-weight: 700;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 }
 </style>
