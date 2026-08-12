@@ -77,5 +77,5 @@ export function formatAreaRange(areaMin, areaMax) {
 // 시세 변동액에 부호를 붙여 "▲ 500만 원" / "▼ 500만 원" / "500만 원"(변동 없음)으로 표기
 export function formatChangeAmount(amount) {
   const arrow = amount > 0 ? '▲ ' : amount < 0 ? '▼ ' : ''
-  return `${arrow}${formatManwon(Math.abs(amount))}`
+  return `${arrow} 설정 대비 ${formatManwon(Math.abs(amount))}`
 }

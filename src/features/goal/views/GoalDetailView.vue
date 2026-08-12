@@ -143,6 +143,15 @@ async function onSubmitMonthlySaving(monthlySaving) {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  /* 화면 전체 글씨를 살짝 굵게. 이미 개별적으로 weight를 지정한 요소(제목/값 등)는
+     자체 지정값이 우선되므로 영향받지 않는다. */
+  font-weight: 500;
+}
+
+/* 이 화면(목표 상세)의 헤더 타이틀만 굵게 강조한다. AppHeader는 다른 화면에서도
+   공용으로 쓰이므로 컴포넌트 자체가 아닌 이 스코프에서만 덮어쓴다. */
+.goal-detail-view :deep(.app-header__title) {
+  font-weight: 700;
 }
 
 .goal-detail-view__edit-link {
@@ -151,6 +160,7 @@ async function onSubmitMonthlySaving(monthlySaving) {
   background: none;
   color: var(--color-text-tertiary, #7fa398);
   font-size: 13px;
+  font-weight: 700;
   cursor: pointer;
 }
 
@@ -163,15 +173,17 @@ async function onSubmitMonthlySaving(monthlySaving) {
 
 .goal-detail-view__title {
   margin: 0;
-  font-size: 20px;
-  font-weight: 400;
-  color: var(--color-heading-accent, #e3ffe8);
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--home-text-primary, #353934);
 }
 
 .goal-detail-view__condition {
   margin: 0;
   font-size: 13px;
-  color: var(--color-text-tertiary, #888888);
+  font-weight: 700;
+  color: var(--color-text-primary, #888888);
+  opacity: 0.7;
 }
 
 .goal-detail-view__skeleton {
