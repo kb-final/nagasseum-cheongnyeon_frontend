@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 
-import { formatEok, formatWon } from '@/shared/utils/formatter'
+import { formatWon } from '@/shared/utils/formatter'
 
 const props = defineProps({
   // 목표 달성 상세 조회 응답의 progress { targetAmount, currentAmount, remainingAmount, achievementRate }
@@ -51,13 +51,13 @@ function segmentModifier(index) {
       <div class="goal-progress-card__stat">
         <span class="goal-progress-card__stat-label">목표 금액</span>
         <strong class="goal-progress-card__stat-value">{{
-          formatEok(progress.targetAmount)
+          formatWon(progress.targetAmount)
         }}</strong>
       </div>
       <div class="goal-progress-card__stat">
         <span class="goal-progress-card__stat-label">현재 자금</span>
         <strong class="goal-progress-card__stat-value">{{
-          formatEok(progress.currentAmount)
+          formatWon(progress.currentAmount)
         }}</strong>
       </div>
       <div class="goal-progress-card__stat goal-progress-card__stat--wide">
@@ -78,6 +78,7 @@ function segmentModifier(index) {
   padding: 16px;
   border-radius: 16px;
   background: var(--color-surface, #161616);
+  font-weight: 500;
 }
 
 .goal-progress-card__header {
@@ -88,12 +89,13 @@ function segmentModifier(index) {
 
 .goal-progress-card__label {
   font-size: 13px;
-  color: var(--color-text-secondary, #9aa09a);
+  font-weight: 700;
+  color: var(--color-text-primary, #12281c);
 }
 
 .goal-progress-card__rate {
   font-size: 26px;
-  font-weight: 400;
+  font-weight: 700;
   line-height: 1;
   color: var(--color-primary, #1d6b3f);
 }
@@ -133,29 +135,30 @@ function segmentModifier(index) {
   flex-direction: column;
   gap: 4px;
   padding: 10px 12px;
-  border: 1px solid var(--color-border, #ebebeb);
   border-radius: 10px;
   background: var(--color-app-bg, #ffffff);
 }
 
-/* 남은 금액 박스만 옅은 초록 배경으로 강조한다. */
 .goal-progress-card__stat--wide {
   flex-basis: 100%;
-  background: var(--color-primary-soft, #e3ffe8);
-}
-
-.goal-progress-card__stat--wide .goal-progress-card__stat-value {
-  color: var(--color-primary, #1d6b3f);
 }
 
 .goal-progress-card__stat-label {
-  font-size: 11px;
-  color: var(--color-text-tertiary, #2f6b4f);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-primary, #2f6b4f);
+  opacity: 0.7;
 }
 
 .goal-progress-card__stat-value {
-  font-size: 15px;
-  font-weight: 400;
+  font-size: 16px;
+  font-weight: 700;
   color: var(--color-text-primary, #0b3b24);
+}
+
+/* 남은 금액 숫자만 크기를 그대로 두고(20px) 강조 색으로 구분한다. */
+.goal-progress-card__stat--wide .goal-progress-card__stat-value {
+  font-size: 20px;
+  color: var(--color-primary, #1d6b3f);
 }
 </style>

@@ -128,7 +128,7 @@ function close() {
       </div>
 
       <p class="saving-edit__section-label">추천 금액</p>
-      <BaseChipGroup v-model="selected" :options="options" size="sm" />
+      <BaseChipGroup v-model="selected" class="saving-edit__chips" :options="options" size="sm" />
 
       <div v-if="selected === CUSTOM" class="saving-edit__custom">
         <BaseInput
@@ -179,7 +179,7 @@ function close() {
         <div v-if="isCustom && !preview" class="saving-edit__simulate">
           <BaseButton
             class="saving-edit__simulate-button"
-            variant="highlight"
+            variant="primary"
             size="md"
             :disabled="!amount || goalStore.isSimulating"
             @click="runSimulation"
@@ -190,13 +190,16 @@ function close() {
       </div>
 
       <p class="saving-edit__note">
-        목표 달성 계산에 반영되는 계획 금액이며, 실제 자동이체 금액은 변경되지 않아요.
+        목표 달성 계산에 반영되는 계획 금액이며,<br />실제 자동이체 금액은 변경되지 않아요.
       </p>
     </div>
 
     <template #footer>
-      <BaseButton variant="secondary" size="modal" @click="close">취소</BaseButton>
+      <BaseButton class="saving-edit__cancel-button" variant="secondary" size="modal" @click="close"
+        >취소</BaseButton
+      >
       <BaseButton
+        class="saving-edit__submit-button"
         variant="primary"
         size="modal"
         :disabled="!canSubmit"
@@ -213,13 +216,15 @@ function close() {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  font-weight: 600;
 }
 
 .saving-edit__title {
   margin: 0 0 2px;
-  color: #0b3b24;
+  color: var(--color-text-primary, #0b3b24);
   font-size: 17px;
-  font-weight: 400;
+  font-weight: 700;
+  text-align: center;
 }
 
 .saving-edit__current {
@@ -228,23 +233,23 @@ function close() {
   gap: 4px;
   padding: 12px 14px;
   border-radius: 12px;
-  background: var(--card-bg, #161616);
+  background: var(--color-surface, #f7f8f4);
 }
 
 .saving-edit__current-label {
-  color: #888888;
+  color: var(--color-text-tertiary, #888888);
   font-size: 11px;
 }
 
 .saving-edit__current-value {
-  color: var(--accent, #e3ffe8);
+  color: var(--color-primary, #1d6b3f);
   font-size: 16px;
-  font-weight: 400;
+  font-weight: 700;
 }
 
 .saving-edit__section-label {
   margin: 2px 0 0;
-  color: #404040;
+  color: var(--color-text-tertiary, #404040);
   font-size: 12px;
 }
 
@@ -254,7 +259,7 @@ function close() {
   gap: 8px;
   padding: 0 14px;
   border-radius: 12px;
-  background: var(--card-bg, #161616);
+  background: var(--color-surface, #f7f8f4);
 }
 
 /* BaseModal이 Teleport로 body에 렌더링돼 조상 기반 :deep()이 안 먹으므로
@@ -262,7 +267,7 @@ function close() {
 .saving-edit__custom-input {
   border: none;
   background: transparent;
-  color: var(--accent, #e3ffe8);
+  color: var(--color-text-primary, #0b3b24);
   font-size: 14px;
   padding: 14px 0;
 }
@@ -273,7 +278,7 @@ function close() {
 
 .saving-edit__custom-unit {
   flex-shrink: 0;
-  color: #888888;
+  color: var(--color-text-tertiary, #888888);
   font-size: 13px;
 }
 
@@ -282,24 +287,23 @@ function close() {
   flex-direction: column;
   gap: 2px;
   padding: 12px 14px;
-  border: 1px solid var(--border, #262626);
   border-radius: 12px;
-  background: var(--card-bg, #161616);
+  background: var(--color-surface, #f7f8f4);
 }
 
 .saving-edit__preview-line {
   margin: 0;
-  color: #dddddd;
+  color: var(--color-text-primary, #dddddd);
   font-size: 13px;
 }
 
 .saving-edit__preview-line--accent {
-  color: #7fe3a0;
+  color: var(--color-primary, #7fe3a0);
 }
 
 .saving-edit__preview-placeholder {
   margin: 0;
-  color: #888888;
+  color: var(--color-text-tertiary, #888888);
   font-size: 12px;
 }
 
@@ -316,11 +320,41 @@ function close() {
   border-radius: 10px;
   font-size: 12px;
   font-weight: 700;
+  background: var(--color-primary-soft, #e8f4ea);
+  color: #353934;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+/* 팝업 버튼 색을 CTA(고정 저축액 변경하기)와 같은 톤으로 통일한다.
+   footer 슬롯 버튼은 .saving-edit의 DOM 형제라 :deep()이 안 먹으므로,
+   버튼 루트에 직접 붙인 클래스를 일반 선택자로 바로 오버라이드한다.
+   취소 버튼은 색은 secondary variant 기본값 그대로 두고 그림자만 준다. */
+.saving-edit__cancel-button {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.saving-edit__submit-button {
+  background: var(--color-primary-soft, #e8f4ea);
+  color: #353934;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+/* 칩(핀)에도 같은 약한 그림자를 준다. BaseChipGroup은 일반 자식이라 :deep()으로 닿는다.
+   선택 안 된 칩의 테두리도 여기서 없앤다. */
+.saving-edit :deep(.saving-edit__chips) .chip-group__item {
+  border: none;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+/* 선택된 칩(핀) 색도 버튼과 같은 톤으로. */
+.saving-edit :deep(.saving-edit__chips) .chip-group__item--active {
+  background: var(--color-primary-soft, #e8f4ea);
+  color: #353934;
 }
 
 .saving-edit__note {
   margin: 0;
-  color: #404040;
+  color: var(--color-text-tertiary, #404040);
   font-size: 11px;
   line-height: 1.4;
 }

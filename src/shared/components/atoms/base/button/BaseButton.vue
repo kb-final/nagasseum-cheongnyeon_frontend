@@ -65,8 +65,8 @@ defineEmits(['click'])
 }
 
 .base-button--secondary {
-  background: #2a2a2a;
-  color: #e3ffe8;
+  background: var(--color-surface, #2a2a2a);
+  color: var(--color-text-primary, #e3ffe8);
 }
 
 .base-button--highlight {

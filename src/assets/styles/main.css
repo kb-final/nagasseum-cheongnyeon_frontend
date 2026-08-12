@@ -58,6 +58,9 @@ html {
      민트색을 유지하고, 라이트에서는 밝은 배경에서도 읽히는 진한 초록을 쓴다. */
   --color-heading-accent: #e3ffe8;
 
+  /* 팝업(BaseModal) 배경 전용 토큰. 앱 배경(--color-app-bg)과 같은 값을 쓴다. */
+  --modal-surface: #111111;
+
   /* 홈 화면에서 --color-text-primary를 쓰던 자리 중, 라이트에서만 353934로
      바꾸고 싶은 곳(인사말/진행 중인 목표 제목 등) 전용. 다크 값은 동일하게 흰색. */
   --home-text-primary: #ffffff;
@@ -133,6 +136,8 @@ html {
 
   --color-heading-accent: #e3ffe8;
 
+  --modal-surface: #111111;
+
   --home-text-primary: #ffffff;
   --home-ink-text: #12281c;
 
@@ -177,6 +182,8 @@ html {
   --color-nav-inactive: #6f766d;
 
   --color-heading-accent: #1d6b3f;
+
+  --modal-surface: #f7f8f4;
 
   --home-text-primary: #353934;
 

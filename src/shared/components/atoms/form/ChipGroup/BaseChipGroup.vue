@@ -40,12 +40,12 @@ defineEmits(['update:modelValue'])
 .chip-group__label {
   margin-bottom: 16px;
   font-weight: 700;
-  color: var(--text-h, #ffffff);
+  color: var(--color-text-primary, #ffffff);
 }
 
 .chip-group__count {
   font-weight: 400;
-  color: var(--text, #9aa09a);
+  color: var(--color-text-tertiary, #9aa09a);
 }
 
 .chip-group__items {
@@ -59,10 +59,10 @@ defineEmits(['update:modelValue'])
 }
 
 .chip-group__item {
-  border: 1px solid #333333;
+  border: 1px solid var(--color-border, #333333);
   border-radius: 999px;
-  background: var(--card-bg, #161616);
-  color: var(--text, #9aa09a);
+  background: var(--color-surface, #161616);
+  color: var(--color-text-secondary, #9aa09a);
   font: inherit;
   font-weight: 700;
   cursor: pointer;
@@ -73,13 +73,13 @@ defineEmits(['update:modelValue'])
 }
 
 .chip-group__item--sm {
-  padding: 10px 18px;
+  padding: 6px 18px;
   font-size: 14px;
 }
 
 .chip-group__item--active {
   border-color: transparent;
-  background: #e3ffe8;
-  color: var(--color-mint-deep, #16281c);
+  background: var(--base-button-primary-bg, #e3ffe8);
+  color: var(--base-button-primary-text, #16281c);
 }
 </style>
