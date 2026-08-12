@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 
 import BaseCard from '@/shared/components/atoms/base/card/BaseCard.vue'
 
@@ -44,9 +44,52 @@ const progress = computed(() =>
   hasGoal.value ? Math.min(100, Math.max(0, props.climb.progressPercent)) : 0,
 )
 
+/**
+ * 화면에 실제로 그려지는 진행률. 캐릭터 위치는 이 값을 따라간다.
+ *
+ * <p>목표 퍼센트(progress)는 카드가 열리자마자 최종값이라, 그대로 쓰면 캐릭터가
+ * 처음부터 도착 지점에 서 있게 된다. 0에서 출발해 목표까지 프레임마다 조금씩 올려서
+ * 지그재그 길을 따라 걸어 올라가는 것처럼 보이게 한다.
+ */
+const displayProgress = ref(0)
+
+let rafId = null
+
+function animateProgressTo(target) {
+  if (rafId !== null) cancelAnimationFrame(rafId)
+
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  if (prefersReducedMotion) {
+    displayProgress.value = target
+    return
+  }
+
+  const from = displayProgress.value
+  const duration = 1500
+  const start = performance.now()
+
+  const step = (now) => {
+    const elapsed = now - start
+    const t = Math.min(1, elapsed / duration)
+    const eased = 1 - Math.pow(1 - t, 3) // ease-out
+
+    displayProgress.value = from + (target - from) * eased
+
+    rafId = t < 1 ? requestAnimationFrame(step) : null
+  }
+
+  rafId = requestAnimationFrame(step)
+}
+
+watch(progress, (target) => animateProgressTo(target), { immediate: true })
+
+onBeforeUnmount(() => {
+  if (rafId !== null) cancelAnimationFrame(rafId)
+})
+
 /** 기준점 두 개를 찾아 그 사이를 비례로 나눈다. */
 const climberPosition = computed(() => {
-  const value = progress.value
+  const value = displayProgress.value
   let from = PATH[0]
   let to = PATH[PATH.length - 1]
 
@@ -169,13 +212,12 @@ const segments = computed(() => {
 */
 .climb-card__climber {
   position: absolute;
-  width: 8.5%;
+  width: 15%;
   /* 발끝이 길에 닿아야 해서 아래쪽을 기준으로 잡는다. */
   transform: translate(-50%, -100%);
-  /* 달성률이 오르면 길을 따라 걸어 올라가는 것처럼 보인다. */
-  transition:
-    left 0.9s ease-in-out,
-    top 0.9s ease-in-out;
+  /* 길을 따라 걸어 올라가는 움직임은 requestAnimationFrame으로 프레임마다 좌표를
+     직접 갱신해서 만든다(스크립트의 animateProgressTo). 여기서 또 transition을 걸면
+     이미 완화(ease)된 값 위에 한 번 더 완화가 걸려 움직임이 밀리듯 어긋난다. */
 }
 
 .climb-card__climber-img {
@@ -183,12 +225,8 @@ const segments = computed(() => {
   width: 100%;
 }
 
-/* 화면 움직임을 꺼둔 사용자에게는 움직이지 않는다. */
-@media (prefers-reduced-motion: reduce) {
-  .climb-card__climber {
-    transition: none;
-  }
-}
+/* 화면 움직임을 꺼둔 사용자는 스크립트의 prefersReducedMotion 분기에서
+   애니메이션 없이 바로 최종 위치로 세운다. */
 
 /* ── 아래 요약 카드 ────────────────────────────────────────── */
 
