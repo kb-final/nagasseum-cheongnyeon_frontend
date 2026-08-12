@@ -48,6 +48,22 @@ function bucketGrow(bucket) {
       </div>
     </div>
 
+    <!--
+      막대 아래 눈금. 각 칸의 시작값을 왼쪽에 붙여 축처럼 읽히게 한다.
+      막대와 같은 flexGrow·gap을 써야 눈금이 칸 시작점과 맞는다.
+    -->
+    <div class="hist__axis" aria-hidden="true">
+      <span
+        v-for="bucket in buckets"
+        :key="bucket.rangeMin"
+        class="hist__tick"
+        :style="{ flexGrow: bucketGrow(bucket) }"
+        >{{ bucket.rangeMin }}</span
+      >
+      <span class="hist__tick hist__tick--last">100</span>
+    </div>
+    <p class="hist__unit">단위: 달성률 %</p>
+
     <p class="hist__legend">
       <span class="hist__legend-dot"></span>나 ({{ myRate }}%) — 코호트 평균 ({{
         cohortAverageRate
@@ -144,6 +160,31 @@ function bucketGrow(bucket) {
   height: 16px;
   transform: translateX(-50%);
   image-rendering: pixelated;
+}
+
+.hist__axis {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.hist__tick {
+  flex-basis: 0;
+  font-size: 10px;
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 마지막 칸의 끝값. 칸 하나를 차지하지 않도록 폭을 글자만큼만 준다. */
+.hist__tick--last {
+  flex: none;
+}
+
+.hist__unit {
+  margin: 3px 0 0;
+  font-size: 10px;
+  color: var(--ink-muted);
+  text-align: right;
 }
 
 .hist__legend {

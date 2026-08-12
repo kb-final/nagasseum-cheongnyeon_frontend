@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 
-import { formatManwon } from '@/shared/utils/formatter'
+import { formatEokManwon, formatManwon } from '@/shared/utils/formatter'
 
 import { useMemberStore } from '@/features/member/store/memberStore'
 
@@ -20,6 +20,7 @@ import CompareTabs from '@/features/compare/components/CompareTabs.vue'
 import DealTypeDistributionCard from '@/features/compare/components/DealTypeDistributionCard.vue'
 import IncomeBracketDistributionCard from '@/features/compare/components/IncomeBracketDistributionCard.vue'
 import NetAssetHighlightCard from '@/features/compare/components/NetAssetHighlightCard.vue'
+import OccupationDistributionCard from '@/features/compare/components/OccupationDistributionCard.vue'
 import PopularRegionsCard from '@/features/compare/components/PopularRegionsCard.vue'
 import SavingRangeCard from '@/features/compare/components/SavingRangeCard.vue'
 import StateNoticeCard from '@/features/compare/components/StateNoticeCard.vue'
@@ -85,6 +86,22 @@ const activeStatus = computed(() =>
 const activeErrorMessage = computed(() =>
   activeTab.value === 'goal' ? goalErrorMessage.value : assetErrorMessage.value,
 )
+
+/**
+ * 서버가 실제로 적용한 추가 필터.
+ *
+ * <p>탭마다 응답이 달라서 지금 보고 있는 탭 기준으로 읽는다.
+ */
+const appliedFilters = computed(() => activeComparison.value?.cohort?.appliedFilters ?? [])
+
+/**
+ * 소득·직업군으로 코호트를 좁히면 그 항목의 분포는 볼 것이 없어진다.
+ *
+ * <p>예를 들어 직업군을 켜면 비교 대상이 나와 같은 직업군만 남으므로 직업군 분포는
+ * 무조건 한 줄에 100%가 된다. 당연한 결과를 카드 한 장으로 보여줄 이유가 없어 감춘다.
+ */
+const showIncomeDistribution = computed(() => !appliedFilters.value.includes('INCOME'))
+const showOccupationDistribution = computed(() => !appliedFilters.value.includes('OCCUPATION'))
 
 const snapshotSource = computed(() => assetComparison.value ?? goalComparison.value)
 
@@ -195,15 +212,17 @@ onMounted(async () => {
 
           <CohortInsufficientNotice
             v-else-if="activeStatus === 'insufficient' && activeComparison"
-            :cohort-size="activeComparison.cohort.cohortSize"
+            :cohort-size="activeComparison.cohort.cohortSize ?? 0"
             :minimum-required="activeComparison.cohort.minimumRequired"
             :can-widen="canWidenCohort"
+            :applied-filters="appliedFilters"
             @widen="isEditOpen = true"
           />
 
           <template v-else-if="activeStatus === 'ready' && activeComparison">
             <CohortConditionCard
               :cohort-size="activeComparison.cohort.cohortSize"
+              :applied-filters="appliedFilters"
               :asset-range-label="`자산 ±${formatManwon(activeComparison.cohort.assetRange)}`"
               :age-range-label="`나이 ±${activeComparison.cohort.ageRange}세`"
               @edit="isEditOpen = true"
@@ -216,14 +235,22 @@ onMounted(async () => {
               />
 
               <IncomeBracketDistributionCard
+                v-if="showIncomeDistribution"
                 class="card--mint"
                 :brackets="activeComparison.incomeBracketDistribution"
                 :my-monthly-income="activeComparison.myMonthlyIncome"
               />
 
+              <OccupationDistributionCard
+                v-if="showOccupationDistribution && activeComparison.occupationDistribution?.length"
+                class="card--cream"
+                :items="activeComparison.occupationDistribution"
+                :my-occupation-type="memberStore.profile?.occupationType ?? null"
+              />
+
               <SavingRangeCard
                 v-if="activeComparison.saving?.mine != null"
-                class="card--cream"
+                class="card--mint"
                 :my-monthly-saving="activeComparison.saving.mine"
                 :cohort-range-min="activeComparison.saving.cohortMin"
                 :cohort-range-max="activeComparison.saving.cohortMax"
@@ -255,7 +282,7 @@ onMounted(async () => {
                 <div class="stat-card card--mint">
                   <div class="stat-card__label">평균 목표 자산</div>
                   <div class="stat-card__value">
-                    {{ formatManwon(activeComparison.averageTargetAmount) }}
+                    {{ formatEokManwon(activeComparison.averageTargetAmount) }}
                   </div>
                 </div>
                 <div class="stat-card card--mint">
@@ -321,6 +348,11 @@ onMounted(async () => {
   --c-ink-faint: #7f8a7d;
   --c-accent: #9fd8ab;
   --c-accent-mid: #4f7a5c;
+  /*
+    막대에서 "채워진 칸" 색. 초록은 내 항목·1위에만 쓰고 나머지는 회색으로 둔다.
+    전부 초록이면 채워진 건 보이는데 어느 게 내 것인지가 안 보인다.
+  */
+  --c-bar-on: #5a6b5c;
   --c-accent-soft: #263029;
   --c-track: #263029;
   --c-box: #171b16;
@@ -343,8 +375,8 @@ onMounted(async () => {
   --c-card-cream: #f7ffd1;
   --c-card-mint: #cdedd3;
   --c-on-color-ink: #16281c;
-  --c-on-color-muted: #4f6f5b;
-  --c-on-color-faint: #6f8b79;
+  --c-on-color-muted: #456351;
+  --c-on-color-faint: #5f7a68;
   --c-on-color-line: rgba(22, 40, 28, 0.14);
   --c-on-color-accent: #1d6b3f;
   --c-on-color-accent-mid: #8fb59a;
@@ -381,13 +413,26 @@ onMounted(async () => {
   --c-line: var(--color-border);
   --c-ink: var(--color-text-primary);
   --c-ink-muted: var(--color-text-secondary);
-  --c-ink-faint: var(--color-text-tertiary);
+  /*
+    공용 --color-text-tertiary(#8f968c)는 흰 카드에서 대비가 3.04:1로 기준(4.5:1)에
+    못 미친다. 여기 쓰이는 곳이 10~11px 작은 글씨라 더 불리해서 한 단계 진하게 쓴다.
+  */
+  --c-ink-faint: #6f7a6d;
   /*
     --color-primary는 라이트·다크가 같은 진초록(#1d6b3f)이라 배경 위에서 안 보인다.
     테마별로 뒤집히는 --color-heading-accent를 쓴다.
   */
   --c-accent: var(--color-heading-accent);
-  --c-accent-mid: var(--color-progress-inactive);
+  /*
+    공용 --color-progress-inactive는 "게이지 빈 칸"용 회색(라이트 #e3e7e0)으로 바뀌었다.
+    여기서 필요한 건 보조 막대·띠에 쓰는 중간 톤 초록이라 뜻이 달라서 값을 직접 쓴다.
+  */
+  --c-accent-mid: #a9c9b0;
+  /*
+    채워진 칸과 빈 칸(#eff1eb)의 대비. #aab3a6은 1.9:1이라 차 있는지가 안 보였다.
+    #7f8c7c면 3.1:1이 되고, 강조색(진초록)과는 채도로 갈린다.
+  */
+  --c-bar-on: #7f8c7c;
   --c-accent-soft: #e8f4ea;
   --c-track: #eff1eb;
   --c-box: #e8ebe4;
@@ -396,7 +441,7 @@ onMounted(async () => {
   --c-badge-ink: var(--color-heading-accent);
   --c-on-accent: #ffffff;
   --c-tooltip-bg: #10130f;
-  --c-warn: #8a6d00;
+  --c-warn: #7a6000;
   --c-warn-bg: #f4efdc;
   --c-danger: #c1442e;
   --c-danger-soft: rgba(193, 68, 46, 0.1);
@@ -406,10 +451,11 @@ onMounted(async () => {
   --c-card-mint: var(--color-surface);
   --c-on-color-ink: var(--color-text-primary);
   --c-on-color-muted: var(--color-text-secondary);
-  --c-on-color-faint: var(--color-text-tertiary);
+  /* 라이트에서 색 카드는 흰 카드라 위 --c-ink-faint와 같은 값을 써야 대비가 유지된다. */
+  --c-on-color-faint: #6f7a6d;
   --c-on-color-line: var(--color-border);
   --c-on-color-accent: var(--color-heading-accent);
-  --c-on-color-accent-mid: var(--color-progress-inactive);
+  --c-on-color-accent-mid: #a9c9b0;
   --c-on-color-soft: #e8f4ea;
   --c-on-color-track: #eff1eb;
   --c-on-color-value: var(--color-heading-accent);

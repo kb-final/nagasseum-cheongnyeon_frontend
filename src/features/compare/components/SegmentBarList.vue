@@ -5,11 +5,26 @@ const SEGMENT_COUNT = 10
 
 const props = defineProps({
   items: { type: Array, required: true },
+  /**
+   * 막대 길이 기준.
+   *
+   * <p>'absolute'는 100%가 10칸이다. 항목이 두세 개라 한쪽이 과반을 넘는 분포에 맞다.
+   * 'max'는 1위가 10칸이고 나머지는 그에 비례한다. 항목이 많아 전부 20% 아래로
+   * 깔리는 분포에서는 이쪽이라야 차이가 보인다. 옆에 실제 %를 같이 적어둔다.
+   */
+  fillMode: { type: String, default: 'absolute' },
 })
 
-const rows = computed(() =>
-  props.items.map((item) => ({ ...item, filled: Math.round((item.ratio / 100) * SEGMENT_COUNT) })),
-)
+const maxRatio = computed(() => Math.max(...props.items.map((item) => item.ratio), 0))
+
+const rows = computed(() => {
+  const base = props.fillMode === 'max' && maxRatio.value > 0 ? maxRatio.value : 100
+  return props.items.map((item) => ({
+    ...item,
+    // 0%가 아니면 최소 한 칸은 채운다. 있는데 안 보이면 없는 것으로 읽힌다.
+    filled: item.ratio > 0 ? Math.max(1, Math.round((item.ratio / base) * SEGMENT_COUNT)) : 0,
+  }))
+})
 </script>
 
 <template>

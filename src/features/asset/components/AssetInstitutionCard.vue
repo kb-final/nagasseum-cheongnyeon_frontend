@@ -54,8 +54,12 @@ defineEmits(['toggle'])
   color: var(--color-mint-deep, #16281c);
 }
 
+/*
+  연민트(#c1e8c8)는 흰 카드에서 1.34:1이라 선택했는지 알아볼 수 없다.
+  테마별로 뒤집히는 강조색을 쓴다(라이트 진초록 / 다크 밝은 민트).
+*/
 .asset-institution-card__indicator--selected {
   border-color: transparent;
-  background: var(--color-mint-strong, #c1e8c8);
+  background: var(--color-heading-accent);
 }
 </style>

@@ -58,7 +58,8 @@ onUnmounted(() => {
   width: 40px;
   height: 40px;
   border: 3px solid var(--color-toggle-off, #383e3a);
-  border-top-color: var(--color-mint-strong, #c1e8c8);
+  /* 연민트는 밝은 배경에서 1.07:1이라 회전하는 게 안 보인다. */
+  border-top-color: var(--color-heading-accent);
   border-radius: 50%;
   animation: asset-syncing-spin 0.8s linear infinite;
 }
@@ -67,13 +68,13 @@ onUnmounted(() => {
   margin: 0;
   font-size: 15.9px;
   font-weight: 500;
-  color: var(--text-h, #ffffff);
+  color: var(--color-text-primary);
 }
 
 .asset-syncing-view__subtitle {
   margin: 0;
   font-size: 13.1px;
-  color: var(--text, #9aa09a);
+  color: var(--color-text-secondary);
 }
 
 @keyframes asset-syncing-spin {

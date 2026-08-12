@@ -110,9 +110,17 @@ onMounted(() => {
   --c-line: var(--color-border);
   --c-ink: var(--color-text-primary);
   --c-ink-muted: var(--color-text-secondary);
-  --c-ink-faint: var(--color-text-tertiary);
+  /*
+    공용 --color-text-tertiary(#8f968c)는 흰 카드에서 3.04:1로 기준(4.5:1)에 못 미친다.
+    여기 쓰이는 기관명이 10px라 더 불리해서 한 단계 진하게 쓴다. 비교 화면과 같은 값.
+  */
+  --c-ink-faint: #6f7a6d;
   --c-accent: var(--color-heading-accent);
-  --c-accent-mid: var(--color-progress-inactive);
+  /*
+    공용 --color-progress-inactive는 "게이지 빈 칸"용 회색(라이트 #e3e7e0)으로 바뀌었다.
+    여기서 필요한 건 보조 막대·띠에 쓰는 중간 톤 초록이라 뜻이 달라서 값을 직접 쓴다.
+  */
+  --c-accent-mid: #a9c9b0;
   --c-accent-soft: #e8f4ea;
   --c-slot: #1d6b3f;
   --c-value: var(--color-text-primary);
@@ -122,7 +130,7 @@ onMounted(() => {
   --c-danger-line: #f2cec5;
   --c-danger-slot: #7a2c1e;
   --c-hero-bg: #e8f4ea;
-  --c-hero-line: var(--color-progress-inactive);
+  --c-hero-line: #a9c9b0;
   --c-hero-ink: var(--color-text-primary);
   --c-hero-muted: var(--color-text-secondary);
   --c-hero-btn-bg: var(--color-heading-accent);

@@ -1,13 +1,31 @@
 <script setup>
+import { computed } from 'vue'
+
 import partyImage from '@/features/compare/assets/party.png'
 
-defineProps({
+const props = defineProps({
   cohortSize: { type: Number, required: true },
   assetRangeLabel: { type: String, required: true },
   ageRangeLabel: { type: String, required: true },
+  /** 서버가 실제로 적용한 추가 필터. CompareCohort.appliedFilters 원본 그대로 */
+  appliedFilters: { type: Array, default: () => [] },
 })
 
 defineEmits(['edit'])
+
+const FILTER_LABELS = {
+  INCOME: '소득',
+  OCCUPATION: '직업군',
+}
+
+/**
+ * 추가로 걸린 필터 칩.
+ *
+ * <p>자산·나이는 항상 걸리지만 소득·직업군은 요청에 넣어도 서버가 못 쓰는 경우가 있다.
+ * 그래서 요청한 값이 아니라 서버가 "적용했다"고 돌려준 값을 그대로 보여준다.
+ * 이게 없으면 대상이 0명일 때 필터 때문인지 진짜 또래가 없는 건지 알 수 없다.
+ */
+const extraChips = computed(() => props.appliedFilters.map((type) => FILTER_LABELS[type] ?? type))
 </script>
 
 <template>
@@ -25,6 +43,7 @@ defineEmits(['edit'])
     <div class="cohort-card__chips">
       <span class="chip">{{ assetRangeLabel }}</span>
       <span class="chip">{{ ageRangeLabel }}</span>
+      <span v-for="label in extraChips" :key="label" class="chip chip--extra"> + {{ label }} </span>
     </div>
 
     <p class="cohort-card__summary">
@@ -57,7 +76,6 @@ defineEmits(['edit'])
   justify-content: space-between;
 }
 
-/* main.css의 h1,h2가 흰색이라 밝은 카드에서 안 보인다. 여기서 덮어쓴다. */
 /* main.css의 h1,h2가 흰색이라 밝은 카드에서 글자가 사라진다. 여기서 덮어쓴다. */
 .cohort-card__title {
   margin: 0;
@@ -79,7 +97,8 @@ defineEmits(['edit'])
 
 .cohort-card__chips {
   display: flex;
-  gap: 10px;
+  flex-wrap: wrap;
+  gap: 6px 10px;
   margin-top: 8px;
 }
 
@@ -91,6 +110,16 @@ defineEmits(['edit'])
   background: var(--chip-bg);
   font-size: 12px;
   color: var(--chip-text);
+}
+
+/*
+  추가 필터는 기본 조건과 구분되게 테두리만 준다. 같은 모양이면 자산·나이처럼
+  항상 걸리는 조건으로 오해한다.
+*/
+.chip--extra {
+  border: 1px solid var(--mint);
+  background: none;
+  color: var(--mint);
 }
 
 .cohort-card__summary {

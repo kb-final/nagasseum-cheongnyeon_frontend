@@ -58,7 +58,7 @@ defineProps({
 .asset-category-section__empty {
   margin: 0;
   padding: 24px 0;
-  border: 1px solid var(--border, #262626);
+  border: 1px solid var(--color-border);
   border-radius: 16px;
   color: #888888;
   font-size: 13px;
