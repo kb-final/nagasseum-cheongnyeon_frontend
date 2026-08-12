@@ -169,7 +169,7 @@ const segments = computed(() => {
 */
 .climb-card__climber {
   position: absolute;
-  width: 6.87%;
+  width: 8.5%;
   /* 발끝이 길에 닿아야 해서 아래쪽을 기준으로 잡는다. */
   transform: translate(-50%, -100%);
   /* 달성률이 오르면 길을 따라 걸어 올라가는 것처럼 보인다. */
