@@ -49,7 +49,7 @@ const goalTitle = computed(
 
     <div class="active-goal-card__stats">
       <div class="active-goal-card__stat">
-        <span class="active-goal-card__stat-label">현재</span>
+        <span class="active-goal-card__stat-label">현재 금액</span>
         <strong class="active-goal-card__stat-value">{{
           formatEokManwon(climb.currentAmount)
         }}</strong>
@@ -134,13 +134,13 @@ const goalTitle = computed(
 }
 
 .active-goal-card__stat-label {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--color-text-tertiary, #8f968c);
 }
 
 .active-goal-card__stat-value {
-  font-size: 15px;
+  font-size: 18px;
   font-weight: 900;
   color: var(--home-text-primary, #10130f);
   font-variant-numeric: tabular-nums;

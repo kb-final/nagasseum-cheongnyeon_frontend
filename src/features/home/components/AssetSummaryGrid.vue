@@ -26,7 +26,7 @@ const tiles = computed(() => [
   {
     label: '고정 저축액',
     amount: props.assetSummary.monthlySavings,
-    sub: null,
+    sub: '월 기준',
   },
 ])
 </script>
@@ -78,7 +78,7 @@ const tiles = computed(() => [
 
 .asset-summary-grid__amount {
   overflow: hidden;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 900;
   color: var(--home-ink-text, #12281c);
   text-overflow: ellipsis;
@@ -87,6 +87,7 @@ const tiles = computed(() => [
 }
 
 .asset-summary-grid__sub {
+  align-self: flex-end;
   font-size: 11px;
   font-weight: 700;
   color: var(--total-asset-label, #12281c);
