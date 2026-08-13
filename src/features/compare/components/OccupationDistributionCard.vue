@@ -132,7 +132,7 @@ const topLabel = computed(() =>
 
 .card__title {
   margin: 0 0 8px;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
 }
 

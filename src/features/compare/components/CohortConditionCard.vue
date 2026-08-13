@@ -79,7 +79,7 @@ const extraChips = computed(() => props.appliedFilters.map((type) => FILTER_LABE
 /* main.css의 h1,h2가 흰색이라 밝은 카드에서 글자가 사라진다. 여기서 덮어쓴다. */
 .cohort-card__title {
   margin: 0;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--c-ink);
 }

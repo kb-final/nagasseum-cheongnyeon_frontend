@@ -85,7 +85,7 @@ const bandWidthPct = computed(() => (isReady.value ? rangeEndPct.value - rangeSt
   align-items: baseline;
   gap: 8px;
   margin: 0;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
 }
 

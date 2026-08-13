@@ -164,7 +164,7 @@ onMounted(() => {
   border-radius: 10px;
   background: var(--c-danger-soft);
   color: var(--c-danger);
-  font-size: 11.5px;
+  font-size: 11px;
   line-height: 1.5;
 }
 </style>

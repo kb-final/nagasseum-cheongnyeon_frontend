@@ -77,7 +77,7 @@ const syncedAtLabel = computed(() => {
   border: 1px solid var(--c-hero-line);
   border-radius: 14px;
   background: var(--c-hero-bg);
-  line-height: 1.3;
+  line-height: 1.45;
 }
 
 .asset-total-card__info {
@@ -85,14 +85,14 @@ const syncedAtLabel = computed(() => {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .asset-total-card__label {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--c-hero-ink);
 }
@@ -136,7 +136,7 @@ const syncedAtLabel = computed(() => {
   border-radius: 8px;
   background: var(--c-hero-btn-bg);
   color: var(--c-hero-btn-ink);
-  font-size: 11.5px;
+  font-size: 11px;
   font-weight: 400;
 }
 
