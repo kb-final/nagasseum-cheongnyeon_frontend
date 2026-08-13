@@ -68,7 +68,7 @@ const extraLabels = computed(() => props.appliedFilters.map((type) => FILTER_LAB
 }
 
 .applied b {
-  font-weight: inherit;
+  font-weight: 700;
   color: var(--c-accent);
 }
 

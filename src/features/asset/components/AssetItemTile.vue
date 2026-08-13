@@ -117,6 +117,7 @@ const label = computed(() => TYPE_LABELS[props.type] || props.type || '기타')
   margin: 0;
   color: var(--c-ink);
   font-size: 12px;
+  font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
 }

@@ -80,6 +80,7 @@ const extraChips = computed(() => props.appliedFilters.map((type) => FILTER_LABE
 .cohort-card__title {
   margin: 0;
   font-size: 14px;
+  font-weight: 700;
   color: var(--c-ink);
 }
 
@@ -109,6 +110,7 @@ const extraChips = computed(() => props.appliedFilters.map((type) => FILTER_LABE
   padding: 3px 10px;
   background: var(--chip-bg);
   font-size: 12px;
+  font-weight: 700;
   color: var(--chip-text);
 }
 
@@ -143,6 +145,6 @@ const extraChips = computed(() => props.appliedFilters.map((type) => FILTER_LABE
 }
 
 .cohort-card__summary b {
-  font-weight: inherit;
+  font-weight: 700;
 }
 </style>

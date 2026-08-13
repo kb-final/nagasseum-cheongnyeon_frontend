@@ -137,6 +137,14 @@ onMounted(() => {
   --c-hero-btn-ink: #ffffff;
 }
 
+/*
+  AppHeader는 공용 컴포넌트라 파일을 고치지 않는다. 제목이 font-weight 400이라
+  화면에서 제일 큰 글자인데도 얇게 보여서 이 화면에서만 굵기를 덮는다.
+*/
+.asset-detail-view :deep(.app-header__title) {
+  font-weight: 700;
+}
+
 .asset-detail-view__skeleton {
   display: flex;
   flex-direction: column;

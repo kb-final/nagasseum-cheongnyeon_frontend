@@ -155,6 +155,7 @@ const isHintOpen = ref(false)
 .card__title {
   margin: 0;
   font-size: 14px;
+  font-weight: 700;
 }
 
 .card__desc {
@@ -163,7 +164,7 @@ const isHintOpen = ref(false)
 }
 
 .card__desc b {
-  font-weight: inherit;
+  font-weight: 700;
   color: var(--mint);
 }
 

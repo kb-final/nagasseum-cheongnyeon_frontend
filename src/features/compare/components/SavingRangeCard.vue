@@ -86,6 +86,7 @@ const bandWidthPct = computed(() => (isReady.value ? rangeEndPct.value - rangeSt
   gap: 8px;
   margin: 0;
   font-size: 14px;
+  font-weight: 700;
 }
 
 .card__range {

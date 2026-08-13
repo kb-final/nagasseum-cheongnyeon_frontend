@@ -581,12 +581,14 @@ onMounted(async () => {
 
 .stat-card__label {
   font-size: 12px;
-  color: var(--ink-muted);
+  font-weight: 700;
+  color: var(--c-ink);
 }
 
 .stat-card__value {
   margin-top: 2px;
   font-size: 18px;
+  font-weight: 700;
   line-height: 1.2;
   color: var(--c-value);
   font-variant-numeric: tabular-nums;
@@ -615,6 +617,7 @@ onMounted(async () => {
   justify-content: center;
   gap: 5px;
   margin: 0;
+  font-weight: 700;
   color: var(--c-disclaimer-ink);
 }
 

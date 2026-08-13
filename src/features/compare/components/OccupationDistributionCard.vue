@@ -133,6 +133,7 @@ const topLabel = computed(() =>
 .card__title {
   margin: 0 0 8px;
   font-size: 14px;
+  font-weight: 700;
 }
 
 .card__desc {
@@ -143,7 +144,7 @@ const topLabel = computed(() =>
 }
 
 .card__desc b {
-  font-weight: inherit;
+  font-weight: 700;
   color: var(--mint);
 }
 

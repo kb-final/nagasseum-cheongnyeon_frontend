@@ -61,6 +61,7 @@ watch(() => props.cohortAverageNetAssets, countUpTo, { immediate: true })
 .card__title {
   margin: 0;
   font-size: 14px;
+  font-weight: 700;
 }
 
 .card__value {

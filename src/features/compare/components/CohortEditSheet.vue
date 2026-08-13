@@ -281,7 +281,7 @@ function apply() {
 }
 
 .field__head b {
-  font-weight: inherit;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
 
