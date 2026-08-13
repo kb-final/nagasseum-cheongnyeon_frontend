@@ -7,8 +7,10 @@ import BaseCard from '@/shared/components/atoms/base/card/BaseCard.vue'
 import BaseToggle from '@/shared/components/atoms/form/Toggle/BaseToggle.vue'
 import BaseModal from '@/shared/components/atoms/feedback/Modal/BaseModal.vue'
 import BaseButton from '@/shared/components/atoms/base/button/BaseButton.vue'
-import BaseProfileIcon from '@/shared/components/atoms/base/icon/BaseProfileIcon.vue'
+import BaseBadge from '@/shared/components/atoms/base/badge/BaseBadge.vue'
 import BaseChevronIcon from '@/shared/components/atoms/base/icon/BaseChevronIcon.vue'
+
+import climberImage from '@/assets/images/climber.png'
 
 import { useMemberStore, AGREEMENT_TYPE } from '@/features/member/store/memberStore'
 import { useTheme } from '@/shared/composables/useTheme'
@@ -77,19 +79,17 @@ function confirmLogout() {
 
     <section class="my-page-view__profile">
       <div class="my-page-view__avatar">
-        <BaseProfileIcon />
+        <img class="my-page-view__avatar-img" :src="climberImage" alt="" />
       </div>
       <p class="my-page-view__nickname">{{ memberStore.profile?.nickname ?? '회원' }} 님</p>
 
       <div class="my-page-view__badges">
-        <span class="my-page-view__badge my-page-view__badge--level">
+        <BaseBadge class="my-page-view__badge--level" variant="mint">
           Lv.{{ climbLevel }} {{ climbTitle }}
-        </span>
-        <span class="my-page-view__badge">고도 {{ altitudePercent }}%</span>
+        </BaseBadge>
       </div>
 
       <div class="my-page-view__exp">
-        <span class="my-page-view__exp-label">EXP</span>
         <span class="my-page-view__exp-track">
           <span
             v-for="index in EXP_SEGMENT_COUNT"
@@ -112,10 +112,6 @@ function confirmLogout() {
           <span class="my-page-view__row-label">회원정보 수정</span>
           <BaseChevronIcon class="my-page-view__chevron" />
         </button>
-        <button type="button" class="my-page-view__row" @click="openLogoutModal">
-          <span class="my-page-view__row-label">로그아웃</span>
-          <BaseChevronIcon class="my-page-view__chevron" />
-        </button>
         <button type="button" class="my-page-view__row" @click="goToAssetLink">
           <span class="my-page-view__row-label">자산 연동 관리</span>
           <BaseChevronIcon class="my-page-view__chevron" />
@@ -130,15 +126,23 @@ function confirmLogout() {
           <div class="my-page-view__row-text">
             <span class="my-page-view__row-label">알림 받기</span>
             <span class="my-page-view__row-desc"
-              >저축 현황, 정책 마감 등 주요 소식을 알려드려요</span
+              >저축 현황, 매물 시세 변동 등 주요 소식을 알려드려요</span
             >
           </div>
           <BaseToggle v-model="notificationAgreed" />
         </div>
+      </BaseCard>
+    </section>
+
+    <section class="my-page-view__section">
+      <h2 class="my-page-view__section-title">데이터 설정</h2>
+      <BaseCard class="my-page-view__card">
         <div class="my-page-view__row my-page-view__row--toggle">
           <div class="my-page-view__row-text">
             <span class="my-page-view__row-label">[선택] 또래 비교 데이터 제공</span>
-            <span class="my-page-view__row-desc">또래 등반 통계에 익명으로 활용돼요</span>
+            <span class="my-page-view__row-desc"
+              >익명 처리된 데이터가 또래 비교 통계에 활용돼요</span
+            >
           </div>
           <BaseToggle v-model="compareDataAgreed" />
         </div>
@@ -151,7 +155,6 @@ function confirmLogout() {
         <div class="my-page-view__row my-page-view__row--toggle">
           <div class="my-page-view__row-text">
             <span class="my-page-view__row-label">다크 모드</span>
-            <span class="my-page-view__row-desc">Light/Dark 테마를 전환해요</span>
           </div>
           <BaseToggle v-model="isDarkTheme" />
         </div>
@@ -176,6 +179,10 @@ function confirmLogout() {
       </BaseCard>
     </section>
 
+    <button type="button" class="my-page-view__logout-link" @click="openLogoutModal">
+      로그아웃
+    </button>
+
     <BaseModal v-model="isLogoutModalOpen" title="로그아웃 하시겠어요?">
       <p class="my-page-view__logout-desc">로그아웃하면 다시 로그인해야 앱을 이용할 수 있어요</p>
       <template #footer>
@@ -192,16 +199,14 @@ function confirmLogout() {
 .my-page-view {
   display: flex;
   flex-direction: column;
+  font-weight: 600;
 }
 
 .my-page-view__profile {
-  /* 레벨 뱃지와 EXP 현재 칸이 같이 쓰는 색. 이 화면에서만 쓴다. */
-  --level-badge: #ffd939;
-
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px 0 24px;
+  padding: 20px 0 12px;
 }
 
 .my-page-view__avatar {
@@ -210,19 +215,22 @@ function confirmLogout() {
   justify-content: center;
   width: 76px;
   height: 76px;
-  /*
-    배경(#e3ffe8)이 라이트 페이지와 밝기가 비슷해 동그라미 경계가 안 보인다.
-    --color-progress-inactive는 게이지 빈 칸용 회색으로 바뀌어서 여기엔 안 맞는다.
-  */
-  border: 1px solid #a9c9b0;
   border-radius: 38px;
-  background: var(--accent, #e3ffe8);
-  color: var(--color-mint-deep, #16281c);
+  /* BaseCard와 같은 배경·그림자 */
+  background: var(--color-surface, #161616);
+  box-shadow: 0 2px 6px rgba(90, 143, 77, 0.06);
+}
+
+.my-page-view__avatar-img {
+  width: 70%;
+  height: 70%;
+  object-fit: contain;
 }
 
 .my-page-view__nickname {
   margin: 12px 0 0;
   font-size: 17px;
+  font-weight: 700;
   color: var(--color-text-primary, #ffffff);
 }
 
@@ -232,19 +240,10 @@ function confirmLogout() {
   margin-top: 10px;
 }
 
-.my-page-view__badge {
-  padding: 3px 7px;
-  border-radius: 999px;
-  background: var(--accent, #e3ffe8);
-  color: var(--color-mint-deep, #16281c);
-  font-size: 11px;
-  line-height: 1.5;
-}
-
-/* 레벨 뱃지만 노란색 */
-.my-page-view__badge--level {
-  background: var(--level-badge);
-  color: #3a2f00;
+/* 홈 화면(GreetingHeader)의 레벨 뱃지와 같은 스타일로 맞춘다. */
+.my-page-view :deep(.my-page-view__badge--level) {
+  font-weight: 700;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 }
 
 .my-page-view__exp {
@@ -254,12 +253,6 @@ function confirmLogout() {
   width: 100%;
   max-width: 280px;
   margin-top: 10px;
-}
-
-.my-page-view__exp-label {
-  font-size: 9.5px;
-  letter-spacing: 0.5px;
-  color: var(--color-text-secondary, #9aa09a);
 }
 
 /* 칸 사이를 띄워 눈금처럼 보이게 한다. 홈 등반 카드와 같은 방식이다. */
@@ -273,20 +266,17 @@ function confirmLogout() {
   flex: 1;
   height: 11px;
   border-radius: 3px;
-  background: var(--color-border, #262626);
+  background: var(--color-progress-inactive, #b6d4bd);
 }
 
-/*
-  연민트(#c1e8c8)는 빈 칸(--color-border)과 라이트에서 1.07:1이라 몇 칸 찼는지
-  구분이 안 된다. 테마별로 뒤집히는 강조색을 쓴다.
-*/
+/* 목표 화면(GoalProgressCard) 진행 바와 같은 색을 쓴다. */
 .my-page-view__exp-segment--filled {
-  background: var(--color-heading-accent);
+  background: var(--color-progress-active, #1d6b3f);
 }
 
-/* 지금 서 있는 칸만 노란색. --filled 뒤에 와야 덮어쓴다. */
+/* 지금 서 있는 칸만 강조색. --filled 뒤에 와야 덮어쓴다. */
 .my-page-view__exp-segment--current {
-  background: var(--level-badge);
+  background: var(--color-accent, #ffd939);
 }
 
 .my-page-view__exp-value {
@@ -302,8 +292,8 @@ function confirmLogout() {
 .my-page-view__section-title {
   margin: 0 0 8px;
   padding: 0 4px;
-  font-size: 12.3px;
-  font-weight: 400;
+  font-size: 14.5px;
+  font-weight: 600;
   color: var(--color-text-secondary, #c1e8c8);
 }
 
@@ -311,7 +301,7 @@ function confirmLogout() {
 .my-page-view__card {
   display: flex;
   flex-direction: column;
-  padding: 4px 20px;
+  padding: 2px 16px;
 }
 
 .my-page-view__row {
@@ -319,7 +309,7 @@ function confirmLogout() {
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: 16px 0;
+  padding: 12px 0;
   border: none;
   background: none;
   color: inherit;
@@ -370,5 +360,16 @@ function confirmLogout() {
   color: #4a5a52;
   font-size: 13px;
   text-align: center;
+}
+
+.my-page-view__logout-link {
+  margin: 20px auto 0;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--color-text-secondary, #9aa09a);
+  font-size: 12px;
+  text-decoration: underline;
+  cursor: pointer;
 }
 </style>
