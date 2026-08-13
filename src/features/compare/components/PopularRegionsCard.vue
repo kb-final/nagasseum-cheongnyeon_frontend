@@ -94,6 +94,7 @@ const filledCount = (ratio) => Math.round((ratio / 100) * SEGMENT_COUNT)
   height: 24px;
   color: var(--rank-ink);
   font-size: 12px;
+  font-weight: 700;
 }
 
 .region-row__rank--1 {
@@ -108,9 +109,14 @@ const filledCount = (ratio) => Math.round((ratio / 100) * SEGMENT_COUNT)
   background: var(--rank-3);
 }
 
+/*
+  지역명은 이 줄의 주인공이라 굵게, 오른쪽 비율은 보조색 보통 굵기로 둔다.
+  둘 다 같은 무게면 어느 쪽이 이름이고 어느 쪽이 값인지 구분이 안 된다.
+*/
 .region-row__name {
   color: var(--ink);
   font-size: 13px;
+  font-weight: 700;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

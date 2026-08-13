@@ -79,14 +79,17 @@ const extraChips = computed(() => props.appliedFilters.map((type) => FILTER_LABE
   color: var(--c-ink);
 }
 
-/* 홈 화면의 "자세히 ›"와 같은 모양으로 맞춘다. */
+/*
+  모양은 홈 화면의 "자세히 ›"와 같게 맞추고, 색은 본문색을 쓴다.
+  --c-ink는 테마를 따라가므로 다크에서는 밝은 글씨가 된다.
+*/
 .cohort-card__edit {
   flex: none;
   border: 0;
   padding: 0;
   background: none;
   font-size: 13px;
-  color: var(--mint);
+  color: var(--c-ink);
   cursor: pointer;
 }
 
