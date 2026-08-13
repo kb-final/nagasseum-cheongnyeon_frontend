@@ -106,7 +106,7 @@ const itemCount = computed(() =>
     <div v-for="group in groups" :key="group.key" class="inventory__group">
       <div class="inventory__group-head">
         <span class="inventory__group-name">{{ group.label }}</span>
-        <span class="inventory__group-total">{{ formatWon(group.total) }}</span>
+        <span class="inventory__group-total">총 {{ formatWon(group.total) }}</span>
       </div>
 
       <div class="inventory__list">
@@ -149,7 +149,7 @@ const itemCount = computed(() =>
 }
 
 .inventory__count {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--c-ink-faint);
   font-variant-numeric: tabular-nums;
 }
@@ -168,7 +168,7 @@ const itemCount = computed(() =>
 }
 
 .inventory__group-name {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--c-accent);
 }
@@ -192,7 +192,7 @@ const itemCount = computed(() =>
   border-radius: 14px;
   background: var(--c-card);
   color: var(--c-ink-muted);
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.7;
   text-align: center;
 }

@@ -125,6 +125,7 @@ function goToAgreement() {
 .locked__title {
   margin: 10px 0 0;
   font-size: 17px;
+  font-weight: 700;
   color: var(--c-ink);
 }
 
@@ -136,7 +137,7 @@ function goToAgreement() {
 }
 
 .locked__body b {
-  font-weight: inherit;
+  font-weight: 700;
   color: var(--c-ink);
 }
 

@@ -67,7 +67,8 @@ const filledCount = (ratio) => Math.round((ratio / 100) * SEGMENT_COUNT)
 
 .card__title {
   margin: 0;
-  font-size: 14px;
+  font-size: 15px;
+  font-weight: 700;
 }
 
 .region-list {
@@ -109,7 +110,7 @@ const filledCount = (ratio) => Math.round((ratio / 100) * SEGMENT_COUNT)
 
 .region-row__name {
   color: var(--ink);
-  font-size: 14px;
+  font-size: 13px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

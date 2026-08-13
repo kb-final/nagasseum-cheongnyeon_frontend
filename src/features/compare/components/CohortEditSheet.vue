@@ -281,7 +281,7 @@ function apply() {
 }
 
 .field__head b {
-  font-weight: inherit;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
 
@@ -458,9 +458,6 @@ function apply() {
 
 .sheet__hint {
   margin: 16px 0 0;
-  padding: 10px 12px;
-  border-radius: 10px;
-  background: var(--c-bg);
   text-align: center;
   font-size: 11px;
   line-height: 1.5;
