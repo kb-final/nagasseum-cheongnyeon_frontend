@@ -32,12 +32,7 @@ const extraChips = computed(() => props.appliedFilters.map((type) => FILTER_LABE
   <section class="cohort-card">
     <div class="cohort-card__head">
       <h2 class="cohort-card__title">내 또래 기준</h2>
-      <button type="button" class="cohort-card__edit" @click="$emit('edit')">
-        기준 수정
-        <svg width="7" height="9" viewBox="0 0 8 10" aria-hidden="true">
-          <path d="M0 0L8 5L0 10Z" fill="currentColor" />
-        </svg>
-      </button>
+      <button type="button" class="cohort-card__edit" @click="$emit('edit')">기준 수정 ›</button>
     </div>
 
     <div class="cohort-card__chips">
@@ -59,7 +54,7 @@ const extraChips = computed(() => props.appliedFilters.map((type) => FILTER_LABE
 .cohort-card {
   --surface: var(--c-card);
   --chip-bg: var(--c-accent-soft);
-  --chip-text: var(--c-value);
+  --chip-text: var(--c-ink);
   --mint: var(--c-accent);
 
   border: 1px solid var(--c-line);
@@ -84,10 +79,9 @@ const extraChips = computed(() => props.appliedFilters.map((type) => FILTER_LABE
   color: var(--c-ink);
 }
 
+/* 홈 화면의 "자세히 ›"와 같은 모양으로 맞춘다. */
 .cohort-card__edit {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
+  flex: none;
   border: 0;
   padding: 0;
   background: none;

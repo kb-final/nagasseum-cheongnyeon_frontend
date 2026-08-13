@@ -106,7 +106,7 @@ const itemCount = computed(() =>
     <div v-for="group in groups" :key="group.key" class="inventory__group">
       <div class="inventory__group-head">
         <span class="inventory__group-name">{{ group.label }}</span>
-        <span class="inventory__group-total">{{ formatWon(group.total) }}</span>
+        <span class="inventory__group-total">총 {{ formatWon(group.total) }}</span>
       </div>
 
       <div class="inventory__list">
