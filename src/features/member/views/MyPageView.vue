@@ -1,6 +1,6 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, nextTick, onMounted, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 import AppHeader from '@/shared/components/molecules/AppHeader.vue'
 import BaseCard from '@/shared/components/atoms/base/card/BaseCard.vue'
@@ -16,10 +16,13 @@ import { useMemberStore, AGREEMENT_TYPE } from '@/features/member/store/memberSt
 import { useTheme } from '@/shared/composables/useTheme'
 
 const router = useRouter()
+const route = useRoute()
 const memberStore = useMemberStore()
 const { theme, toggleTheme } = useTheme()
 
 const isLogoutModalOpen = ref(false)
+const compareDataSectionRef = ref(null)
+const isCompareDataShaking = ref(false)
 
 const isDarkTheme = computed({
   get: () => theme.value === 'dark',
@@ -51,8 +54,28 @@ const altitudePercent = 27
 /** 진행률을 칸 수로 바꾼다. 홈의 등반 카드와 같은 방식이다. */
 const filledSegments = computed(() => Math.round((altitudePercent / 100) * EXP_SEGMENT_COUNT))
 
-onMounted(() => {
+onMounted(async () => {
   if (!memberStore.profile) memberStore.fetchProfile()
+
+  // 비교 화면 잠금 카드에서 "약관 동의하러 가기"로 들어왔을 때, 해당 항목이
+  // 화면 세로 가운데에 오도록 스크롤해준다.
+  // 쿼리 정리를 router.replace로 하면 vue-router의 전역 scrollBehavior({top:0})가
+  // 뒤늦게(비동기로) 실행되면서 아래 scrollIntoView를 덮어써 스크롤이 안 먹는 것처럼
+  // 보인다. 그래서 라우터 네비게이션을 타지 않는 history API로 쿼리만 지운다.
+  if (route.query.scrollTo === 'compare-data-agreed') {
+    window.history.replaceState(history.state, '', router.resolve({ name: 'my' }).fullPath)
+    await nextTick()
+    // 페이지 진입 직후(같은 마이크로태스크) 바로 호출하면 브라우저의 초기 스크롤
+    // 처리와 겹쳐서 scrollIntoView가 씹힌다. setTimeout으로 매크로태스크로 미뤄야 먹힌다.
+    setTimeout(() => {
+      compareDataSectionRef.value?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      // 스크롤이 어느 정도 끝난 뒤에 흔들어야 "이 카드예요"가 눈에 들어온다.
+      // 스크롤 도중에 같이 흔들면 위치가 계속 바뀌어서 흔들림이 잘 안 보인다.
+      setTimeout(() => {
+        isCompareDataShaking.value = true
+      }, 500)
+    })
+  }
 })
 
 function goToEditInfo() {
@@ -74,7 +97,7 @@ function confirmLogout() {
 </script>
 
 <template>
-  <div class="my-page-view">
+  <div class="my-page-view my-page-view--animated">
     <AppHeader title="마이페이지" :show-back="false" />
 
     <section class="my-page-view__profile">
@@ -134,10 +157,14 @@ function confirmLogout() {
       </BaseCard>
     </section>
 
-    <section class="my-page-view__section">
+    <section ref="compareDataSectionRef" class="my-page-view__section">
       <h2 class="my-page-view__section-title">데이터 설정</h2>
       <BaseCard class="my-page-view__card">
-        <div class="my-page-view__row my-page-view__row--toggle">
+        <div
+          class="my-page-view__row my-page-view__row--toggle"
+          :class="{ 'my-page-view__row--shake': isCompareDataShaking }"
+          @animationend="isCompareDataShaking = false"
+        >
           <div class="my-page-view__row-text">
             <span class="my-page-view__row-label">[선택] 또래 비교 데이터 제공</span>
             <span class="my-page-view__row-desc"
@@ -200,6 +227,42 @@ function confirmLogout() {
   display: flex;
   flex-direction: column;
   font-weight: 600;
+}
+
+/*
+  홈/비교/목표 상세 화면과 같은 card-rise 진입 모션(main.css에 공용 정의)을 재사용해서
+  프로필/설정 섹션들이 순서대로 살짝 떠오르며 나타나게 한다.
+*/
+.my-page-view--animated > * {
+  animation: card-rise 0.35s ease-out both;
+}
+
+.my-page-view--animated > *:nth-child(2) {
+  animation-delay: 0.04s;
+}
+
+.my-page-view--animated > *:nth-child(3) {
+  animation-delay: 0.08s;
+}
+
+.my-page-view--animated > *:nth-child(4) {
+  animation-delay: 0.12s;
+}
+
+.my-page-view--animated > *:nth-child(5) {
+  animation-delay: 0.16s;
+}
+
+.my-page-view--animated > *:nth-child(6) {
+  animation-delay: 0.2s;
+}
+
+.my-page-view--animated > *:nth-child(7) {
+  animation-delay: 0.24s;
+}
+
+.my-page-view--animated > *:nth-child(8) {
+  animation-delay: 0.28s;
 }
 
 .my-page-view__profile {
@@ -342,6 +405,33 @@ function confirmLogout() {
 
 .my-page-view__row--toggle {
   align-items: center;
+}
+
+/*
+  비교 화면 잠금 카드에서 이 항목을 보러 왔을 때, 스크롤이 끝난 뒤 살짝 흔들어서
+  "이 항목이에요"를 짚어준다.
+*/
+.my-page-view__row--shake {
+  animation: row-shake 0.5s ease-in-out;
+}
+
+@keyframes row-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-6px);
+  }
+  40% {
+    transform: translateX(5px);
+  }
+  60% {
+    transform: translateX(-3px);
+  }
+  80% {
+    transform: translateX(2px);
+  }
 }
 
 .my-page-view__row-text {
