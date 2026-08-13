@@ -4,9 +4,6 @@ import { computed } from 'vue'
 import BaseButton from '@/shared/components/atoms/base/button/BaseButton.vue'
 import { formatManwon, formatYearMonthKo } from '@/shared/utils/formatter'
 
-import runnerImage from '@/assets/images/runner.png'
-import flagImage from '@/assets/images/flag.png'
-
 const props = defineProps({
   // savingStatus { fixedSaving, recentAverageSaving, latestSaving } — 저축 기록이 부족하면 평균/최근 값이 없을 수 있다.
   savingStatus: { type: Object, required: true },
@@ -18,33 +15,78 @@ const props = defineProps({
 defineEmits(['change-saving'])
 
 const FORECAST_LABELS = {
-  FIXED: '기존 예상 달성일 (고정 저축 기준)',
-  RECENT_AVERAGE: '최근 3개월 평균 기준',
-  LATEST: '최근 저축 기준',
+  FIXED: '기존 예상 달성일',
+  RECENT_AVERAGE: '최근 3개월 평균',
+  LATEST: '최근 저축',
 }
 
-// 저축 현황 막대의 눈금 상한. 세 기준 중 가장 큰 값에 여유를 둬서 마커가 끝에 붙지 않게 한다.
-const SCALE_HEADROOM = 1.15
+const latestForecast = computed(() => props.forecasts.find((f) => f.basis === 'LATEST'))
+const averageForecast = computed(() => props.forecasts.find((f) => f.basis === 'RECENT_AVERAGE'))
 
-const scaleMax = computed(() => {
-  const values = [
-    props.savingStatus.fixedSaving,
-    props.savingStatus.recentAverageSaving,
-    props.savingStatus.latestSaving,
-  ].filter((value) => typeof value === 'number')
+// 저축액을 더/덜 냈을 때 예상 달성 시점이 어떻게 달라지는지 순수 비교만 하는 타임라인.
+// "가까울수록 좋다"는 의미가 없으므로 등반가/깃발 대신 중립적인 점으로 표시한다.
+// monthsDiff(목표 시점보다 몇 개월 빠른지)가 클수록 날짜가 이르므로 왼쪽에 두고,
+// 목표 시점(monthsDiff=0)은 셋 중 가장 늦은 날짜이므로 오른쪽 끝에 온다.
+// 매물 시세 변화 카드의 타임라인과 동일하게 18~82% 구간에 배치해 라벨이 가장자리에서 안 잘리게 하고,
+// 시점(monthsDiff)이 완전히 같은 점은 점 하나로 합치고(라벨·금액을 이어붙임), 값은 달라도 위치가
+// 가까운 점끼리는 라벨이 겹치지 않도록 최소 간격(MIN_GAP)을 보장한다.
+const timelinePoints = computed(() => {
+  const points = [
+    {
+      key: 'latest',
+      label: '최근 저축',
+      monthsDiff: latestForecast.value?.monthsDiff,
+      amount: props.savingStatus.latestSaving,
+    },
+    {
+      key: 'average',
+      label: '3개월 평균',
+      monthsDiff: averageForecast.value?.monthsDiff,
+      amount: props.savingStatus.recentAverageSaving,
+    },
+    {
+      key: 'target',
+      label: '목표',
+      monthsDiff: 0,
+      amount: props.savingStatus.fixedSaving,
+    },
+  ].filter((point) => typeof point.monthsDiff === 'number')
 
-  return Math.max(...values, 1) * SCALE_HEADROOM
+  const values = points.map((point) => -point.monthsDiff)
+  const min = Math.min(...values)
+  const max = Math.max(...values)
+  const range = max - min
+
+  const grouped = []
+  points.forEach((point, i) => {
+    const value = values[i]
+    const existing = grouped.find((group) => group.value === value)
+    if (existing) {
+      existing.keys.push(point.key)
+      existing.labels.push(point.label)
+      existing.amounts.push(point.amount)
+    } else {
+      grouped.push({ keys: [point.key], value, labels: [point.label], amounts: [point.amount] })
+    }
+  })
+
+  const withPercent = grouped.map((group) => ({
+    ...group,
+    percent: range === 0 ? 50 : 18 + ((group.value - min) / range) * 64,
+  }))
+
+  const MIN_GAP = 18
+  const sortedByPercent = [...withPercent].sort((a, b) => a.percent - b.percent)
+  for (let i = 1; i < sortedByPercent.length; i++) {
+    const prev = sortedByPercent[i - 1]
+    const curr = sortedByPercent[i]
+    if (curr.percent - prev.percent < MIN_GAP) {
+      curr.percent = prev.percent + MIN_GAP
+    }
+  }
+
+  return withPercent
 })
-
-function toPercent(amount) {
-  if (typeof amount !== 'number') return null
-  return Math.min((amount / scaleMax.value) * 100, 100)
-}
-
-// 고정 저축액이 저축 현황 막대의 "목표선"(깃발)이고, 실제 저축액(최근/평균)이 그 선을 향해 채워진다.
-const fixedPercent = computed(() => toPercent(props.savingStatus.fixedSaving))
-const averagePercent = computed(() => toPercent(props.savingStatus.recentAverageSaving))
-const latestPercent = computed(() => toPercent(props.savingStatus.latestSaving))
 
 function forecastNote(forecast) {
   if (forecast.basis === 'FIXED' || !forecast.monthsDiff) return ''
@@ -56,78 +98,25 @@ function forecastNote(forecast) {
 
 <template>
   <section class="saving-forecast-card">
-    <h2 class="saving-forecast-card__title">목표 시점 대비 예상 달성 시점</h2>
-
-    <dl class="saving-forecast-card__status">
-      <div class="saving-forecast-card__status-row">
-        <dt>목표 시점</dt>
-        <dd>{{ formatYearMonthKo(targetDate) }}</dd>
-      </div>
-      <div class="saving-forecast-card__status-row">
-        <dt>고정 저축액</dt>
-        <dd>{{ formatManwon(savingStatus.fixedSaving) }}</dd>
-      </div>
-      <div
-        v-if="typeof savingStatus.recentAverageSaving === 'number'"
-        class="saving-forecast-card__status-row"
-      >
-        <dt>최근 3개월 평균</dt>
-        <dd class="saving-forecast-card__status-value--average">
-          {{ formatManwon(savingStatus.recentAverageSaving) }}
-        </dd>
-      </div>
-      <div
-        v-if="typeof savingStatus.latestSaving === 'number'"
-        class="saving-forecast-card__status-row"
-      >
-        <dt>최근 저축액</dt>
-        <dd class="saving-forecast-card__status-value--latest">
-          {{ formatManwon(savingStatus.latestSaving) }}
-        </dd>
-      </div>
-    </dl>
+    <h2 class="saving-forecast-card__title">저축 금액에 따른 예상 달성 시점</h2>
 
     <div class="saving-forecast-card__gauge">
       <div class="saving-forecast-card__track">
-        <span
-          v-if="latestPercent !== null"
-          class="saving-forecast-card__fill"
-          :style="{ width: `${latestPercent}%` }"
-        />
-        <!-- 최근 저축액: 채워진 막대 끝에 선 등반가 + 머리 위 금액 -->
-        <span
-          v-if="latestPercent !== null"
-          class="saving-forecast-card__latest-label"
-          :style="{ left: `${latestPercent}%` }"
+        <div
+          v-for="point in timelinePoints"
+          :key="point.keys.join('-')"
+          class="saving-forecast-card__point"
+          :class="{ 'saving-forecast-card__point--target': point.keys.includes('target') }"
+          :style="{ left: `${point.percent}%` }"
         >
-          {{ formatManwon(savingStatus.latestSaving) }}
-        </span>
-        <span
-          v-if="latestPercent !== null"
-          class="saving-forecast-card__runner"
-          :style="{ left: `${latestPercent}%` }"
-        >
-          <img :src="runnerImage" alt="" />
-        </span>
-        <!-- 최근 3개월 평균: 막대보다 조금 큰 사각형 마커 + 아래 금액 -->
-        <span
-          v-if="averagePercent !== null"
-          class="saving-forecast-card__average-marker"
-          :style="{ left: `${averagePercent}%` }"
-        />
-        <span
-          v-if="averagePercent !== null"
-          class="saving-forecast-card__average-label"
-          :style="{ left: `${averagePercent}%` }"
-        >
-          {{ formatManwon(savingStatus.recentAverageSaving) }}
-        </span>
-        <span class="saving-forecast-card__flag" :style="{ left: `${fixedPercent}%` }">
-          <img :src="flagImage" alt="" />
-        </span>
-        <span class="saving-forecast-card__flag-label" :style="{ left: `${fixedPercent}%` }">
-          목표
-        </span>
+          <span class="saving-forecast-card__dot" />
+          <div class="saving-forecast-card__point-info">
+            <span class="saving-forecast-card__point-label">{{ point.labels.join(' · ') }}</span>
+            <span class="saving-forecast-card__point-amount">{{
+              point.amounts.map((amount) => formatManwon(amount)).join(' · ')
+            }}</span>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -139,7 +128,8 @@ function forecastNote(forecast) {
       >
         <div class="saving-forecast-card__forecast-main">
           <span class="saving-forecast-card__forecast-label">
-            {{ FORECAST_LABELS[forecast.basis] ?? forecast.basis }}
+            {{ FORECAST_LABELS[forecast.basis] ?? forecast.basis }} · 월
+            {{ formatManwon(forecast.monthlySaving) }}
           </span>
           <!-- 남은 금액이 0이면 expectedDate가 null로 내려온다(달성 상태) -->
           <span class="saving-forecast-card__forecast-date">
@@ -152,7 +142,12 @@ function forecastNote(forecast) {
       </li>
     </ul>
 
-    <BaseButton variant="highlight" @click="$emit('change-saving')">월 저축액 변경하기</BaseButton>
+    <BaseButton
+      variant="highlight"
+      class="saving-forecast-card__cta"
+      @click="$emit('change-saving')"
+      >고정 저축액 변경하기</BaseButton
+    >
   </section>
 </template>
 
@@ -162,123 +157,90 @@ function forecastNote(forecast) {
   flex-direction: column;
   gap: 16px;
   padding: 16px;
-  border: 1px solid var(--border, #262626);
   border-radius: 16px;
-  background: #272727;
+  background: var(--color-surface, #272727);
+  box-shadow: 0 2px 6px rgba(90, 143, 77, 0.06);
+  font-weight: 500;
 }
 
 .saving-forecast-card__title {
   margin: 0;
-  font-size: 14px;
-  font-weight: 400;
-  color: var(--accent, #e3ffe8);
-}
-
-.saving-forecast-card__status {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin: 0;
-  padding: 12px 14px;
-  border-radius: 12px;
-  background: var(--color-card-highlight, #f7ffd1);
-}
-
-.saving-forecast-card__status-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 12px;
-}
-
-.saving-forecast-card__status-row dt {
-  color: #3f3f3f;
-}
-
-.saving-forecast-card__status-row dd {
-  margin: 0;
-  color: #727272;
-}
-
-.saving-forecast-card__status-value--average {
-  color: #29d23a;
-}
-
-.saving-forecast-card__status-value--latest {
-  color: #237f33;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-primary, #12281c);
 }
 
 .saving-forecast-card__gauge {
-  padding: 44px 8px 20px;
+  padding: 8px 8px 64px;
 }
 
 .saving-forecast-card__track {
   position: relative;
   height: 6px;
-  background: #243624;
 }
 
-.saving-forecast-card__fill {
+/* 매물 시세 변화 카드의 회색 바와 두께(3px)를 맞추기 위해 실제 막대는 얇은
+   가상요소로 그리고, 점들이 기준으로 삼는 6px 박스는 그대로 둔다. */
+.saving-forecast-card__track::before {
+  content: '';
   position: absolute;
-  top: 0;
+  top: 1.5px;
+  right: 0;
   left: 0;
-  height: 100%;
-  background: #9fd8ab;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--color-progress-inactive, #243624);
 }
 
-.saving-forecast-card__runner {
+/* "가까울수록 좋다"는 의미가 없는 순수 비교라, 등반가/깃발 대신
+   매물 시세 변화 카드와 같은 중립적인 점으로 세 시점을 표시한다. */
+.saving-forecast-card__point {
   position: absolute;
-  bottom: -6px;
-  width: 28px;
-  height: 28px;
+  top: -3px;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
   transform: translateX(-50%);
 }
 
-/* 진행바(6px)보다 세로로 조금 더 큰 마커 */
-.saving-forecast-card__average-marker {
-  position: absolute;
-  top: -4px;
+.saving-forecast-card__dot {
   width: 12px;
-  height: 14px;
-  border: 1px solid rgba(16, 19, 15, 0.14);
-  background: #9fd8ab;
-  transform: translateX(-50%);
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--color-progress-active, #9fd8ab);
+  background: var(--color-progress-active, #9fd8ab);
 }
 
-.saving-forecast-card__runner img,
-.saving-forecast-card__flag img {
-  width: 100%;
-  height: 100%;
-  image-rendering: pixelated;
+.saving-forecast-card__point--target .saving-forecast-card__dot {
+  border-color: var(--color-accent, #ffd939);
+  background: var(--color-accent, #ffd939);
 }
 
-.saving-forecast-card__flag {
-  position: absolute;
-  bottom: 2px;
-  width: 20px;
-  height: 20px;
-  transform: translateX(-50%);
+.saving-forecast-card__point-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
 }
 
-.saving-forecast-card__latest-label,
-.saving-forecast-card__average-label,
-.saving-forecast-card__flag-label {
-  position: absolute;
-  font-size: 9px;
+/* 매물 시세 변화 카드의 타임라인 라벨(.market-alert__point-label/-amount)과 스타일을 맞췄다. */
+.saving-forecast-card__point-label {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--color-text-primary, #f5f5f5);
+  text-align: center;
   white-space: nowrap;
-  transform: translateX(-50%);
+  opacity: 0.7;
 }
 
-/* 등반가 머리 위에 오도록 마커(28px) 높이만큼 띄운다 */
-.saving-forecast-card__latest-label {
-  top: -34px;
-  color: #ffd939;
-}
-
-.saving-forecast-card__average-label,
-.saving-forecast-card__flag-label {
-  top: 16px;
-  color: #888888;
+.saving-forecast-card__point-amount {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-primary, #f5f5f5);
+  white-space: nowrap;
 }
 
 .saving-forecast-card__forecasts {
@@ -292,25 +254,37 @@ function forecastNote(forecast) {
 
 .saving-forecast-card__forecast-main {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: 8px;
 }
 
 .saving-forecast-card__forecast-label {
-  font-size: 12px;
-  color: #999999;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-primary, #f5f5f5);
+  opacity: 0.7;
 }
 
 .saving-forecast-card__forecast-date {
-  font-size: 13px;
-  color: #f5f5f5;
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--color-text-primary, #f5f5f5);
 }
 
 .saving-forecast-card__forecast-note {
   margin: 2px 0 0;
-  font-size: 11px;
-  color: #7fe3a0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-primary, #7fe3a0);
   text-align: right;
+}
+
+.saving-forecast-card :deep(.saving-forecast-card__cta) {
+  height: 46px;
+  background: var(--color-primary-soft, #e8f4ea);
+  color: #353934;
+  font-size: 17px;
+  font-weight: 700;
 }
 </style>

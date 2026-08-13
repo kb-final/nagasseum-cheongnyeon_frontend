@@ -191,8 +191,7 @@ export const mockGoalDetail = {
   goalType: 'HOUSING',
   status: 'ACTIVE',
   housing: {
-    title: '강남구 오피스텔 전세',
-    regionName: '강남구',
+    regionCode: '11680',
     housingType: 'OFFICETEL',
     dealType: 'JEONSE',
     areaMin: 10,
@@ -220,25 +219,27 @@ export const mockGoalDetail = {
 }
 
 // GET /api/v1/goals/{goalId} 응답 mock ("목표 조회" API 명세 기준).
-// 수정 폼 재현용이라 지역은 이름이 아니라 코드 배열로 내려온다.
+// 생성·수정 요청 본문과 같은 평평한 GoalResponse다. 수정 폼 재현용이라 지역은 이름이 아니라
+// 코드(regionCode)로 내려오고, 전세라 월세는 null이 아니라 0으로 정규화된 값이 온다.
+// targetDate는 날짜가 아니라 YYYY-MM이다.
 export const mockGoal = {
   goalId: 1,
-  goalType: 'HOUSING',
   status: 'ACTIVE',
+  regionCode: '11680',
+  propertyType: mockGoalDetail.housing.housingType,
+  tradeType: mockGoalDetail.housing.dealType,
+  sizeMin: mockGoalDetail.housing.areaMin,
+  sizeMax: mockGoalDetail.housing.areaMax,
+  depositMin: mockGoalDetail.housing.depositMin,
+  depositMax: mockGoalDetail.housing.depositMax,
+  monthlyRentMin: 0,
+  monthlyRentMax: 0,
+  monthlySavings: mockGoalDetail.savingStatus.fixedSaving,
+  targetDate: mockGoalDetail.targetDate.slice(0, 7),
   targetAmount: mockGoalDetail.progress.targetAmount,
-  targetDate: mockGoalDetail.targetDate,
-  monthlySaving: mockGoalDetail.savingStatus.fixedSaving,
-  housing: {
-    regions: ['11680'],
-    housingTypes: [mockGoalDetail.housing.housingType],
-    dealTypes: [mockGoalDetail.housing.dealType],
-    areaMin: mockGoalDetail.housing.areaMin,
-    areaMax: mockGoalDetail.housing.areaMax,
-    depositMin: mockGoalDetail.housing.depositMin,
-    depositMax: mockGoalDetail.housing.depositMax,
-    monthlyRentMin: null,
-    monthlyRentMax: null,
-  },
+  targetRentMiddleAmount: 350000000,
+  createdAt: '2026-08-05T14:32:10',
+  updatedAt: '2026-08-06T17:21:44',
 }
 
 // GET /api/v1/goals/{goalId}/simulations/monthly-saving 응답 mock.
@@ -252,12 +253,12 @@ export const mockSavingSimulations = {
 // PUT /api/v1/goals/{goalId} 는 아직 백엔드 구현 전이라, 목 핸들러가 위 두 fixture의 월 저축액을
 // 메모리에서 갱신해 준다. 수정 직후 화면 이동 시 바뀐 값이 보이게 하려는 것이며,
 // 브라우저를 새로고침하면 모듈이 다시 로드되어 초기값으로 돌아온다.
-export function applyMockGoalUpdate({ monthlySaving }) {
-  mockGoal.monthlySaving = monthlySaving
-  mockGoalDetail.savingStatus.fixedSaving = monthlySaving
+export function applyMockGoalUpdate({ monthlySavings }) {
+  mockGoal.monthlySavings = monthlySavings
+  mockGoalDetail.savingStatus.fixedSaving = monthlySavings
 
   const fixedForecast = mockGoalDetail.forecasts.find((forecast) => forecast.basis === 'FIXED')
-  if (fixedForecast) fixedForecast.monthlySaving = monthlySaving
+  if (fixedForecast) fixedForecast.monthlySaving = monthlySavings
 }
 
 // GET /api/v1/goals/market-trend 응답 mock (홈 화면 API 명세서 예시값 그대로)

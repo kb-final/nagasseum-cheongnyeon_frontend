@@ -134,13 +134,13 @@ onMounted(() =>
   margin: 0;
   font-size: 15.9px;
   font-weight: 500;
-  color: var(--text-h, #ffffff);
+  color: var(--color-text-primary);
 }
 
 .asset-link-view__subtitle {
   margin: 0;
   font-size: 13.1px;
-  color: var(--text, #9aa09a);
+  color: var(--color-text-secondary);
 }
 
 .asset-link-view__list {

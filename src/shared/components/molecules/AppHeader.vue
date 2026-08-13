@@ -29,7 +29,7 @@ defineEmits(['back'])
     </button>
     <span v-else class="app-header__spacer" />
     <h1 class="app-header__title">{{ title }}</h1>
-    <!-- 우측 액션(예: "수정하기")이 없으면 제목이 가운데 오도록 spacer 크기를 유지한다 -->
+    <!-- 3열 grid라 좌/우 폭이 달라도(예: "수정하기") 제목은 항상 가운데 칸에 고정된다 -->
     <div class="app-header__action">
       <slot name="action" />
     </div>
@@ -37,10 +37,18 @@ defineEmits(['back'])
 </template>
 
 <style scoped>
+/*
+  좌/우 칸을 1fr로 잡아 폭이 서로 달라도(예: "수정하기"처럼 스페이서보다 넓은 액션)
+  가운데 칸(제목)이 항상 화면 정중앙에 오게 한다. flex space-between이었을 때는
+  오른쪽 액션이 왼쪽 스페이서보다 넓으면 제목이 살짝 왼쪽으로 밀렸었다.
+*/
 .app-header {
-  display: flex;
+  display: grid;
+  /* minmax(0, 1fr): "수정하기"처럼 액션 쪽 내용이 넓어도 트랙이 그 내용만큼 늘어나지
+     않게 강제로 좌우를 같은 폭으로 묶는다. 그냥 1fr이면 fr 트랙의 기본 최소 크기가
+     content 크기라서, 넓은 쪽 트랙이 커져 제목이 중앙에서 밀렸다. */
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  justify-content: space-between;
   width: 100%;
   padding: 12px 0;
 }
@@ -49,12 +57,13 @@ defineEmits(['back'])
   display: flex;
   align-items: center;
   justify-content: center;
+  justify-self: start;
   width: 24px;
   height: 24px;
   padding: 0;
   border: none;
   background: none;
-  color: var(--text-h, #ffffff);
+  color: var(--color-text-primary, #ffffff);
   cursor: pointer;
 }
 
@@ -62,12 +71,13 @@ defineEmits(['back'])
   margin: 0;
   font-size: 15.9px;
   font-weight: 400;
-  color: var(--text-h, #ffffff);
+  color: var(--color-text-primary, #ffffff);
 }
 
 .app-header__spacer {
   width: 24px;
   height: 24px;
+  justify-self: start;
 }
 
 .app-header__action {
@@ -76,5 +86,6 @@ defineEmits(['back'])
   justify-content: flex-end;
   min-width: 24px;
   height: 24px;
+  justify-self: end;
 }
 </style>

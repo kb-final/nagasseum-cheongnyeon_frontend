@@ -31,19 +31,19 @@ defineProps({
 }
 
 .base-badge--mint {
-  background: var(--color-mint-strong, #c1e8c8);
-  color: var(--color-mint-deep, #16281c);
+  background: var(--base-badge-mint-bg, #c1e8c8);
+  color: var(--base-badge-mint-text, #16281c);
 }
 
 .base-badge--neutral {
-  background: #1e211f;
-  color: var(--text, #9aa09a);
+  background: var(--color-border, #666666);
+  color: var(--color-text-secondary, #ebebeb);
 }
 
 .base-badge--outline {
   background: transparent;
-  border-color: var(--border, #262626);
-  color: var(--text, #9aa09a);
+  border-color: var(--color-border, #262626);
+  color: var(--color-text-secondary, #9aa09a);
 }
 
 .base-badge--quest {

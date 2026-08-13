@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 import AppHeader from '@/shared/components/molecules/AppHeader.vue'
@@ -9,6 +9,7 @@ import BaseInputField from '@/shared/components/molecules/BaseInputField.vue'
 import BaseOptionCardGroup from '@/shared/components/atoms/form/OptionCardGroup/BaseOptionCardGroup.vue'
 import BaseProfileIcon from '@/shared/components/atoms/base/icon/BaseProfileIcon.vue'
 import { INCOME_BRACKET_OPTIONS } from '@/shared/constants/incomeBracket'
+import { OCCUPATION_OPTIONS } from '@/shared/constants/occupation'
 
 import { useMemberStore } from '@/features/member/store/memberStore'
 
@@ -17,17 +18,48 @@ const memberStore = useMemberStore()
 
 const nickname = ref('')
 const incomeBracket = ref(null)
+/** 화면에서는 만원 단위로 받는다. 서버는 원 단위라 저장할 때 10,000을 곱한다. */
+const monthlyIncomeManwon = ref('')
+const occupationType = ref(null)
 
 onMounted(async () => {
   if (!memberStore.profile) await memberStore.fetchProfile()
   nickname.value = memberStore.profile?.nickname ?? ''
   incomeBracket.value = memberStore.profile?.incomeBracket ?? null
+  monthlyIncomeManwon.value =
+    memberStore.profile?.monthlyIncome != null
+      ? String(Math.round(memberStore.profile.monthlyIncome / 10000))
+      : ''
+  occupationType.value = memberStore.profile?.occupationType ?? null
 })
+
+// 숫자만 남긴다. 서버가 Long으로 받기 때문에 글자가 섞이면 저장에서 막힌다.
+watch(monthlyIncomeManwon, (value) => {
+  const digits = value.replace(/\D/g, '')
+  if (digits !== value) monthlyIncomeManwon.value = digits
+})
+
+/**
+ * 서버에 보낼 월 소득(원).
+ *
+ * <p>비워두면 null이고, updateProfile은 null인 항목을 요청에서 빼기 때문에 기존 값이
+ * 그대로 남는다. 지우는 기능은 지금 API로는 안 된다.
+ */
+const monthlyIncome = computed(() =>
+  monthlyIncomeManwon.value ? Number(monthlyIncomeManwon.value) * 10000 : null,
+)
+
+// 이미 고른 것을 다시 누르면 해제한다. 필수값이 아니라서 되돌릴 방법이 있어야 한다.
+function selectOccupation(value) {
+  occupationType.value = occupationType.value === value ? null : value
+}
 
 async function handleSave() {
   await memberStore.updateProfile({
     nickname: nickname.value,
     incomeBracket: incomeBracket.value,
+    monthlyIncome: monthlyIncome.value,
+    occupationType: occupationType.value,
   })
   if (memberStore.error) return
 
@@ -76,6 +108,37 @@ async function handleSave() {
         </div>
         <BaseOptionCardGroup v-model="incomeBracket" :options="INCOME_BRACKET_OPTIONS" />
       </div>
+
+      <BaseInputField
+        v-model="monthlyIncomeManwon"
+        label="월 소득"
+        :max-length="5"
+        placeholder="만원 단위로 입력"
+        helper-text="또래 비교에서 내 소득 구간을 표시하는 데 쓰입니다"
+      />
+
+      <div class="edit-info-view__field">
+        <div class="edit-info-view__field-label-row">
+          <span class="edit-info-view__field-label">직업군</span>
+          <BaseFieldBadge :required="false" />
+        </div>
+        <div class="edit-info-view__chips">
+          <button
+            v-for="option in OCCUPATION_OPTIONS"
+            :key="option.value"
+            type="button"
+            class="edit-info-view__chip"
+            :class="{ 'edit-info-view__chip--selected': occupationType === option.value }"
+            :aria-pressed="occupationType === option.value"
+            @click="selectOccupation(option.value)"
+          >
+            {{ option.label }}
+          </button>
+        </div>
+        <p class="edit-info-view__field-helper">
+          또래 비교에서 같은 직업군끼리 묶어보는 데 쓰입니다
+        </p>
+      </div>
     </section>
 
     <div class="edit-info-view__footer">
@@ -86,10 +149,45 @@ async function handleSave() {
 
 <style scoped>
 .edit-info-view {
+  /*
+    BaseInputField와 BaseOptionCardGroup이 아직 legacy --text-h(#ffffff 고정)를 쓴다.
+    라이트에서 "닉네임" "월 소득" 라벨과 안 고른 분위 카드 글씨가 흰 배경에 묻힌다.
+    공용 컴포넌트를 고치지 않고 이 화면에서만 변수를 테마 토큰으로 바꿔 끼운다.
+  */
+  --text-h: var(--color-text-primary);
+  /*
+    legacy --border도 #262626 고정이라 라이트에서 입력창·분위 카드만 검은 테두리가 된다.
+    다른 카드와 같은 연한 선으로 맞춘다.
+  */
+  --border: var(--color-border);
+  /*
+    "필수" "선택" 뱃지도 색이 박혀 있다(#3a1f1f / #1e211f). 라이트에서 검은 알약이 된다.
+    기본값은 다크로 두고 라이트만 덮어쓴다.
+  */
+  --badge-required-bg: #3a1f1f;
+  --badge-required-ink: #ff6b6b;
+  --badge-optional-bg: #1e211f;
+
   display: flex;
   flex-direction: column;
   gap: 24px;
   padding-bottom: 24px;
+}
+
+:root[data-theme='light'] .edit-info-view {
+  --badge-required-bg: #fdeeea;
+  --badge-required-ink: #c1442e;
+  --badge-optional-bg: #eff1eb;
+}
+
+.edit-info-view :deep(.base-field-badge) {
+  background: var(--badge-required-bg);
+  color: var(--badge-required-ink);
+}
+
+.edit-info-view :deep(.base-field-badge--optional) {
+  background: var(--badge-optional-bg);
+  color: var(--color-text-secondary);
 }
 
 .edit-info-view__avatar-section {
@@ -122,14 +220,16 @@ async function handleSave() {
   height: 28px;
   border-radius: 14px;
   background: var(--bg, #111111);
-  border: 1px solid var(--border, #262626);
-  color: var(--text-h, #ffffff);
+  /* 아바타와 겹치는 자리라 페이지 색으로 테두리를 둘러 경계를 만든다. */
+  border: 2px solid var(--color-app-bg);
+  /* 이 동그라미 배경(--bg)은 테마와 무관하게 어둡다. 아이콘은 흰색으로 고정한다. */
+  color: #ffffff;
 }
 
 .edit-info-view__avatar-label {
   margin: 0;
   font-size: 12px;
-  color: var(--text, #9aa09a);
+  color: var(--color-text-secondary);
 }
 
 .edit-info-view__section {
@@ -142,7 +242,7 @@ async function handleSave() {
   margin: 0;
   font-size: 13.2px;
   font-weight: 500;
-  color: var(--text-h, #ffffff);
+  color: var(--color-text-primary);
 }
 
 .edit-info-view__field {
@@ -158,8 +258,75 @@ async function handleSave() {
 }
 
 .edit-info-view__field-label {
-  color: var(--text-h, #ffffff);
+  color: var(--color-text-primary);
   font-weight: 500;
+}
+
+/*
+  BaseOptionCardGroup은 글자색이 변수가 아니라 #e6e9e6으로 박혀 있어서 변수로는
+  덮을 수 없다. 공용 컴포넌트를 고치지 않고 이 화면에서만 :deep()으로 바꾼다.
+  고른 카드 규칙을 뒤에 둬야 순서상 이긴다.
+*/
+.edit-info-view :deep(.option-card-group__item .option-card-group__label) {
+  color: var(--color-text-primary);
+}
+
+.edit-info-view :deep(.option-card-group__item .option-card-group__sublabel) {
+  color: var(--color-text-secondary);
+}
+
+/* 고른 카드는 테두리를 없애도록 돼 있어 혼자 선이 빠져 보인다. 다른 칸과 같은 선을 준다. */
+.edit-info-view :deep(.option-card-group__item--active) {
+  border-color: var(--color-border);
+}
+
+.edit-info-view :deep(.option-card-group__item--active .option-card-group__label) {
+  color: var(--color-mint-deep, #16281c);
+}
+
+.edit-info-view :deep(.option-card-group__item--active .option-card-group__sublabel) {
+  color: #5c7a63;
+}
+
+.edit-info-view__field-helper {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+/*
+  직업군은 아홉 개다. 소득 분위와 같은 카드로 두면 아홉 칸이 세로로 쌓여 화면이
+  너무 길어진다. 글자 폭만큼만 차지하는 칩으로 두고 줄바꿈시킨다.
+*/
+.edit-info-view__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/*
+  버튼 기본 스타일(여백·테두리·폰트)이 브라우저마다 다르다. 전부 직접 지정한다.
+  색은 테마 토큰이라 라이트·다크 모두 따라간다.
+*/
+.edit-info-view__chip {
+  padding: 7px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+/*
+  고른 칩은 연한 민트 바탕에 진한 초록 글씨. 바탕색이 양쪽 테마 모두 밝은 쪽이라
+  글씨는 고정값으로 둬도 대비가 유지된다.
+*/
+.edit-info-view__chip--selected {
+  border-color: var(--color-primary);
+  background: var(--color-primary-soft);
+  color: var(--color-mint-deep, #16281c);
 }
 
 .edit-info-view__footer {

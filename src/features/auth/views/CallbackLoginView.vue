@@ -73,7 +73,7 @@ onMounted(async () => {
 .callback-login-view__loading {
   margin: 0;
   font-size: 14px;
-  color: var(--text, #9aa09a);
+  color: var(--color-text-secondary);
 }
 
 .callback-login-view__error {

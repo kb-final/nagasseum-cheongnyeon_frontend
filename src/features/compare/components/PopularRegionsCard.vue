@@ -1,9 +1,8 @@
 <script setup>
-/** 게이지는 10칸이고 한 칸이 10%다. 목표 유형 분포 카드와 같은 눈금이다. */
 const SEGMENT_COUNT = 10
 
 defineProps({
-  regions: { type: Array, required: true }, // [{ rank, regionName, ratio }]
+  regions: { type: Array, required: true },
 })
 
 const filledCount = (ratio) => Math.round((ratio / 100) * SEGMENT_COUNT)
@@ -40,23 +39,30 @@ const filledCount = (ratio) => Math.round((ratio / 100) * SEGMENT_COUNT)
 /* 폰트 크기는 rem이 아닌 px로 고정한다.
    루트가 18px/16px로 바뀌면 픽셀 폰트가 그리드에서 어긋나 뭉개진다. */
 .card {
-  /* 이 카드에서만 쓰는 색 */
-  --mint: #cdedd3;
-  --ink: #10130f;
-  --forest: #1d6b3f;
-  --forest-soft: #7fae89;
-  --segment: #a9c9b0;
+  --ink: var(--c-ink);
+  --ink-muted: var(--c-ink-muted);
+  --mint: var(--c-accent);
+  --mint-soft: var(--c-accent-mid);
+  --segment: var(--c-track);
+  /*
+    순위 배지는 금·은·동. 메달 색이라 테마를 타지 않고 라이트·다크 모두 같은 값을 쓴다.
+    셋 다 밝은 색이라 숫자는 진한 초록으로 고정한다.
+  */
   --rank-1: #ffd939;
-  --rank-2: #d9dcc0;
-  --rank-3: #c9a26b;
+  --rank-2: #c9d1d3;
+  --rank-3: #d99a5b;
+  --rank-ink: #16281c;
 
-  border-radius: 20px;
+  border: 1px solid var(--c-line);
+  border-radius: 14px;
   padding: 16px;
-  background: var(--mint);
+  background: var(--c-card);
   color: var(--ink);
   /* 루트의 145%는 18px 기준으로 계산된 26.1px이 그대로 상속된다.
      단위 없는 값으로 덮어써야 각 요소가 제 폰트 크기로 줄 높이를 계산한다. */
   line-height: 1.45;
+  animation: card-rise 0.35s ease-out both;
+  animation-delay: 0.24s;
 }
 
 .card__title {
@@ -85,6 +91,7 @@ const filledCount = (ratio) => Math.round((ratio / 100) * SEGMENT_COUNT)
   justify-content: center;
   width: 24px;
   height: 24px;
+  color: var(--rank-ink);
   font-size: 12px;
 }
 
@@ -101,6 +108,7 @@ const filledCount = (ratio) => Math.round((ratio / 100) * SEGMENT_COUNT)
 }
 
 .region-row__name {
+  color: var(--ink);
   font-size: 14px;
   white-space: nowrap;
   overflow: hidden;
@@ -120,14 +128,15 @@ const filledCount = (ratio) => Math.round((ratio / 100) * SEGMENT_COUNT)
 }
 
 .region-row__segment--on {
-  background: var(--forest-soft);
+  background: var(--mint-soft);
 }
 
 .region-row__track--top .region-row__segment--on {
-  background: var(--forest);
+  background: var(--mint);
 }
 
 .region-row__value {
+  color: var(--ink-muted);
   font-size: 13px;
   font-variant-numeric: tabular-nums;
 }

@@ -3,9 +3,8 @@ import { computed } from 'vue'
 
 import BaseCard from '@/shared/components/atoms/base/card/BaseCard.vue'
 import BaseBadge from '@/shared/components/atoms/base/badge/BaseBadge.vue'
-import BaseButton from '@/shared/components/atoms/base/button/BaseButton.vue'
 import {
-  formatEok,
+  formatEokManwon,
   formatManwon,
   formatChangeAmount,
   formatYearMonth,
@@ -15,17 +14,20 @@ const props = defineProps({
   marketAlert: { type: Object, required: true },
 })
 
-defineEmits(['edit-goal'])
-
 const subtitle = computed(() => {
   const [year, month] = props.marketAlert.updatedYm.split('-')
   const a = props.marketAlert
-  return `${a.regionName} · ${a.housingType} · ${a.dealType} · ${a.areaLabel} · ${year}년 ${Number(month)}월 갱신`
+  return {
+    condition: `${a.regionName} · ${a.housingType} · ${a.dealType} · ${a.areaLabel}`,
+    date: `${year}년 ${Number(month)}월 갱신`,
+  }
 })
 
 // 점 3개의 최소/최대 금액을 기준으로 가로 위치(%)를 계산한다.
-// 값이 바뀌면(최소/최대가 바뀌면) 위치도 자동으로 다시 계산됨. 8~92% 범위에 배치해 점이 카드 가장자리에 붙지 않게 함.
+// 값이 바뀌면(최소/최대가 바뀌면) 위치도 자동으로 다시 계산됨. 18~82% 범위에 배치해
+// 라벨 텍스트(줄바꿈 없는 한 줄)가 카드 가장자리에서 잘리지 않을 만큼 여백을 둠.
 // 금액이 같은 점들은 dot·라벨을 하나로 합치고(원래 순서대로 라벨을 이어붙임), 병합된 dot은 mint-deep 고정색으로 표시한다.
+// 합친 뒤에도 값이 달라 위치만 가까운 점들은 라벨이 겹치지 않도록 최소 간격(MIN_GAP)을 보장한다.
 const timeline = computed(() => {
   const a = props.marketAlert
   const points = [
@@ -48,12 +50,26 @@ const timeline = computed(() => {
     }
   }
 
-  return grouped.map((group) => ({
-    label: group.labels.join(' · '),
+  const withPercent = grouped.map((group) => ({
+    labels: group.labels,
     amount: group.amount,
     variant: group.labels.length > 1 ? 'merged' : group.variant,
-    percent: range === 0 ? 50 : 8 + ((group.amount - min) / range) * 84,
+    percent: range === 0 ? 50 : 18 + ((group.amount - min) / range) * 64,
   }))
+
+  // 비율은 그대로 두되, 라벨이 겹칠 만큼 금액이 가까운 점끼리는 최소 간격을 벌린다.
+  // 금액이 완전히 같은 점은 위에서 이미 하나로 합쳤으므로 여기선 남은 점들끼리만 비교하면 된다.
+  const MIN_GAP = 18
+  const sortedByPercent = [...withPercent].sort((a, b) => a.percent - b.percent)
+  for (let i = 1; i < sortedByPercent.length; i++) {
+    const prev = sortedByPercent[i - 1]
+    const curr = sortedByPercent[i]
+    if (curr.percent - prev.percent < MIN_GAP) {
+      curr.percent = prev.percent + MIN_GAP
+    }
+  }
+
+  return withPercent
 })
 
 // 내 목표가 중앙값보다 낮은지/높은지에 따라 방향 표현과 금액 강조색을 바꾼다(주어는 항상 "내 목표가 중앙값보다")
@@ -74,22 +90,12 @@ const diffAmountText = computed(() => {
   <BaseCard class="market-alert">
     <div class="market-alert__header">
       <h2 class="market-alert__title">매물 시세 변화</h2>
-      <BaseBadge variant="point">{{ formatChangeAmount(marketAlert.changeAmount) }}</BaseBadge>
+      <BaseBadge v-if="marketAlert.changeAmount !== 0" variant="point">
+        {{ formatChangeAmount(marketAlert.changeAmount) }}
+      </BaseBadge>
+      <BaseBadge v-else variant="neutral">변화 없음</BaseBadge>
     </div>
-    <p class="market-alert__subtitle">{{ subtitle }}</p>
-
-    <div class="market-alert__timeline">
-      <div
-        v-for="point in timeline"
-        :key="point.label"
-        class="market-alert__point"
-        :style="{ left: `${point.percent}%` }"
-      >
-        <span class="market-alert__dot" :class="`market-alert__dot--${point.variant}`" />
-        <span class="market-alert__point-label">{{ point.label }}</span>
-        <span class="market-alert__point-amount">{{ formatEok(point.amount) }}</span>
-      </div>
-    </div>
+    <p class="market-alert__subtitle">{{ subtitle.condition }}</p>
 
     <p class="market-alert__diff">
       <template v-if="diffDirection === 'same'">내 목표가 중앙값과 같아요.</template>
@@ -104,10 +110,30 @@ const diffAmountText = computed(() => {
       >
     </p>
 
+    <div class="market-alert__timeline">
+      <div
+        v-for="point in timeline"
+        :key="point.amount"
+        class="market-alert__point"
+        :style="{ left: `${point.percent}%` }"
+      >
+        <span class="market-alert__dot" :class="`market-alert__dot--${point.variant}`" />
+        <span class="market-alert__point-label">
+          <template v-for="(labelText, idx) in point.labels" :key="labelText">
+            <span v-if="idx > 0" class="market-alert__point-sep">·</span>
+            <span>{{ labelText }}</span>
+          </template>
+        </span>
+        <span class="market-alert__point-amount">{{ formatEokManwon(point.amount) }}</span>
+      </div>
+    </div>
+
     <div class="market-alert__compare">
       <div class="market-alert__compare-box">
         <span class="market-alert__compare-label">유지 시</span>
-        <span class="market-alert__compare-value">{{ formatEok(marketAlert.targetAmount) }}</span>
+        <span class="market-alert__compare-value">{{
+          formatEokManwon(marketAlert.targetAmount)
+        }}</span>
         <span class="market-alert__compare-eta">{{
           formatYearMonth(marketAlert.maintainEta)
         }}</span>
@@ -116,17 +142,17 @@ const diffAmountText = computed(() => {
       <div class="market-alert__compare-box">
         <span class="market-alert__compare-label">반영 시</span>
         <span class="market-alert__compare-value">{{
-          formatEok(marketAlert.currentMiddleAmount)
+          formatEokManwon(marketAlert.currentMiddleAmount)
         }}</span>
         <span class="market-alert__compare-eta">{{ formatYearMonth(marketAlert.reflectEta) }}</span>
       </div>
     </div>
 
     <p class="market-alert__hint">
-      현재 시세에 맞게 목표를 변경하시려면<br />목표 수정하기를 눌러주세요
+      현재 시세에 맞게 목표를 변경하시려면<br />우측 상단의 수정하기 버튼을 눌러주세요
     </p>
 
-    <BaseButton variant="dark" size="lg" @click="$emit('edit-goal')">목표 수정하기</BaseButton>
+    <p class="market-alert__updated">{{ subtitle.date }}</p>
   </BaseCard>
 </template>
 
@@ -135,7 +161,14 @@ const diffAmountText = computed(() => {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  background: var(--color-card-highlight, #f7ffd1);
+  background: var(--color-surface, #f7ffd1);
+  font-weight: 500;
+}
+
+/* BaseCard 기본 padding(20px)을 달성률 카드와 같은 16px로 맞춘다.
+   base-card--lg와 특이도를 맞춰야 확실히 덮어써서, 클래스 두 개를 함께 지정한다. */
+.market-alert.base-card--lg {
+  padding: 16px;
 }
 
 .market-alert__header {
@@ -145,21 +178,39 @@ const diffAmountText = computed(() => {
 }
 
 .market-alert__title {
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 700;
-  color: var(--color-mint-deep, #16281c);
+  color: var(--color-text-primary, #12281c);
+}
+
+.market-alert__updated {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-text-primary, #16281c);
+  text-align: right;
+  opacity: 0.7;
 }
 
 .market-alert__subtitle {
+  margin: -4px 0 0;
   font-size: 12px;
-  color: var(--color-mint-deep, #16281c);
+  color: var(--color-text-primary, #16281c);
+  opacity: 0.7;
+}
+
+.market-alert__hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-text-primary, #16281c);
+  text-align: center;
   opacity: 0.7;
 }
 
 .market-alert__timeline {
   position: relative;
-  height: 64px;
+  height: 96px;
   padding-top: 6px;
+  overflow: hidden;
 }
 
 .market-alert__timeline::before {
@@ -169,7 +220,8 @@ const diffAmountText = computed(() => {
   right: 0;
   left: 0;
   height: 3px;
-  background: rgba(22, 40, 28, 0.2);
+  border-radius: 2px;
+  background: var(--color-progress-inactive, #243624);
 }
 
 .market-alert__point {
@@ -181,14 +233,13 @@ const diffAmountText = computed(() => {
   align-items: center;
   gap: 4px;
   transform: translateX(-50%);
-  white-space: nowrap;
 }
 
 .market-alert__dot {
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background: var(--color-card-highlight, #f7ffd1);
+  background: var(--color-surface, #f7ffd1);
   border: 2px solid rgba(22, 40, 28, 0.3);
 }
 
@@ -197,9 +248,10 @@ const diffAmountText = computed(() => {
   border-color: var(--color-mint-strong, #c1e8c8);
 }
 
+/* "설정 당시" 점. 저축 금액에 따른 예상 달성 시점 카드의 목표 점과 같은 노란색으로 맞췄다. */
 .market-alert__dot--neutral {
-  background: #8fa079;
-  border-color: #8fa079;
+  background: var(--color-accent, #ffd939);
+  border-color: var(--color-accent, #ffd939);
 }
 
 .market-alert__dot--point {
@@ -213,20 +265,34 @@ const diffAmountText = computed(() => {
 }
 
 .market-alert__point-label {
-  font-size: 11px;
-  color: var(--color-mint-deep, #16281c);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--color-text-primary, #16281c);
+  text-align: center;
+  white-space: nowrap;
   opacity: 0.7;
+}
+
+.market-alert__point-sep {
+  opacity: 0.6;
 }
 
 .market-alert__point-amount {
   font-size: 13px;
   font-weight: 700;
-  color: var(--color-mint-deep, #16281c);
+  color: var(--color-text-primary, #16281c);
+  white-space: nowrap;
 }
 
 .market-alert__diff {
-  font-size: 13px;
-  color: var(--color-mint-deep, #16281c);
+  margin: 0;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--color-text-primary, #16281c);
 }
 
 .market-alert__diff-amount {
@@ -246,13 +312,13 @@ const diffAmountText = computed(() => {
   align-items: center;
   gap: 8px;
   padding: 10px;
-  background: var(--color-card-sub, #effab8);
+  background: var(--color-app-bg, #effab8);
   border-radius: 10px;
 }
 
 .market-alert__compare-arrow {
   flex-shrink: 0;
-  color: var(--color-mint-deep, #16281c);
+  color: var(--color-text-primary, #16281c);
   opacity: 0.7;
   font-size: 13px;
 }
@@ -266,27 +332,27 @@ const diffAmountText = computed(() => {
 }
 
 .market-alert__compare-label {
-  font-size: 11px;
-  color: var(--color-mint-deep, #16281c);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-primary, #16281c);
   opacity: 0.7;
 }
 
 .market-alert__compare-value {
-  font-size: 15px;
+  font-size: 20px;
   font-weight: 700;
-  color: var(--color-mint-deep, #16281c);
+  color: var(--color-text-primary, #16281c);
+}
+
+/* "반영 시" 쪽만 초록으로 강조한다(레퍼런스 이미지 기준). */
+.market-alert__compare-box:last-child .market-alert__compare-value {
+  color: var(--color-primary, #16281c);
 }
 
 .market-alert__compare-eta {
-  font-size: 11px;
-  color: var(--color-mint-deep, #16281c);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-primary, #16281c);
   opacity: 0.7;
-}
-
-.market-alert__hint {
-  font-size: 12px;
-  color: var(--color-mint-deep, #16281c);
-  opacity: 0.7;
-  text-align: center;
 }
 </style>

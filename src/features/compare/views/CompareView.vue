@@ -1,130 +1,161 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 
-import { formatManwon } from '@/shared/utils/formatter'
+import { formatEokManwon, formatManwon } from '@/shared/utils/formatter'
 
 import { useMemberStore } from '@/features/member/store/memberStore'
 
-import { getGoalComparison } from '@/features/compare/api/compareApi'
+import { useAssetComparison } from '@/features/compare/composables/useAssetComparison'
+import {
+  filterEligibleCohortTypes,
+  useCohortFilter,
+} from '@/features/compare/composables/useCohortFilter'
+import { useGoalComparison } from '@/features/compare/composables/useGoalComparison'
 import AchievementHistogramCard from '@/features/compare/components/AchievementHistogramCard.vue'
 import CohortConditionCard from '@/features/compare/components/CohortConditionCard.vue'
 import CohortEditSheet from '@/features/compare/components/CohortEditSheet.vue'
+import CohortInsufficientNotice from '@/features/compare/components/CohortInsufficientNotice.vue'
 import CompareLockedCard from '@/features/compare/components/CompareLockedCard.vue'
+import CompareTabs from '@/features/compare/components/CompareTabs.vue'
 import DealTypeDistributionCard from '@/features/compare/components/DealTypeDistributionCard.vue'
+import IncomeBracketDistributionCard from '@/features/compare/components/IncomeBracketDistributionCard.vue'
+import NetAssetHighlightCard from '@/features/compare/components/NetAssetHighlightCard.vue'
+import OccupationDistributionCard from '@/features/compare/components/OccupationDistributionCard.vue'
 import PopularRegionsCard from '@/features/compare/components/PopularRegionsCard.vue'
 import SavingRangeCard from '@/features/compare/components/SavingRangeCard.vue'
+import StateNoticeCard from '@/features/compare/components/StateNoticeCard.vue'
 
 import lockImage from '@/features/compare/assets/lock.png'
 
-const DEFAULT_ASSET_RANGE = 10_000_000
-const DEFAULT_AGE_RANGE = 2
-
 /**
- * 코호트 비교 범위는 사용자 데이터가 아니라 화면 필터라서 서버에 저장하지 않는다.
- * 브라우저에만 남겨두고, 없거나 깨졌으면 기본값으로 돌아간다.
+ * 자물쇠 아이콘을 색칠하기 위한 마스크 주소.
+ *
+ * <p>그림 파일이 밝은 민트 한 색이라 크림색 안내 상자 위에서 보이지 않는다. 파일을
+ * 다시 칠하면 다크 테마에서 못 쓰게 되므로, 모양만 마스크로 떠서 글씨와 같은 색으로
+ * 칠한다. 색이 변수라 테마가 바뀌면 아이콘도 같이 따라온다.
  */
-const COHORT_STORAGE_KEY = 'compare-cohort-range'
+const lockMask = `url(${lockImage})`
 
-function loadCohortRange() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(COHORT_STORAGE_KEY))
-    return {
-      assetRange: Number(saved?.assetRange) || DEFAULT_ASSET_RANGE,
-      ageRange: Number(saved?.ageRange) || DEFAULT_AGE_RANGE,
-    }
-  } catch {
-    return { assetRange: DEFAULT_ASSET_RANGE, ageRange: DEFAULT_AGE_RANGE }
-  }
-}
-
-const savedRange = loadCohortRange()
-const assetRange = ref(savedRange.assetRange)
-const ageRange = ref(savedRange.ageRange)
-
-// '또래 비교 데이터 제공' 약관 동의 여부. 회원가입·마이페이지 토글에서 정해진다.
-// 값을 모르면 동의 안 한 것으로 본다. 개인정보라 열어두는 쪽으로 기울면 안 된다.
 const memberStore = useMemberStore()
 const hasCompareConsent = computed(() => memberStore.profile?.compareDataAgreed ?? false)
 
-const status = ref('loading') // loading | ready | insufficient | no-snapshot | no-consent | error
-const comparison = ref(null)
-const isEditOpen = ref(false)
+const hasIncomeInfo = computed(() => memberStore.profile?.monthlyIncome != null)
+const hasOccupationInfo = computed(() => memberStore.profile?.occupationType != null)
 
-function applyCohort({ assetRange: nextAsset, ageRange: nextAge }) {
-  isEditOpen.value = false
-  // 값이 바뀌면 아래 watch가 재조회한다.
-  assetRange.value = nextAsset
-  ageRange.value = nextAge
-  localStorage.setItem(
-    COHORT_STORAGE_KEY,
-    JSON.stringify({ assetRange: nextAsset, ageRange: nextAge }),
-  )
+const { assetRange, ageRange, cohortTypes, canWidenCohort, applyCohort } = useCohortFilter()
+
+const eligibleCohortTypes = computed(() =>
+  filterEligibleCohortTypes(cohortTypes.value, {
+    hasIncomeInfo: hasIncomeInfo.value,
+    hasOccupationInfo: hasOccupationInfo.value,
+  }),
+)
+
+const {
+  status: goalStatus,
+  comparison: goalComparison,
+  errorMessage: goalErrorMessage,
+  fetch: fetchGoalComparison,
+} = useGoalComparison()
+
+const {
+  status: assetStatus,
+  comparison: assetComparison,
+  errorMessage: assetErrorMessage,
+  fetch: fetchAssetComparison,
+} = useAssetComparison()
+
+const isEditOpen = ref(false)
+const hasLoadedOnce = ref(false)
+const activeTab = ref('asset') // 'asset' | 'goal'
+let hasUserPickedTab = false
+
+function selectTab(tab) {
+  hasUserPickedTab = true
+  activeTab.value = tab
 }
 
-/** 응답의 snapshotYm('2026-07')을 '2026.07.01'로 바꾼다. 집계는 매월 1일 기준이다. */
+const isGoalLocked = computed(() => goalStatus.value === 'no-snapshot')
+
+const activeComparison = computed(() =>
+  activeTab.value === 'goal' ? goalComparison.value : assetComparison.value,
+)
+const activeStatus = computed(() =>
+  activeTab.value === 'goal' ? goalStatus.value : assetStatus.value,
+)
+const activeErrorMessage = computed(() =>
+  activeTab.value === 'goal' ? goalErrorMessage.value : assetErrorMessage.value,
+)
+
+/**
+ * 서버가 실제로 적용한 추가 필터.
+ *
+ * <p>탭마다 응답이 달라서 지금 보고 있는 탭 기준으로 읽는다.
+ */
+const appliedFilters = computed(() => activeComparison.value?.cohort?.appliedFilters ?? [])
+
+/**
+ * 소득·직업군으로 코호트를 좁히면 그 항목의 분포는 볼 것이 없어진다.
+ *
+ * <p>예를 들어 직업군을 켜면 비교 대상이 나와 같은 직업군만 남으므로 직업군 분포는
+ * 무조건 한 줄에 100%가 된다. 당연한 결과를 카드 한 장으로 보여줄 이유가 없어 감춘다.
+ */
+const showIncomeDistribution = computed(() => !appliedFilters.value.includes('INCOME'))
+const showOccupationDistribution = computed(() => !appliedFilters.value.includes('OCCUPATION'))
+
+const snapshotSource = computed(() => assetComparison.value ?? goalComparison.value)
+
+const snapshotDigits = computed(() =>
+  String(snapshotSource.value?.snapshotYm ?? '').replace(/\D/g, ''),
+)
+
 const snapshotLabel = computed(() => {
-  const digits = String(comparison.value?.snapshotYm ?? '').replace(/\D/g, '')
+  const digits = snapshotDigits.value
   return digits.length >= 6 ? `${digits.slice(0, 4)}.${digits.slice(4, 6)}.01` : ''
 })
 
-/**
- * 집계 기준일이 오래됐는지. 기능명세서 예외 흐름:
- *   "배치 지연 → 마지막 집계 기준일 표시 / 집계 기준일 2주 초과 → 기준일 라벨 표시"
- */
 const STALE_DAYS = 14
 const isSnapshotStale = computed(() => {
-  const digits = String(comparison.value?.snapshotYm ?? '').replace(/\D/g, '')
+  const digits = snapshotDigits.value
   if (digits.length < 6) return false
   const base = new Date(Number(digits.slice(0, 4)), Number(digits.slice(4, 6)) - 1, 1)
   return (Date.now() - base.getTime()) / 86_400_000 > STALE_DAYS
 })
 
-async function fetchComparison() {
-  // 어차피 거절당할 요청이므로 보내지 않는다.
+async function fetchAll() {
   if (!hasCompareConsent.value) {
-    status.value = 'no-consent'
+    goalStatus.value = 'no-consent'
+    assetStatus.value = 'no-consent'
+    hasLoadedOnce.value = true
     return
   }
 
-  status.value = 'loading'
-  try {
-    const body = await getGoalComparison({
-      assetRange: assetRange.value,
-      ageRange: ageRange.value,
-    })
-    if (body.data?.cohort?.sufficient === false) {
-      comparison.value = body.data
-      status.value = 'insufficient'
-      return
-    }
-    comparison.value = body.data
-    status.value = 'ready'
-  } catch (error) {
-    if (error.response?.status === 404) {
-      status.value = 'no-snapshot'
-    } else if (error.response?.status === 403) {
-      // 클라이언트가 들고 있던 동의 정보가 오래됐을 때를 위한 보루.
-      status.value = 'no-consent'
-    } else {
-      status.value = 'error'
-    }
+  const params = {
+    assetRange: assetRange.value,
+    ageRange: ageRange.value,
+    cohortTypes: eligibleCohortTypes.value,
+  }
+  await Promise.all([fetchGoalComparison(params), fetchAssetComparison(params)])
+  hasLoadedOnce.value = true
+
+  if (!hasUserPickedTab) {
+    activeTab.value =
+      goalStatus.value === 'ready' || goalStatus.value === 'insufficient' ? 'goal' : 'asset'
   }
 }
 
-// 비교 범위를 바꾸면 다시 불러온다.
-// 동의 여부는 여기서 보지 않는다. 이 화면은 keep-alive가 아니라서 마이페이지에서
-// 동의를 켜고 돌아오면 어차피 새로 mount되고, 아래 onMounted가 최신 프로필로 다시 조회한다.
-// 여기에 hasCompareConsent를 같이 걸면 프로필이 도착하는 순간 watch와 onMounted가
-// 함께 발동해 같은 요청이 두 번 나간다.
-watch([assetRange, ageRange], fetchComparison)
+function handleApplyCohort(next) {
+  isEditOpen.value = false
+  applyCohort(next)
+}
+
+watch([assetRange, ageRange, cohortTypes], fetchAll)
 
 onMounted(async () => {
-  // 새로고침으로 들어오면 프로필이 비어 있어 동의 여부를 알 수 없다.
-  // 마이페이지를 거쳐 왔다면 이미 채워져 있으므로 다시 부르지 않는다.
   if (!memberStore.profile) {
     await memberStore.fetchProfile()
   }
-  fetchComparison()
+  fetchAll()
 })
 </script>
 
@@ -132,120 +163,336 @@ onMounted(async () => {
   <div class="compare-view">
     <header class="compare-view__header">
       <h1>또래 비교</h1>
-      <p v-if="snapshotLabel">집계 기준 {{ snapshotLabel }} · 매월 1일 갱신</p>
+      <p class="compare-view__desc">비슷한 자산의 또래와 목표·자산을 비교해보세요.</p>
       <span v-if="isSnapshotStale" class="compare-view__stale">
         {{ snapshotLabel }} 기준 · 2주 이상 지난 집계
       </span>
     </header>
 
-    <div class="compare-view__body">
-      <p v-if="status === 'loading'" class="compare-view__notice">불러오는 중...</p>
+    <p v-if="!hasLoadedOnce" class="compare-view__notice">불러오는 중...</p>
 
-      <p v-else-if="status === 'error'" class="compare-view__notice">
-        비교 결과를 불러오지 못했어요. 잠시 후 다시 시도해주세요.
-      </p>
+    <CompareLockedCard v-else-if="goalStatus === 'no-consent'" />
 
-      <CompareLockedCard v-else-if="status === 'no-consent'" />
+    <template v-else>
+      <CompareTabs :active-tab="activeTab" :goal-locked="isGoalLocked" @select="selectTab" />
 
-      <div v-else-if="status === 'no-snapshot'" class="state-card">
-        <span class="state-card__eyebrow">목표 미설정</span>
-        <p class="state-card__title">아직 비교할 내 목표가 없어요</p>
-        <p class="state-card__body">목표를 설정하면 이번 달 집계부터 또래와 비교해서 보여드려요.</p>
-        <RouterLink class="state-card__cta" to="/diagnosis">목표 설정하러 가기</RouterLink>
-      </div>
+      <Transition name="tab-fade" mode="out-in">
+        <div :key="activeTab" class="compare-view__body">
+          <StateNoticeCard
+            v-if="activeTab === 'goal' && isGoalLocked"
+            eyebrow="목표 비교 잠금"
+            variant="wait"
+            title="목표를 세우면 달성률과 저축 순위를 볼 수 있어요"
+          >
+            비슷한 자산의 또래들과 목표 달성률, 저축 구간 순위를 비교해드려요.<br />
+            지금 목표를 설정하면 바로 확인할 수 있어요.
+            <template #action>
+              <RouterLink class="state-card__cta" to="/diagnosis">목표 설정하러 가기</RouterLink>
+            </template>
+          </StateNoticeCard>
 
-      <div v-else-if="status === 'insufficient'" class="state-card">
-        <span class="state-card__eyebrow">집계 대기</span>
-        <p class="state-card__title">아직 비교 데이터가 부족합니다</p>
-        <p class="state-card__body">
-          같은 자산·나이 범위의 또래가 {{ comparison.cohort.cohortSize }}명뿐이에요. 최소
-          {{ comparison.cohort.minimumRequired }}명이 모이면 정확한 비교 결과를 보여드릴게요.
-        </p>
-        <div class="state-card__gauge">
-          <span class="state-card__gauge-track">
-            <span
-              class="state-card__gauge-fill"
-              :style="{
-                width: `${(comparison.cohort.cohortSize / comparison.cohort.minimumRequired) * 100}%`,
-              }"
-            ></span>
-          </span>
-          <span class="state-card__gauge-label">
-            {{ comparison.cohort.cohortSize }} / {{ comparison.cohort.minimumRequired }}명
-          </span>
-        </div>
-      </div>
+          <p v-else-if="activeStatus === 'loading'" class="compare-view__notice">불러오는 중...</p>
 
-      <template v-else-if="status === 'ready' && comparison">
-        <CohortConditionCard
-          :cohort-size="comparison.cohort.cohortSize"
-          :asset-range-label="`자산 ±${formatManwon(comparison.cohort.assetRange)}`"
-          :age-range-label="`나이 ±${comparison.cohort.ageRange}세`"
-          @edit="isEditOpen = true"
-        />
-
-        <DealTypeDistributionCard
-          :top-deal-type="comparison.dealTypeDistribution.items[0].label"
-          :top-deal-ratio="comparison.dealTypeDistribution.items[0].ratio"
-          :items="comparison.dealTypeDistribution.items"
-        />
-
-        <div class="stat-pair">
-          <div class="stat-card">
-            <div class="stat-card__label">평균 목표 자산</div>
-            <div class="stat-card__value">{{ formatManwon(comparison.averageTargetAmount) }}</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-card__label">평균 준비 기간</div>
-            <div class="stat-card__value">{{ comparison.averagePrepMonths }}개월</div>
-          </div>
-        </div>
-
-        <AchievementHistogramCard
-          :my-rate="comparison.achievementDistribution.myRate"
-          :cohort-average-rate="comparison.achievementDistribution.cohortAverageRate"
-          :buckets="comparison.achievementDistribution.buckets"
-        />
-
-        <PopularRegionsCard :regions="comparison.popularRegions" />
-
-        <SavingRangeCard
-          :my-monthly-saving="comparison.savingRange.myMonthlySaving"
-          :cohort-range-min="comparison.savingRange.cohortRangeMin"
-          :cohort-range-max="comparison.savingRange.cohortRangeMax"
-        />
-
-        <div class="disclaimer">
-          <p class="disclaimer__title">
-            <img class="disclaimer__icon" :src="lockImage" alt="" />개인 정보 보호 안내
+          <p v-else-if="activeStatus === 'error'" class="compare-view__notice">
+            {{ activeErrorMessage || '비교 결과를 불러오지 못했어요. 잠시 후 다시 시도해주세요.' }}
           </p>
-          <p class="disclaimer__body">
-            개인별 목표·자산은 절대 노출되지 않으며,<br />집계 통계만 사용됩니다.
-          </p>
-        </div>
-      </template>
-    </div>
 
-    <!-- 열 때마다 새로 만들어야 사본(draft)이 현재 값으로 초기화된다. -->
-    <CohortEditSheet
-      v-if="isEditOpen"
-      :asset-range="assetRange"
-      :age-range="ageRange"
-      @apply="applyCohort"
-      @close="isEditOpen = false"
-    />
+          <StateNoticeCard
+            v-else-if="activeStatus === 'no-asset'"
+            eyebrow="자산 연동 필요"
+            variant="wait"
+            title="자산을 연동하면 비교해드릴게요"
+          >
+            또래 비교는 순자산이 비슷한 사람끼리 묶어서 보여드려요.<br />
+            자산을 연동하면 바로 결과를 볼 수 있어요.
+            <template #action>
+              <RouterLink class="state-card__cta" to="/asset-link">자산 연동하러 가기</RouterLink>
+            </template>
+          </StateNoticeCard>
+
+          <CohortInsufficientNotice
+            v-else-if="activeStatus === 'insufficient' && activeComparison"
+            :cohort-size="activeComparison.cohort.cohortSize ?? 0"
+            :minimum-required="activeComparison.cohort.minimumRequired"
+            :can-widen="canWidenCohort"
+            :applied-filters="appliedFilters"
+            @widen="isEditOpen = true"
+          />
+
+          <template v-else-if="activeStatus === 'ready' && activeComparison">
+            <CohortConditionCard
+              :cohort-size="activeComparison.cohort.cohortSize"
+              :applied-filters="appliedFilters"
+              :asset-range-label="`자산 ±${formatManwon(activeComparison.cohort.assetRange)}`"
+              :age-range-label="`나이 ±${activeComparison.cohort.ageRange}세`"
+              @edit="isEditOpen = true"
+            />
+
+            <template v-if="activeTab === 'asset'">
+              <NetAssetHighlightCard
+                class="card--cream"
+                :cohort-average-net-assets="activeComparison.cohortAverageNetAssets"
+              />
+
+              <IncomeBracketDistributionCard
+                v-if="showIncomeDistribution"
+                class="card--mint"
+                :brackets="activeComparison.incomeBracketDistribution"
+                :my-monthly-income="activeComparison.myMonthlyIncome"
+              />
+
+              <OccupationDistributionCard
+                v-if="showOccupationDistribution && activeComparison.occupationDistribution?.length"
+                class="card--cream"
+                :items="activeComparison.occupationDistribution"
+                :my-occupation-type="memberStore.profile?.occupationType ?? null"
+              />
+
+              <SavingRangeCard
+                v-if="activeComparison.saving?.mine != null"
+                class="card--mint"
+                :my-monthly-saving="activeComparison.saving.mine"
+                :cohort-range-min="activeComparison.saving.cohortMin"
+                :cohort-range-max="activeComparison.saving.cohortMax"
+              />
+              <StateNoticeCard
+                v-else
+                eyebrow="목표 설정 필요"
+                variant="wait"
+                title="목표를 세우면 저축 계획도 비교할 수 있어요"
+              >
+                어떤 목표로 얼마씩 모으고 있는지 또래와 비교해보세요.
+                <template #action>
+                  <RouterLink class="state-card__cta" to="/diagnosis"
+                    >목표 설정하러 가기</RouterLink
+                  >
+                </template>
+              </StateNoticeCard>
+            </template>
+
+            <template v-else>
+              <AchievementHistogramCard
+                class="card--cream"
+                :my-rate="activeComparison.achievement.mine"
+                :cohort-average-rate="activeComparison.achievement.cohortAverage"
+                :buckets="activeComparison.achievement.buckets"
+              />
+
+              <div class="stat-pair">
+                <div class="stat-card card--mint">
+                  <div class="stat-card__label">평균 목표 자산</div>
+                  <div class="stat-card__value">
+                    {{ formatEokManwon(activeComparison.averageTargetAmount) }}
+                  </div>
+                </div>
+                <div class="stat-card card--mint">
+                  <div class="stat-card__label">평균 준비 기간</div>
+                  <div class="stat-card__value">{{ activeComparison.averagePrepMonths }}개월</div>
+                </div>
+              </div>
+
+              <DealTypeDistributionCard
+                v-if="activeComparison.dealTypeDistribution.length"
+                class="card--cream"
+                :top-deal-type="activeComparison.dealTypeDistribution[0].label"
+                :top-deal-ratio="activeComparison.dealTypeDistribution[0].ratio"
+                :items="activeComparison.dealTypeDistribution"
+              />
+
+              <PopularRegionsCard class="card--mint" :regions="activeComparison.popularRegions" />
+            </template>
+
+            <div class="disclaimer">
+              <p class="disclaimer__title">
+                <span class="disclaimer__icon" aria-hidden="true" />개인 정보 보호 안내
+              </p>
+              <p class="disclaimer__body">
+                개인별 목표·자산은 절대 노출되지 않으며,<br />집계 통계만 사용됩니다.
+              </p>
+            </div>
+          </template>
+        </div>
+      </Transition>
+    </template>
+
+    <Transition name="sheet">
+      <CohortEditSheet
+        v-if="isEditOpen"
+        :asset-range="assetRange"
+        :age-range="ageRange"
+        :cohort-types="cohortTypes"
+        :has-income-info="hasIncomeInfo"
+        :has-occupation-info="hasOccupationInfo"
+        @apply="handleApplyCohort"
+        @close="isEditOpen = false"
+      />
+    </Transition>
   </div>
 </template>
 
 <style scoped>
-/* 폭·좌우 여백은 MobileLayout이 잡는다. 여기서 또 주면 이중으로 들어간다. */
+/*
+  비교 화면 색을 여기 한 곳에 모은다. CSS 변수는 scoped 여부와 상관없이
+  자식 컴포넌트까지 내려가므로, 카드들은 이 이름만 가져다 쓴다.
+
+  다크는 원래 비교 화면 색을 그대로 둔다(민트·골드).
+  라이트만 main.css의 공용 테마 토큰에 붙인다. 마이페이지에서 토글하면
+  이 화면도 같이 바뀐다. main.css는 건드리지 않는다.
+*/
 .compare-view {
+  --c-bg: #111111;
+  --c-card: #171b16;
+  --c-line: #334234;
+  --c-ink: #e8f0e6;
+  --c-ink-muted: #7fa398;
+  --c-ink-faint: #7f8a7d;
+  --c-accent: #9fd8ab;
+  --c-accent-mid: #4f7a5c;
+  /*
+    막대에서 "채워진 칸" 색. 초록은 내 항목·1위에만 쓰고 나머지는 회색으로 둔다.
+    전부 초록이면 채워진 건 보이는데 어느 게 내 것인지가 안 보인다.
+  */
+  --c-bar-on: #5a6b5c;
+  --c-accent-soft: #263029;
+  --c-track: #263029;
+  --c-box: #171b16;
+  /* 내 값·순위처럼 눈에 먼저 들어와야 하는 숫자. 다크에서만 금색을 쓴다. */
+  --c-value: #ffd939;
+  --c-badge-bg: #ffd939;
+  --c-badge-ink: #171b16;
+  --c-on-accent: #16281c;
+  --c-tooltip-bg: #1c1c1c;
+  --c-warn: #ffd939;
+  --c-warn-bg: rgba(255, 217, 57, 0.16);
+  --c-danger: #e37a63;
+  --c-danger-soft: rgba(193, 68, 46, 0.16);
+
+  /*
+    다크에서 카드는 크림·민트 두 가지 색을 번갈아 쓴다(홈 화면과 같은 팔레트).
+    색 있는 카드 위에서는 글씨와 막대 색이 달라져야 해서 한 벌 더 둔다.
+    라이트에서는 아래 [data-theme='light'] 블록이 전부 흰 카드로 되돌린다.
+  */
+  --c-card-cream: #f7ffd1;
+  --c-card-mint: #cdedd3;
+  --c-on-color-ink: #16281c;
+  --c-on-color-muted: #456351;
+  --c-on-color-faint: #5f7a68;
+  --c-on-color-line: rgba(22, 40, 28, 0.14);
+  --c-on-color-accent: #1d6b3f;
+  --c-on-color-accent-mid: #8fb59a;
+  --c-on-color-soft: rgba(22, 40, 28, 0.08);
+  --c-on-color-track: rgba(22, 40, 28, 0.12);
+  --c-on-color-value: #16281c;
+
+  /* 맨 아래 안내 상자. 읽고 넘어가는 문구라 양쪽 테마 모두 배경보다 살짝만 밝게 둔다. */
+  /* 잠금 화면 안내 상자처럼 옅은 바탕이 필요한 곳 */
+  --c-pale-bg: #9fd8ab;
+  --c-pale-ink: #16281c;
+
+  --c-disclaimer-bg: #1b1f1a;
+  --c-disclaimer-ink: #e8f0e6;
+  --c-disclaimer-body: #7fa398;
+  /*
+    앱 배경이 아직 테마를 따라가지 않아 이 화면만 직접 칠한다. MobileLayout의
+    여백(16px 16px 96px)을 음수 마진으로 상쇄한 뒤 같은 값을 다시 준다.
+    레이아웃이 배경을 칠해주게 되면 이 세 줄은 지우면 된다.
+  */
+  margin: -16px -16px -96px;
+  padding: 16px 16px 96px;
+  background: var(--c-bg);
+
   display: flex;
   flex-direction: column;
   gap: 10px;
-  /* 루트의 145%는 18px 기준으로 계산된 26.1px이 그대로 상속된다.
-     단위 없는 값으로 덮어써야 각 요소가 제 폰트 크기로 줄 높이를 계산한다. */
   line-height: 1.45;
+}
+
+:root[data-theme='light'] .compare-view {
+  --c-bg: var(--color-app-bg);
+  --c-card: var(--color-surface);
+  --c-line: var(--color-border);
+  --c-ink: var(--color-text-primary);
+  --c-ink-muted: var(--color-text-secondary);
+  /*
+    공용 --color-text-tertiary(#8f968c)는 흰 카드에서 대비가 3.04:1로 기준(4.5:1)에
+    못 미친다. 여기 쓰이는 곳이 10~11px 작은 글씨라 더 불리해서 한 단계 진하게 쓴다.
+  */
+  --c-ink-faint: #6f7a6d;
+  /*
+    --color-primary는 라이트·다크가 같은 진초록(#1d6b3f)이라 배경 위에서 안 보인다.
+    테마별로 뒤집히는 --color-heading-accent를 쓴다.
+  */
+  --c-accent: var(--color-heading-accent);
+  /*
+    공용 --color-progress-inactive는 "게이지 빈 칸"용 회색(라이트 #e3e7e0)으로 바뀌었다.
+    여기서 필요한 건 보조 막대·띠에 쓰는 중간 톤 초록이라 뜻이 달라서 값을 직접 쓴다.
+  */
+  --c-accent-mid: #a9c9b0;
+  /*
+    채워진 칸과 빈 칸(#eff1eb)의 대비. #aab3a6은 1.9:1이라 차 있는지가 안 보였다.
+    #7f8c7c면 3.1:1이 되고, 강조색(진초록)과는 채도로 갈린다.
+  */
+  --c-bar-on: #7f8c7c;
+  --c-accent-soft: #e8f4ea;
+  --c-track: #eff1eb;
+  --c-box: #e8ebe4;
+  --c-value: var(--color-heading-accent);
+  --c-badge-bg: #e8f4ea;
+  --c-badge-ink: var(--color-heading-accent);
+  --c-on-accent: #ffffff;
+  --c-tooltip-bg: #10130f;
+  --c-warn: #7a6000;
+  --c-warn-bg: #f4efdc;
+  --c-danger: #c1442e;
+  --c-danger-soft: rgba(193, 68, 46, 0.1);
+
+  /* 라이트에서는 색 카드가 없다. 전부 흰 카드로 되돌린다. */
+  --c-card-cream: var(--color-surface);
+  --c-card-mint: var(--color-surface);
+  --c-on-color-ink: var(--color-text-primary);
+  --c-on-color-muted: var(--color-text-secondary);
+  /* 라이트에서 색 카드는 흰 카드라 위 --c-ink-faint와 같은 값을 써야 대비가 유지된다. */
+  --c-on-color-faint: #6f7a6d;
+  --c-on-color-line: var(--color-border);
+  --c-on-color-accent: var(--color-heading-accent);
+  --c-on-color-accent-mid: #a9c9b0;
+  --c-on-color-soft: #e8f4ea;
+  --c-on-color-track: #eff1eb;
+  --c-on-color-value: var(--color-heading-accent);
+
+  --c-pale-bg: #e8f4ea;
+  --c-pale-ink: var(--color-heading-accent);
+
+  --c-disclaimer-bg: #e8ebe4;
+  --c-disclaimer-ink: var(--color-text-primary);
+  --c-disclaimer-body: var(--color-text-secondary);
+}
+
+/*
+  색 카드는 배경만 다른 게 아니라 그 위의 글씨·막대 색도 함께 바뀌어야 한다.
+  카드 컴포넌트를 고치는 대신, 이 화면에서 클래스를 얹어 변수만 갈아 끼운다.
+  변수는 자식까지 내려가므로 카드 안쪽 요소들이 알아서 따라온다.
+*/
+.compare-view :deep(.card--cream),
+.compare-view :deep(.card--mint) {
+  --c-ink: var(--c-on-color-ink);
+  --c-ink-muted: var(--c-on-color-muted);
+  --c-ink-faint: var(--c-on-color-faint);
+  --c-line: var(--c-on-color-line);
+  --c-accent: var(--c-on-color-accent);
+  --c-accent-mid: var(--c-on-color-accent-mid);
+  --c-accent-soft: var(--c-on-color-soft);
+  --c-track: var(--c-on-color-track);
+  --c-value: var(--c-on-color-value);
+  --c-box: var(--c-on-color-soft);
+}
+
+.compare-view :deep(.card--cream) {
+  --c-card: var(--c-card-cream);
+}
+
+.compare-view :deep(.card--mint) {
+  --c-card: var(--c-card-mint);
 }
 
 .compare-view__header {
@@ -261,22 +508,25 @@ onMounted(async () => {
   margin: 0;
   font-size: 17px;
   font-weight: 700;
-  color: var(--text-h);
+  color: var(--c-ink);
 }
 
 .compare-view__header p {
   margin: 0;
   font-size: 11.5px;
-  color: var(--text);
+  color: var(--c-ink-muted);
 }
 
-/* 집계가 2주 넘게 묵었을 때만 붙는 라벨 */
+.compare-view__desc {
+  margin-top: 2px;
+}
+
 .compare-view__stale {
   display: inline-flex;
   padding: 2px 9px;
   border-radius: 999px;
-  background: rgba(255, 217, 57, 0.16);
-  color: #ffd939;
+  background: var(--c-warn-bg);
+  color: var(--c-warn);
   font-size: 10.5px;
   font-weight: 600;
 }
@@ -285,13 +535,31 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  margin-top: 10px;
 }
 
 .compare-view__notice {
   padding: 24px 0;
   text-align: center;
   font-size: 13px;
-  color: var(--text);
+  color: var(--c-ink-muted);
+}
+
+.tab-fade-enter-active,
+.tab-fade-leave-active {
+  transition:
+    opacity 0.16s ease,
+    transform 0.16s ease;
+}
+
+.tab-fade-enter-from {
+  opacity: 0;
+  transform: translateY(4px);
+}
+
+.tab-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
 }
 
 .stat-pair {
@@ -301,14 +569,14 @@ onMounted(async () => {
 }
 
 .stat-card {
-  /* 이 카드에서만 쓰는 색 */
-  --mint: #cdedd3;
-  --ink: #10130f;
-  --ink-muted: #4e5c50;
+  --ink-muted: var(--c-ink-muted);
 
-  border-radius: 12px;
-  background: var(--mint);
+  border: 1px solid var(--c-line);
+  border-radius: 14px;
+  background: var(--c-card);
   padding: 14px;
+  animation: card-rise 0.35s ease-out both;
+  animation-delay: 0.12s;
 }
 
 .stat-card__label {
@@ -320,24 +588,25 @@ onMounted(async () => {
   margin-top: 2px;
   font-size: 18px;
   line-height: 1.2;
-  color: var(--ink);
+  color: var(--c-value);
   font-variant-numeric: tabular-nums;
 }
 
 .disclaimer {
-  /* 이 블록에서만 쓰는 색 */
-  --surface: #171b16;
-  --body: #7f8a7d;
+  --surface: var(--c-disclaimer-bg);
+  --body: var(--c-disclaimer-body);
 
   margin: 4px 0;
   padding: 12px 14px;
   border-radius: 12px;
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: none;
   text-align: center;
   font-size: 12px;
   line-height: 1.55;
   color: var(--body);
+  animation: card-rise 0.35s ease-out both;
+  animation-delay: 0.3s;
 }
 
 .disclaimer__title {
@@ -346,52 +615,21 @@ onMounted(async () => {
   justify-content: center;
   gap: 5px;
   margin: 0;
-  color: var(--text-h);
+  color: var(--c-disclaimer-ink);
 }
 
-/* 원본이 11px이라 등배로 써야 픽셀이 고르게 나온다. */
+/* 원본이 11×11이고 그대로 11px에 그리므로 확대·축소가 없어 픽셀이 깨지지 않는다. */
 .disclaimer__icon {
   flex: none;
   width: 11px;
   height: 11px;
-  image-rendering: pixelated;
+  background: var(--c-disclaimer-ink);
+  -webkit-mask: v-bind(lockMask) no-repeat center / contain;
+  mask: v-bind(lockMask) no-repeat center / contain;
 }
 
 .disclaimer__body {
   margin: 4px 0 0;
-}
-
-/* 예외 상태 카드 */
-.state-card {
-  border-radius: 18px;
-  background: var(--card-bg, #161616);
-  border: 1px solid var(--border);
-  padding: 16px;
-}
-
-.state-card__eyebrow {
-  display: inline-flex;
-  padding: 3px 9px;
-  border-radius: 999px;
-  background: rgba(193, 68, 46, 0.16);
-  color: #e37a63;
-  font-size: 10px;
-  font-weight: 600;
-  margin-bottom: 9px;
-}
-
-.state-card__title {
-  margin: 0 0 5px;
-  font-size: 13.5px;
-  font-weight: 700;
-  color: var(--text-h);
-}
-
-.state-card__body {
-  margin: 0;
-  font-size: 11.5px;
-  line-height: 1.6;
-  color: var(--text);
 }
 
 .state-card__cta {
@@ -400,39 +638,10 @@ onMounted(async () => {
   align-items: center;
   padding: 8px 15px;
   border-radius: 999px;
-  background: var(--accent);
-  color: var(--color-mint-deep);
+  background: var(--c-accent);
+  color: var(--c-on-accent);
   font-size: 12px;
   font-weight: 700;
   text-decoration: none;
-}
-
-.state-card__gauge {
-  margin-top: 11px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.state-card__gauge-track {
-  flex: 1;
-  height: 6px;
-  border-radius: 999px;
-  background: var(--border);
-  overflow: hidden;
-}
-
-.state-card__gauge-fill {
-  display: block;
-  height: 100%;
-  border-radius: 999px;
-  background: var(--color-point);
-}
-
-.state-card__gauge-label {
-  font-size: 10.5px;
-  color: var(--text);
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
 }
 </style>

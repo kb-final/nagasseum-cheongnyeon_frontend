@@ -2,6 +2,8 @@ export const mockMemberProfile = {
   id: 1,
   nickname: '김OO',
   incomeBracket: 'INCOME_DECILE_2_3',
+  monthlyIncome: 3000000,
+  occupationType: 'OFFICE_WORKER',
   notificationAgreed: true,
   compareDataAgreed: false,
 }

@@ -27,13 +27,13 @@ defineEmits(['update:modelValue'])
   padding: 0;
   border: none;
   border-radius: 14px;
-  background: var(--color-toggle-off, #383e3a);
+  background: var(--color-border, #383e3a);
   cursor: pointer;
   transition: background-color 0.15s ease;
 }
 
 .base-toggle--on {
-  background: var(--color-mint-strong, #c1e8c8);
+  background: var(--color-primary, #1d6b3f);
 }
 
 .base-toggle__thumb {
@@ -43,14 +43,13 @@ defineEmits(['update:modelValue'])
   width: 22px;
   height: 22px;
   border-radius: 11px;
-  background: var(--color-toggle-thumb-off, #c7ccc8);
+  background: #ffffff;
   transition:
     transform 0.15s ease,
     background-color 0.15s ease;
 }
 
 .base-toggle--on .base-toggle__thumb {
-  background: #ffffff;
   transform: translateX(19px);
 }
 </style>

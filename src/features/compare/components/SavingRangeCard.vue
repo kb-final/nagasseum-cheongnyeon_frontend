@@ -1,9 +1,8 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 
 import runnerImage from '@/features/compare/assets/runner.png'
 
-/** 눈금 최대값. 이보다 많이 저축해도 게이지는 끝에서 멈춘다(라벨 '150만+'의 의미). */
 const TRACK_MAX = 1_500_000
 
 const props = defineProps({
@@ -12,96 +11,140 @@ const props = defineProps({
   cohortRangeMax: { type: Number, required: true },
 })
 
-/**
- * 700000 -> '70'. 숫자만 만든다.
- * 공용 formatManwon은 '70만원'처럼 단위까지 붙여서, '70~90만원'이나 '150만+' 형태를 만들 수 없다.
- * 반올림 방식은 공용 함수와 맞춰둔다.
- */
 const manwon = (won) => Math.round(won / 10000).toLocaleString()
 
-const fillPct = computed(() => Math.min(100, (props.myMonthlySaving / TRACK_MAX) * 100))
+const toPercent = (won) => Math.min(100, Math.max(0, (won / TRACK_MAX) * 100))
+
+const rangeStartPct = computed(() => toPercent(props.cohortRangeMin))
+const rangeEndPct = computed(() => toPercent(props.cohortRangeMax))
+const myPct = computed(() => toPercent(props.myMonthlySaving))
+
+// 첫 프레임은 출발선(0%)에 그려야 CSS transition이 진짜로 "달려오는" 움직임으로 보인다.
+// rAF 없이 바로 목표값을 넣으면 브라우저가 중간 과정 없이 도착 지점만 그려버린다.
+const isReady = ref(false)
+onMounted(() => requestAnimationFrame(() => (isReady.value = true)))
+const runnerPct = computed(() => (isReady.value ? myPct.value : 0))
+const bandWidthPct = computed(() => (isReady.value ? rangeEndPct.value - rangeStartPct.value : 0))
 </script>
 
 <template>
   <div class="card">
-    <p class="card__title">월 저축액 구간</p>
-    <p class="card__range">{{ manwon(cohortRangeMin) }}~{{ manwon(cohortRangeMax) }}만원</p>
+    <p class="card__title">
+      월 저축액 구간
+      <span class="card__range">{{ manwon(cohortRangeMin) }}~{{ manwon(cohortRangeMax) }}만원</span>
+    </p>
 
-    <div class="slider">
-      <div class="slider__fill" :style="{ width: `${fillPct}%` }"></div>
-      <img class="slider__runner" :src="runnerImage" alt="" :style="{ left: `${fillPct}%` }" />
+    <div class="gauge">
+      <span class="gauge__my-label" :style="{ left: `${runnerPct}%` }">
+        나 {{ manwon(myMonthlySaving) }}만
+      </span>
+
+      <div class="gauge__track">
+        <span
+          class="gauge__band"
+          :style="{ left: `${rangeStartPct}%`, width: `${bandWidthPct}%` }"
+        ></span>
+      </div>
+
+      <img class="gauge__runner" :src="runnerImage" alt="" :style="{ left: `${runnerPct}%` }" />
+
+      <span class="gauge__tick" :style="{ left: `${rangeStartPct}%` }">
+        {{ manwon(cohortRangeMin) }}만
+      </span>
+      <span class="gauge__tick" :style="{ left: `${rangeEndPct}%` }">
+        {{ manwon(cohortRangeMax) }}만
+      </span>
     </div>
 
-    <div class="slider__scale">
+    <div class="gauge__ends">
       <span>0</span>
-      <span>{{ manwon(cohortRangeMin) }}만 · 나 {{ manwon(myMonthlySaving) }}만</span>
       <span>{{ manwon(TRACK_MAX) }}만+</span>
     </div>
   </div>
 </template>
 
 <style scoped>
-/* 폰트 크기는 rem이 아닌 px로 고정한다.
-   루트가 18px/16px로 바뀌면 픽셀 폰트가 그리드에서 어긋나 뭉개진다. */
 .card {
-  /* 이 카드에서만 쓰는 색 */
-  --cream: #f6f8d9;
-  --ink: #10130f;
-  --ink-muted: #4e5c50;
-  --track: #d9dcc0;
-  --fill: #9fd8ab;
+  --ink: var(--c-ink);
+  --ink-muted: var(--c-ink-muted);
+  --track: var(--c-track);
+  --band: var(--c-accent-mid);
 
-  border-radius: 20px;
+  border: 1px solid var(--c-line);
+  border-radius: 14px;
   padding: 16px;
-  background: var(--cream);
+  background: var(--c-card);
   color: var(--ink);
-  /* 루트의 145%는 18px 기준으로 계산된 26.1px이 그대로 상속된다.
-     단위 없는 값으로 덮어써야 각 요소가 제 폰트 크기로 줄 높이를 계산한다. */
   line-height: 1.45;
+  animation: card-rise 0.35s ease-out both;
+  animation-delay: 0.18s;
 }
 
 .card__title {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
   margin: 0;
   font-size: 14px;
 }
 
 .card__range {
-  margin: 6px 0 0;
-  font-size: 14px;
-  text-align: center;
+  font-size: 13px;
+  color: var(--ink-muted);
 }
 
-/* 위쪽 여백은 캐릭터가 설 자리다. 캐릭터는 absolute라 높이를 차지하지 않는다. */
-.slider {
+.gauge {
+  position: relative;
+  margin: 60px 0 22px;
+}
+
+.gauge__track {
   position: relative;
   height: 6px;
-  margin-top: 35px;
   background: var(--track);
 }
 
-.slider__fill {
+.gauge__band {
+  position: absolute;
+  top: 0;
   height: 100%;
-  background: var(--fill);
+  background: var(--band);
+  transition: width 0.7s cubic-bezier(0.22, 0.9, 0.32, 1) 0.5s;
 }
 
-.slider__runner {
+.gauge__runner {
   position: absolute;
-  bottom: 100%;
+  bottom: 6px;
   width: 30px;
   height: 30px;
   transform: translateX(-50%);
   image-rendering: pixelated;
+  transition: left 0.7s cubic-bezier(0.22, 0.9, 0.32, 1) 0.5s;
 }
 
-.slider__scale {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  margin-top: 4px;
+.gauge__my-label {
+  position: absolute;
+  bottom: 40px;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: 12px;
+  color: var(--c-value);
+  transition: left 0.7s cubic-bezier(0.22, 0.9, 0.32, 1) 0.5s;
+}
+
+.gauge__tick {
+  position: absolute;
+  top: 14px;
+  transform: translateX(-50%);
+  white-space: nowrap;
   font-size: 12px;
   color: var(--ink-muted);
 }
 
-.slider__scale span:last-child {
-  text-align: right;
+.gauge__ends {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--ink-muted);
 }
 </style>

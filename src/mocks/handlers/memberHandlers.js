@@ -34,7 +34,7 @@ export const memberHandlers = [
   }),
 
   http.patch(`${API_BASE_URL}/api/v1/members/me`, async ({ request }) => {
-    const { nickname, incomeBracket } = await request.json()
+    const { nickname, incomeBracket, monthlyIncome, occupationType } = await request.json()
 
     if (nickname === NOT_FOUND_TEST_NICKNAME) {
       return HttpResponse.json(mockMemberNotFoundResponse, { status: 404 })
@@ -42,6 +42,8 @@ export const memberHandlers = [
 
     if (nickname != null) mockMemberProfile.nickname = nickname
     if (incomeBracket != null) mockMemberProfile.incomeBracket = incomeBracket
+    if (monthlyIncome != null) mockMemberProfile.monthlyIncome = monthlyIncome
+    if (occupationType != null) mockMemberProfile.occupationType = occupationType
 
     return HttpResponse.json({ success: true, data: null, error: null })
   }),

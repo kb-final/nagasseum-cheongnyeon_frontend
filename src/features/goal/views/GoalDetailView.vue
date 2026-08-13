@@ -3,15 +3,16 @@ import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 import AppHeader from '@/shared/components/molecules/AppHeader.vue'
-import BaseBadge from '@/shared/components/atoms/base/badge/BaseBadge.vue'
-import BaseButton from '@/shared/components/atoms/base/button/BaseButton.vue'
 import BaseSkeleton from '@/shared/components/atoms/feedback/Skeleton/BaseSkeleton.vue'
 import { formatEok, formatManwon, formatYearMonthKo } from '@/shared/utils/formatter'
+import { HOUSING_TYPE_LABEL, DEAL_TYPE_LABEL } from '@/shared/constants/housing'
+import { findRegionBySigunguCode } from '@/shared/constants/regions'
 import { useToast } from '@/shared/composables/useToast'
 
 import GoalProgressCard from '@/features/goal/components/GoalProgressCard.vue'
 import SavingForecastCard from '@/features/goal/components/SavingForecastCard.vue'
 import MonthlySavingEditModal from '@/features/goal/components/MonthlySavingEditModal.vue'
+import MarketPriceAlertCard from '@/features/goal/components/MarketPriceAlertCard.vue'
 import { useGoalStore } from '@/features/goal/store/goalStore'
 
 const props = defineProps({
@@ -24,7 +25,23 @@ const toast = useToast()
 
 const detail = computed(() => goalStore.goalDetail)
 
+// 상세 조회 응답에는 title 필드가 없어서 "강남구 오피스텔 전세" 형태로 직접 조합한다.
+const conditionTitle = computed(() => {
+  if (!detail.value) return ''
+
+  const { regionCode, housingType, dealType } = detail.value.housing
+  const sigunguName = findRegionBySigunguCode(regionCode)?.sigunguName ?? ''
+  return [
+    sigunguName,
+    HOUSING_TYPE_LABEL[housingType] ?? housingType,
+    DEAL_TYPE_LABEL[dealType] ?? dealType,
+  ]
+    .filter(Boolean)
+    .join(' ')
+})
+
 // 조건 요약: "10~20평 · 보증금 3억~6억 · 목표 시점 2028년 9월"
+// 지역/매물유형/거래유형은 바로 위 제목(conditionTitle)에 이미 나오니 여기서는 중복하지 않는다.
 const conditionSummary = computed(() => {
   if (!detail.value) return ''
 
@@ -36,21 +53,16 @@ const conditionSummary = computed(() => {
   ].join(' · ')
 })
 
-// 상세 조회 응답에는 등반 레벨이 없어서 달성률 25%p 구간으로 환산해 표시한다.
-// 백엔드가 레벨을 내려주면 그 값으로 교체해야 한다.
-const climbLevel = computed(() => {
-  if (!detail.value) return 1
-  return Math.min(Math.floor(detail.value.progress.achievementRate / 25) + 1, 4)
-})
-
 onMounted(() => {
   goalStore.loadGoalDetail(props.goalId)
+  goalStore.loadMarketAlert()
 })
 
 // 목표 수정은 UC-12(진단 폼)를 재사용하는 것이 기획 상 흐름이다.
 // 값이 채워진 전용 수정 폼은 별도 작업으로 분리되어 있어, 지금은 진단 화면으로 보낸다.
+// goal-edit 라우트로 보내야 진단 화면이 생성(POST)이 아니라 수정(PUT)으로 저장한다.
 function goToEditGoal() {
-  router.push({ name: 'diagnosis' })
+  router.push({ name: 'goal-edit', params: { goalId: props.goalId } })
 }
 
 const isSavingModalOpen = ref(false)
@@ -72,7 +84,7 @@ async function onSubmitMonthlySaving(monthlySaving) {
 
 <template>
   <div class="goal-detail-view">
-    <AppHeader title="목표 상세" @back="router.back()">
+    <AppHeader title="목표 상세" :show-back="false">
       <template #action>
         <button
           v-if="detail"
@@ -87,10 +99,7 @@ async function onSubmitMonthlySaving(monthlySaving) {
 
     <template v-if="detail">
       <div class="goal-detail-view__summary">
-        <div class="goal-detail-view__title-row">
-          <h2 class="goal-detail-view__title">{{ detail.housing.title }}</h2>
-          <BaseBadge variant="mint">Lv.{{ climbLevel }} 등반가</BaseBadge>
-        </div>
+        <h2 class="goal-detail-view__title">{{ conditionTitle }}</h2>
         <p class="goal-detail-view__condition">{{ conditionSummary }}</p>
       </div>
 
@@ -103,11 +112,11 @@ async function onSubmitMonthlySaving(monthlySaving) {
         @change-saving="isSavingModalOpen = true"
       />
 
-      <BaseButton variant="primary" @click="goToEditGoal">목표 수정하기</BaseButton>
-
       <p v-if="goalStore.updateError" class="goal-detail-view__error">
         월 저축 계획을 수정하지 못했어요.
       </p>
+
+      <MarketPriceAlertCard v-if="goalStore.marketAlert" :market-alert="goalStore.marketAlert" />
 
       <MonthlySavingEditModal
         v-model="isSavingModalOpen"
@@ -134,14 +143,24 @@ async function onSubmitMonthlySaving(monthlySaving) {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  /* 화면 전체 글씨를 살짝 굵게. 이미 개별적으로 weight를 지정한 요소(제목/값 등)는
+     자체 지정값이 우선되므로 영향받지 않는다. */
+  font-weight: 500;
+}
+
+/* 이 화면(목표 상세)의 헤더 타이틀만 굵게 강조한다. AppHeader는 다른 화면에서도
+   공용으로 쓰이므로 컴포넌트 자체가 아닌 이 스코프에서만 덮어쓴다. */
+.goal-detail-view :deep(.app-header__title) {
+  font-weight: 700;
 }
 
 .goal-detail-view__edit-link {
   padding: 0;
   border: none;
   background: none;
-  color: #7fa398;
+  color: var(--color-text-tertiary, #7fa398);
   font-size: 13px;
+  font-weight: 700;
   cursor: pointer;
 }
 
@@ -149,25 +168,22 @@ async function onSubmitMonthlySaving(monthlySaving) {
   display: flex;
   flex-direction: column;
   gap: 6px;
-}
-
-.goal-detail-view__title-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  margin-left: 4px;
 }
 
 .goal-detail-view__title {
   margin: 0;
-  font-size: 20px;
-  font-weight: 400;
-  color: var(--accent, #e3ffe8);
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--home-text-primary, #353934);
 }
 
 .goal-detail-view__condition {
   margin: 0;
   font-size: 13px;
-  color: #888888;
+  font-weight: 700;
+  color: var(--color-text-primary, #888888);
+  opacity: 0.7;
 }
 
 .goal-detail-view__skeleton {
@@ -178,7 +194,7 @@ async function onSubmitMonthlySaving(monthlySaving) {
 
 .goal-detail-view__error {
   padding: 24px 0;
-  color: var(--text, #9aa09a);
+  color: var(--color-text-secondary, #9aa09a);
   text-align: center;
 }
 </style>

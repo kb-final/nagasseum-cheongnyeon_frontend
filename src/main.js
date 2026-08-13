@@ -6,6 +6,7 @@ import router from './router'
 
 import { registerAuthRefreshInterceptor } from '@/features/auth'
 import { trackStore } from '@/shared/utils/storeRegistry'
+import { initTheme } from '@/shared/composables/useTheme'
 
 async function enableMocking() {
   if (import.meta.env.VITE_USE_MOCK !== 'true') return
@@ -14,6 +15,8 @@ async function enableMocking() {
   return worker.start({ onUnhandledRequest: 'bypass' })
 }
 
+// 첫 페인트 전에 data-theme을 세팅해야 테마 깜빡임(FOUC)이 없다.
+initTheme()
 registerAuthRefreshInterceptor()
 
 const pinia = createPinia()

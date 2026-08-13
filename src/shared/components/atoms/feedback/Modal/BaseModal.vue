@@ -43,7 +43,7 @@ defineEmits(['update:modelValue'])
 .base-modal {
   display: flex;
   flex-direction: column;
-  background: #becfc7;
+  background: var(--modal-surface, #becfc7);
   border-radius: 22px;
   /* 오른쪽 패딩은 없애고 header/body/footer에서 각자 준다 -> 스크롤바가 팝업 맨 오른쪽 끝에 붙는다 */
   padding: 14px 0 14px 16px;
@@ -57,7 +57,7 @@ defineEmits(['update:modelValue'])
 
 .base-modal__header h2 {
   margin: 0 0 12px;
-  color: #1f2b25;
+  color: var(--color-text-primary, #1f2b25);
   font-size: 17px;
   font-weight: 700;
   text-align: center;

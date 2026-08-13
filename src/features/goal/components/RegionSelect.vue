@@ -76,7 +76,7 @@ function onGugunChange(event) {
 .region-select__label {
   margin-bottom: 16px;
   font-weight: 700;
-  color: var(--text-h, #ffffff);
+  color: var(--color-text-primary, #ffffff);
 }
 
 .region-select__row {
@@ -105,12 +105,12 @@ function onGugunChange(event) {
 
 .region-select__summary {
   margin: 0;
-  color: var(--text, #9aa09a);
+  color: var(--color-text-secondary, #9aa09a);
   font-size: 13px;
 }
 
 .region-select__summary-name {
-  color: #e3ffe8;
+  color: var(--color-heading-accent, #e3ffe8);
   font-weight: 700;
 }
 </style>

@@ -7,68 +7,39 @@ defineProps({
 </script>
 
 <template>
+  <!--
+    알림 벨을 뺐다. 알림 기능이 없어져서 눌러도 아무 일이 없는 버튼만 남아 있었다.
+    (프론트 점검 목록 1번) 기능이 생기면 다시 넣으면 된다.
+  -->
   <div class="greeting-header">
-    <div class="greeting-header__text">
-      <span class="greeting-header__hello">안녕하세요, {{ member.nickname }} 님</span>
-      <BaseBadge variant="mint">Lv.{{ member.level }} {{ member.levelTitle }}</BaseBadge>
-    </div>
-    <button type="button" class="greeting-header__bell" aria-label="알림">
-      <span v-if="member.hasUnreadNotification" class="greeting-header__bell-dot" />
-      <img src="@/assets/images/bell.png" alt="알림" class="greeting-header__bell-icon" />
-    </button>
+    <span class="greeting-header__hello">안녕하세요, {{ member.nickname }} 님</span>
+    <BaseBadge class="greeting-header__badge" variant="mint"
+      >Lv.{{ member.level }} {{ member.levelTitle }}</BaseBadge
+    >
   </div>
 </template>
 
 <style scoped>
+/* 벨이 빠져 오른쪽이 비었다. 가운데로 모아야 한쪽으로 쏠려 보이지 않는다. */
 .greeting-header {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.greeting-header__text {
-  display: flex;
-  align-items: center;
+  align-items: flex-end;
   gap: 8px;
   min-width: 0;
 }
 
 .greeting-header__hello {
   overflow: hidden;
+  font-family: var(--sans-normal);
   font-size: 20px;
-  font-weight: 700;
-  color: var(--text-h, #ffffff);
+  font-weight: 900;
+  color: var(--home-text-primary, #ffffff);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.greeting-header__bell {
-  position: relative;
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border: none;
-  background: transparent;
-  color: var(--text, #9aa09a);
-  cursor: pointer;
-}
-
-.greeting-header__bell-icon {
-  width: 20px;
-  height: 20px;
-}
-
-.greeting-header__bell-dot {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--color-point, #c1442e);
+.greeting-header :deep(.greeting-header__badge) {
+  font-weight: 700;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 }
 </style>

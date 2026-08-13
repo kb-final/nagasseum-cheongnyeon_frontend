@@ -48,6 +48,22 @@ function bucketGrow(bucket) {
       </div>
     </div>
 
+    <!--
+      막대 아래 눈금. 각 칸의 시작값을 왼쪽에 붙여 축처럼 읽히게 한다.
+      막대와 같은 flexGrow·gap을 써야 눈금이 칸 시작점과 맞는다.
+    -->
+    <div class="hist__axis" aria-hidden="true">
+      <span
+        v-for="bucket in buckets"
+        :key="bucket.rangeMin"
+        class="hist__tick"
+        :style="{ flexGrow: bucketGrow(bucket) }"
+        >{{ bucket.rangeMin }}</span
+      >
+      <span class="hist__tick hist__tick--last">100</span>
+    </div>
+    <p class="hist__unit">단위: 달성률 %</p>
+
     <p class="hist__legend">
       <span class="hist__legend-dot"></span>나 ({{ myRate }}%) — 코호트 평균 ({{
         cohortAverageRate
@@ -60,23 +76,25 @@ function bucketGrow(bucket) {
 /* 폰트 크기는 rem이 아닌 px로 고정한다.
    루트가 18px/16px로 바뀌면 픽셀 폰트가 그리드에서 어긋나 뭉개진다. */
 .card {
-  /* 이 카드에서만 쓰는 색 */
-  --cream: #f6f8d9;
-  --ink: #10130f;
-  --ink-muted: #4e5c50;
-  --forest: #1d6b3f;
-  --bar-body: #c2c7a8;
-  --bar-line: #d9dcc0;
-  --bar-body-mine: #165231;
-  --bar-line-mine: #1d6b3f;
+  --ink: var(--c-ink);
+  --ink-muted: var(--c-ink-muted);
+  --forest: var(--c-accent);
+  /* 막대는 칸이 쌓인 모양이다. 칸 사이 선을 카드 배경색으로 둬야 칸이 나뉘어 보인다. */
+  --bar-body: var(--c-box);
+  --bar-line: var(--c-card);
+  --bar-body-mine: var(--c-accent);
+  --bar-line-mine: var(--c-accent-mid);
 
-  border-radius: 20px;
+  border: 1px solid var(--c-line);
+  border-radius: 14px;
   padding: 16px;
-  background: var(--cream);
+  background: var(--c-card);
   color: var(--ink);
   /* 루트의 145%는 18px 기준으로 계산된 26.1px이 그대로 상속된다.
      단위 없는 값으로 덮어써야 각 요소가 제 폰트 크기로 줄 높이를 계산한다. */
   line-height: 1.45;
+  animation: card-rise 0.35s ease-out both;
+  animation-delay: 0.06s;
 }
 
 .card__title {
@@ -142,6 +160,31 @@ function bucketGrow(bucket) {
   height: 16px;
   transform: translateX(-50%);
   image-rendering: pixelated;
+}
+
+.hist__axis {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.hist__tick {
+  flex-basis: 0;
+  font-size: 10px;
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 마지막 칸의 끝값. 칸 하나를 차지하지 않도록 폭을 글자만큼만 준다. */
+.hist__tick--last {
+  flex: none;
+}
+
+.hist__unit {
+  margin: 3px 0 0;
+  font-size: 10px;
+  color: var(--ink-muted);
+  text-align: right;
 }
 
 .hist__legend {

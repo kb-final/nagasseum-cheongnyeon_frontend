@@ -8,7 +8,9 @@ import {
   fetchGoal,
   putGoal,
   fetchMonthlySavingSimulation,
+  fetchGoalMarketTrend,
 } from '@/features/goal/api/goalApi'
+import { toMarketAlertViewModel } from '@/features/goal/utils/marketAlertViewModel'
 
 export const useGoalStore = defineStore('goal', () => {
   const diagnosisResult = ref(null) // 진단 결과 { budget, results }
@@ -21,6 +23,9 @@ export const useGoalStore = defineStore('goal', () => {
   const goalDetail = ref(null) // 목표 상세 조회 결과 { housing, progress, savingStatus, forecasts, ... }
   const isLoadingDetail = ref(false)
   const detailError = ref(null)
+
+  // 목표 상세 화면 맨 아래 시세 변화 카드용. 목표 상세 조회와 독립적이라 실패해도 나머지 화면엔 영향 없다.
+  const marketAlert = ref(null)
 
   const isUpdating = ref(false)
   const updateError = ref(null)
@@ -60,6 +65,23 @@ export const useGoalStore = defineStore('goal', () => {
     }
   }
 
+  // 진단 화면을 수정 모드로 들어왔을 때 쓴다. 생성(saveGoal)과 요청 본문 스키마가 완전히 같고
+  // 엔드포인트만 POST -> PUT으로 바뀌므로, 호출부가 상태를 따로 다루지 않도록 isSaving/saveError를
+  // 그대로 공유한다.
+  async function updateGoal(goalId, payload) {
+    isSaving.value = true
+    saveError.value = null
+
+    try {
+      return await putGoal(goalId, payload)
+    } catch (e) {
+      saveError.value = e.response?.data?.error ?? e
+      return null
+    } finally {
+      isSaving.value = false
+    }
+  }
+
   async function loadGoalDetail(goalId) {
     isLoadingDetail.value = true
     detailError.value = null
@@ -71,6 +93,15 @@ export const useGoalStore = defineStore('goal', () => {
       goalDetail.value = null
     } finally {
       isLoadingDetail.value = false
+    }
+  }
+
+  // 실패해도 조용히 카드만 숨기면 되므로 별도 에러 상태 없이 marketAlert를 null로 둔다.
+  async function loadMarketAlert() {
+    try {
+      marketAlert.value = toMarketAlertViewModel(await fetchGoalMarketTrend())
+    } catch {
+      marketAlert.value = null
     }
   }
 
@@ -104,6 +135,7 @@ export const useGoalStore = defineStore('goal', () => {
   // 월 저축액만 바꾸는 화면이지만 목표 수정 API가 전체 교체(PUT)라, 기존 목표를 먼저 조회해
   // 나머지 필드(목표 금액/시점/주거 조건)를 그대로 실어 보낸다. 상세 조회 응답에는 지역 "코드"가
   // 없어서 detail 값만으로는 요청 본문을 만들 수 없다.
+  // 조회 응답(GoalResponse)과 수정 요청 본문은 필드 구성이 같아, 월 저축액만 갈아끼우면 된다.
   async function updateMonthlySaving(goalId, monthlySaving) {
     isUpdating.value = true
     updateError.value = null
@@ -111,10 +143,19 @@ export const useGoalStore = defineStore('goal', () => {
     try {
       const goal = await fetchGoal(goalId)
       await putGoal(goalId, {
-        targetAmount: goal.targetAmount,
+        regionCode: goal.regionCode,
+        propertyType: goal.propertyType,
+        tradeType: goal.tradeType,
+        sizeMin: goal.sizeMin,
+        sizeMax: goal.sizeMax,
+        depositMin: goal.depositMin,
+        depositMax: goal.depositMax,
+        monthlyRentMin: goal.monthlyRentMin,
+        monthlyRentMax: goal.monthlyRentMax,
         targetDate: goal.targetDate,
-        monthlySaving,
-        housing: goal.housing,
+        targetAmount: goal.targetAmount,
+        targetRentMiddleAmount: goal.targetRentMiddleAmount,
+        monthlySavings: monthlySaving,
       })
       return true
     } catch (e) {
@@ -133,10 +174,13 @@ export const useGoalStore = defineStore('goal', () => {
     isSaving,
     saveError,
     saveGoal,
+    updateGoal,
     goalDetail,
     isLoadingDetail,
     detailError,
     loadGoalDetail,
+    marketAlert,
+    loadMarketAlert,
     isUpdating,
     updateError,
     updateMonthlySaving,

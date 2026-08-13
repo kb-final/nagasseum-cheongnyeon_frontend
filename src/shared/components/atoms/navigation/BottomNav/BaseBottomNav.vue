@@ -30,9 +30,11 @@ defineEmits(['update:modelValue'])
   display: flex;
   align-items: center;
   width: 100%;
-  padding: 8px;
+  padding: 6px;
   border-radius: 30px;
   background: var(--color-nav-bg, #a6c7b7);
+  /* 콘텐츠 위에 떠 있는 네비라 배경과 구분되게 옅은 그림자를 준다. */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   box-sizing: border-box;
 }
 
@@ -43,17 +45,17 @@ defineEmits(['update:modelValue'])
   align-items: center;
   justify-content: center;
   gap: 4px;
-  padding: 10px 8px;
+  padding: 8px 8px;
   border: none;
   border-radius: 22px;
   background: transparent;
-  color: var(--color-nav-inactive-icon, #3e5a49);
+  color: var(--color-nav-inactive, #3e5a49);
   cursor: pointer;
 }
 
 .bottom-nav__item--active {
   background: var(--color-nav-active-bg, #e3ffe8);
-  color: var(--color-nav-active-icon, #16281c);
+  color: var(--color-nav-active, #16281c);
 }
 
 .bottom-nav__icon {
@@ -70,7 +72,9 @@ defineEmits(['update:modelValue'])
 }
 
 .bottom-nav__label {
+  font-family: var(--sans-normal);
   font-size: 12px;
+  font-weight: 700;
   white-space: nowrap;
 }
 </style>
