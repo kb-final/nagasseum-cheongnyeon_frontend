@@ -51,6 +51,13 @@ defineEmits(['back'])
   align-items: center;
   width: 100%;
   padding: 12px 0;
+  /* 스크롤해도 화면 위에 계속 떠 있게 한다. 배경을 페이지 배경과 같은 색으로 채워야
+     아래 콘텐츠가 뒤로 비치지 않는다. 하단 탭(z-index: 10)보다는 아래에 둔다. */
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--color-app-bg, #111111);
+  border-bottom: 1px solid var(--color-border, #262626);
 }
 
 .app-header__back {
@@ -69,8 +76,8 @@ defineEmits(['back'])
 
 .app-header__title {
   margin: 0;
-  font-size: 15.9px;
-  font-weight: 400;
+  font-size: 17px;
+  font-weight: 700;
   color: var(--color-text-primary, #ffffff);
 }
 

@@ -1,6 +1,7 @@
 <script setup>
 import { useRouter } from 'vue-router'
 
+import AppHeader from '@/shared/components/molecules/AppHeader.vue'
 import EmptyGoalCard from '@/features/home/components/EmptyGoalCard.vue'
 
 const router = useRouter()
@@ -8,9 +9,7 @@ const router = useRouter()
 
 <template>
   <div class="goal-empty-view">
-    <header class="goal-empty-view__header">
-      <h1>목표</h1>
-    </header>
+    <AppHeader title="목표" :show-back="false" />
     <EmptyGoalCard @create-goal="router.push('/diagnosis')" />
   </div>
 </template>
@@ -20,12 +19,5 @@ const router = useRouter()
   display: flex;
   flex-direction: column;
   gap: 16px;
-}
-
-.goal-empty-view__header h1 {
-  margin: 0;
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--color-text-primary, #ffffff);
 }
 </style>

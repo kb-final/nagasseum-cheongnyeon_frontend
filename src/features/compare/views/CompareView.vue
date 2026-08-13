@@ -508,7 +508,9 @@ onMounted(async () => {
   margin: 0;
   font-size: 17px;
   font-weight: 700;
-  color: var(--c-ink);
+  /* 다른 화면의 헤더 제목과 같은 색으로 맞춘다. 이 화면 전용 톤인 --c-ink 대신
+     공용 텍스트색을 쓴다(다크에서 --c-ink는 #e8f0e6로 --color-text-primary와 미묘하게 다름). */
+  color: var(--color-text-primary);
 }
 
 .compare-view__header p {
