@@ -60,7 +60,8 @@ watch(() => props.cohortAverageNetAssets, countUpTo, { immediate: true })
 
 .card__title {
   margin: 0;
-  font-size: 14px;
+  font-size: 15px;
+  font-weight: 700;
 }
 
 .card__value {
@@ -73,7 +74,7 @@ watch(() => props.cohortAverageNetAssets, countUpTo, { immediate: true })
 
 .card__desc {
   margin: 4px 0 0;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--ink-muted);
 }
 </style>
