@@ -216,9 +216,8 @@ function confirmLogout() {
   width: 76px;
   height: 76px;
   border-radius: 38px;
-  background: var(--accent, #e3ffe8);
-  color: var(--color-mint-deep, #16281c);
-  /* BaseCard와 같은 그림자 */
+  /* BaseCard와 같은 배경·그림자 */
+  background: var(--color-surface, #161616);
   box-shadow: 0 2px 6px rgba(90, 143, 77, 0.06);
 }
 
