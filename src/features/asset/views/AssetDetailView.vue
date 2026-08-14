@@ -109,7 +109,11 @@ onMounted(() => {
   --c-card: var(--color-surface);
   --c-line: var(--color-border);
   --c-ink: var(--color-text-primary);
-  --c-ink-muted: var(--color-text-secondary);
+  /*
+    카드 설명 글 색. 디자인에서 지정한 값이라 공용 토큰 대신 직접 쓴다.
+    흰 카드에서 6.2:1, 앱 배경에서 5.8:1로 기준(4.5:1)을 넘는다. 비교 화면과 같은 값.
+  */
+  --c-ink-muted: #5b6358;
   /*
     공용 --color-text-tertiary(#8f968c)는 흰 카드에서 3.04:1로 기준(4.5:1)에 못 미친다.
     여기 쓰이는 기관명이 10px라 더 불리해서 한 단계 진하게 쓴다. 비교 화면과 같은 값.

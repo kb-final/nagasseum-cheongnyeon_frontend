@@ -25,17 +25,6 @@ import PopularRegionsCard from '@/features/compare/components/PopularRegionsCard
 import SavingRangeCard from '@/features/compare/components/SavingRangeCard.vue'
 import StateNoticeCard from '@/features/compare/components/StateNoticeCard.vue'
 
-import lockImage from '@/features/compare/assets/lock.png'
-
-/**
- * 자물쇠 아이콘을 색칠하기 위한 마스크 주소.
- *
- * <p>그림 파일이 밝은 민트 한 색이라 크림색 안내 상자 위에서 보이지 않는다. 파일을
- * 다시 칠하면 다크 테마에서 못 쓰게 되므로, 모양만 마스크로 떠서 글씨와 같은 색으로
- * 칠한다. 색이 변수라 테마가 바뀌면 아이콘도 같이 따라온다.
- */
-const lockMask = `url(${lockImage})`
-
 const memberStore = useMemberStore()
 const hasCompareConsent = computed(() => memberStore.profile?.compareDataAgreed ?? false)
 
@@ -102,6 +91,23 @@ const appliedFilters = computed(() => activeComparison.value?.cohort?.appliedFil
  */
 const showIncomeDistribution = computed(() => !appliedFilters.value.includes('INCOME'))
 const showOccupationDistribution = computed(() => !appliedFilters.value.includes('OCCUPATION'))
+
+/**
+ * 개월 수를 '1년 2개월'로 바꾼다.
+ *
+ * <p>서버는 준비 기간을 개월로만 내려준다. 두 자리가 되면 몇 년인지 머리로 나눠야 해서
+ * 12개월부터는 연을 앞에 세운다. 12로 나눠떨어지면 '개월 0'을 붙이지 않는다.
+ */
+function formatPrepPeriod(months) {
+  if (months == null) return '-'
+
+  const years = Math.floor(months / 12)
+  const restMonths = months % 12
+
+  if (years === 0) return `${restMonths}개월`
+  if (restMonths === 0) return `${years}년`
+  return `${years}년 ${restMonths}개월`
+}
 
 const snapshotSource = computed(() => assetComparison.value ?? goalComparison.value)
 
@@ -287,7 +293,9 @@ onMounted(async () => {
                 </div>
                 <div class="stat-card card--mint">
                   <div class="stat-card__label">평균 준비 기간</div>
-                  <div class="stat-card__value">{{ activeComparison.averagePrepMonths }}개월</div>
+                  <div class="stat-card__value">
+                    {{ formatPrepPeriod(activeComparison.averagePrepMonths) }}
+                  </div>
                 </div>
               </div>
 
@@ -304,7 +312,22 @@ onMounted(async () => {
 
             <div class="disclaimer">
               <p class="disclaimer__title">
-                <span class="disclaimer__icon" aria-hidden="true" />개인 정보 보호 안내
+                <svg
+                  class="disclaimer__icon"
+                  viewBox="0 0 11 11"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <rect x="3" y="0" width="5" height="1" />
+                  <rect x="2" y="1" width="1" height="3" />
+                  <rect x="8" y="1" width="1" height="3" />
+                  <rect x="1" y="4" width="9" height="1" />
+                  <rect x="1" y="5" width="1" height="5" />
+                  <rect x="9" y="5" width="1" height="5" />
+                  <rect x="5" y="6" width="1" height="3" />
+                  <rect x="1" y="10" width="9" height="1" />
+                </svg>
+                개인 정보 보호 안내
               </p>
               <p class="disclaimer__body">
                 개인별 목표·자산은 절대 노출되지 않으며,<br />집계 통계만 사용됩니다.
@@ -412,7 +435,11 @@ onMounted(async () => {
   --c-card: var(--color-surface);
   --c-line: var(--color-border);
   --c-ink: var(--color-text-primary);
-  --c-ink-muted: var(--color-text-secondary);
+  /*
+    카드 설명 글 색. 디자인에서 지정한 값이라 공용 토큰 대신 직접 쓴다.
+    흰 카드에서 6.2:1, 앱 배경에서 5.8:1로 기준(4.5:1)을 넘는다.
+  */
+  --c-ink-muted: #5b6358;
   /*
     공용 --color-text-tertiary(#8f968c)는 흰 카드에서 대비가 3.04:1로 기준(4.5:1)에
     못 미친다. 여기 쓰이는 곳이 10~11px 작은 글씨라 더 불리해서 한 단계 진하게 쓴다.
@@ -450,7 +477,8 @@ onMounted(async () => {
   --c-card-cream: var(--color-surface);
   --c-card-mint: var(--color-surface);
   --c-on-color-ink: var(--color-text-primary);
-  --c-on-color-muted: var(--color-text-secondary);
+  /* 라이트에서 색 카드는 흰 카드라 위 --c-ink-muted와 같은 값을 쓴다. */
+  --c-on-color-muted: #5b6358;
   /* 라이트에서 색 카드는 흰 카드라 위 --c-ink-faint와 같은 값을 써야 대비가 유지된다. */
   --c-on-color-faint: #6f7a6d;
   --c-on-color-line: var(--color-border);
@@ -508,9 +536,7 @@ onMounted(async () => {
   margin: 0;
   font-size: 17px;
   font-weight: 700;
-  /* 다른 화면의 헤더 제목과 같은 색으로 맞춘다. 이 화면 전용 톤인 --c-ink 대신
-     공용 텍스트색을 쓴다(다크에서 --c-ink는 #e8f0e6로 --color-text-primary와 미묘하게 다름). */
-  color: var(--color-text-primary);
+  color: var(--c-ink);
 }
 
 .compare-view__header p {
@@ -623,14 +649,20 @@ onMounted(async () => {
   color: var(--c-disclaimer-ink);
 }
 
-/* 원본이 11×11이고 그대로 11px에 그리므로 확대·축소가 없어 픽셀이 깨지지 않는다. */
+/*
+  자물쇠는 그림 파일이 아니라 SVG로 그린다. 원본 11×11 격자를 사각형 여덟 개로 옮겼다.
+
+  PNG는 화면 배율이 정수배가 아닐 때(윈도우 125%·150%, 브라우저 확대 등) 11칸이
+  고르게 나뉘지 않아 어떤 줄은 굵고 어떤 줄은 사라진다. SVG는 도형이라 배율이
+  얼마든 같은 비율로 그려진다.
+
+  fill이 currentColor라 제목 글씨색(--c-disclaimer-ink)을 그대로 따라간다.
+  테마가 바뀌면 자물쇠도 같이 뒤집혀서 파일을 두 벌 둘 필요가 없다.
+*/
 .disclaimer__icon {
   flex: none;
   width: 11px;
   height: 11px;
-  background: var(--c-disclaimer-ink);
-  -webkit-mask: v-bind(lockMask) no-repeat center / contain;
-  mask: v-bind(lockMask) no-repeat center / contain;
 }
 
 .disclaimer__body {
