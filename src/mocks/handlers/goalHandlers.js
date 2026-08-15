@@ -1,7 +1,8 @@
-import { http, HttpResponse } from 'msw'
+import { http, HttpResponse, delay } from 'msw'
 
 import {
   buildMockDiagnosisResult,
+  buildMockRecommendations,
   mockGoalSaveResponse,
   mockGoalDetail,
   mockGoal,
@@ -19,6 +20,37 @@ export const goalHandlers = [
     return HttpResponse.json({
       success: true,
       data: buildMockDiagnosisResult(payload),
+      error: null,
+    })
+  }),
+
+  // 목표 추천 리스트 조회. 명세서에는 GET + Query Parameter로 적혀 있지만 실제 구현이
+  // POST + Request Body라(GoalRecommendationController) 목도 구현 쪽에 맞춘다.
+  // 아래 `POST /goals`(목표 저장)보다 먼저 등록해야 하는 건 아니지만, 경로가 헷갈리기 쉬워
+  // 저장 핸들러 바로 위에 붙여둔다.
+  http.post(`${API_BASE_URL}/api/v1/goals/recommendations`, async ({ request }) => {
+    const payload = await request.json()
+
+    // 백엔드가 @NotBlank로 막는 유일한 필수 조건. 화면에서 걸러지지만, 요청을 직접 만들었을 때의
+    // 응답 형태도 목에서 그대로 확인할 수 있게 같이 재현한다.
+    if (!payload.regionCode) {
+      return HttpResponse.json(
+        {
+          success: false,
+          data: null,
+          error: { code: 'GOAL_INVALID_INPUT', message: '지역 코드는 필수입니다.' },
+        },
+        { status: 400 },
+      )
+    }
+
+    // 실제로는 알고리즘 4개가 각각 실거래를 훑어서 수 초가 걸린다. 목이 즉시 응답하면
+    // 로딩 화면이 한 프레임도 안 보여 확인할 수가 없어, 대략의 체감 시간을 흉내낸다.
+    await delay(1500)
+
+    return HttpResponse.json({
+      success: true,
+      data: buildMockRecommendations(payload),
       error: null,
     })
   }),
