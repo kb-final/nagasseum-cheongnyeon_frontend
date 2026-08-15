@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 
 import {
   postGoalDiagnosis,
+  postGoalRecommendations,
   postGoal,
   fetchGoalDetail,
   fetchGoal,
@@ -16,6 +17,12 @@ export const useGoalStore = defineStore('goal', () => {
   const diagnosisResult = ref(null) // 진단 결과 { budget, results }
   const isSubmitting = ref(false)
   const error = ref(null)
+
+  // 조건 입력 플로우가 받아온 추천 대안 목록. 대안을 내지 못한 알고리즘은 응답에서 빠지므로
+  // 길이가 4보다 작을 수 있고, 조건에 따라 아예 0개일 수도 있다.
+  const recommendations = ref([])
+  const isRecommending = ref(false)
+  const recommendError = ref(null)
 
   const isSaving = ref(false)
   const saveError = ref(null)
@@ -48,6 +55,27 @@ export const useGoalStore = defineStore('goal', () => {
       error.value = e.response?.data?.error ?? e
     } finally {
       isSubmitting.value = false
+    }
+  }
+
+  // 조건 입력을 마치고 추천 목록을 불러온다. 호출부(로딩 화면)가 성공/실패로 화면을 갈라야 해서
+  // 에러를 상태에만 담지 않고 boolean으로도 돌려준다.
+  async function loadRecommendations(payload) {
+    isRecommending.value = true
+    recommendError.value = null
+
+    try {
+      const result = await postGoalRecommendations(payload)
+      // 추천이 0개여도 정상 응답이다 — 화면에서 "조건에 맞는 대안 없음"으로 구분해 다룬다.
+      recommendations.value = result?.recommendations ?? []
+      return true
+    } catch (e) {
+      // 백엔드가 {success:false, error:{code,message,fields}}로 내려주므로, 있으면 그 메시지를 그대로 쓴다.
+      recommendError.value = e.response?.data?.error ?? e
+      recommendations.value = []
+      return false
+    } finally {
+      isRecommending.value = false
     }
   }
 
@@ -171,6 +199,10 @@ export const useGoalStore = defineStore('goal', () => {
     isSubmitting,
     error,
     submitDiagnosis,
+    recommendations,
+    isRecommending,
+    recommendError,
+    loadRecommendations,
     isSaving,
     saveError,
     saveGoal,

@@ -31,6 +31,21 @@ export async function postGoalDiagnosis(payload) {
   return data.data
 }
 
+// 희망 조건을 받아 추천 목표 대안 목록을 돌려준다 (PREFERENCE / REALISTIC / VALUE / HOLD_OUT).
+//
+// 명세서에는 GET + Query Parameter로 적혀 있지만 실제 구현은 POST + Request Body다
+// (GoalRecommendationController#recommend). 명세서에도 "미확정 — 프론트와 합의 필요"로 남아 있는
+// 항목이며, 파라미터가 10개라 POST 쪽에 맞췄다. 백엔드가 GET으로 바꾸면 이 함수만 고치면 된다.
+//
+// payload 필드명은 백엔드 GoalRecommendationRequest와 1:1로 같아 변환 없이 그대로 보낸다.
+// regionCode(시도 2자리 또는 시군구 5자리)만 필수이고 나머지는 전부 선택값이며,
+// 지정하지 않은 조건은 null로 보내면 각 추천 알고리즘이 알아서 채운다.
+// memberId는 인증 토큰(@LoginMember)에서 추출하므로 별도 전달 불필요
+export async function postGoalRecommendations(payload) {
+  const { data } = await httpClient.post('/api/v1/goals/recommendations', payload)
+  return data.data
+}
+
 // 목표 상세 화면 데이터 (목표 정보 · 달성 현황 · 저축 현황 · 예상 달성 시점)
 export async function fetchGoalDetail(goalId) {
   const { data } = await httpClient.get(`/api/v1/goals/${goalId}/detail`)
