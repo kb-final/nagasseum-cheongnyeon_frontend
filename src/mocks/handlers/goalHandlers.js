@@ -14,6 +14,27 @@ import {
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
+// 쿼리 문자열은 값이 전부 문자열이라, 백엔드가 Integer/Long으로 받는 필드는 숫자로 되돌린다.
+// (목 데이터 계산이 문자열 연결로 새는 것을 막는다) 없는 파라미터는 "조건 없음"이므로 null이다.
+const NUMERIC_PARAMS = [
+  'sizeMin',
+  'sizeMax',
+  'depositMin',
+  'depositMax',
+  'monthlyRentMin',
+  'monthlyRentMax',
+]
+
+function toRecommendationCondition(searchParams) {
+  const condition = Object.fromEntries(searchParams)
+
+  for (const key of NUMERIC_PARAMS) {
+    condition[key] = condition[key] === undefined ? null : Number(condition[key])
+  }
+
+  return condition
+}
+
 export const goalHandlers = [
   http.post(`${API_BASE_URL}/api/v1/goals/diagnosis`, async ({ request }) => {
     const payload = await request.json()
@@ -24,16 +45,16 @@ export const goalHandlers = [
     })
   }),
 
-  // 목표 추천 리스트 조회. 명세서에는 GET + Query Parameter로 적혀 있지만 실제 구현이
-  // POST + Request Body라(GoalRecommendationController) 목도 구현 쪽에 맞춘다.
-  // 아래 `POST /goals`(목표 저장)보다 먼저 등록해야 하는 건 아니지만, 경로가 헷갈리기 쉬워
-  // 저장 핸들러 바로 위에 붙여둔다.
-  http.post(`${API_BASE_URL}/api/v1/goals/recommendations`, async ({ request }) => {
-    const payload = await request.json()
+  // 목표 추천 리스트 조회 (명세서대로 GET + Query Parameter).
+  // 주의: 아래 `GET /goals/:goalId`가 세그먼트 하나짜리 경로를 모두 goalId로 매칭하므로,
+  // `market-trend`/`summary`와 마찬가지로 반드시 그보다 먼저 등록해야 한다.
+  // (MSW는 먼저 등록된 핸들러가 이긴다)
+  http.get(`${API_BASE_URL}/api/v1/goals/recommendations`, async ({ request }) => {
+    const condition = toRecommendationCondition(new URL(request.url).searchParams)
 
     // 백엔드가 @NotBlank로 막는 유일한 필수 조건. 화면에서 걸러지지만, 요청을 직접 만들었을 때의
     // 응답 형태도 목에서 그대로 확인할 수 있게 같이 재현한다.
-    if (!payload.regionCode) {
+    if (!condition.regionCode) {
       return HttpResponse.json(
         {
           success: false,
@@ -50,7 +71,7 @@ export const goalHandlers = [
 
     return HttpResponse.json({
       success: true,
-      data: buildMockRecommendations(payload),
+      data: buildMockRecommendations(condition),
       error: null,
     })
   }),

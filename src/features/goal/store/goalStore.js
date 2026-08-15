@@ -3,7 +3,7 @@ import { defineStore } from 'pinia'
 
 import {
   postGoalDiagnosis,
-  postGoalRecommendations,
+  fetchGoalRecommendations,
   postGoal,
   fetchGoalDetail,
   fetchGoal,
@@ -60,12 +60,12 @@ export const useGoalStore = defineStore('goal', () => {
 
   // 조건 입력을 마치고 추천 목록을 불러온다. 호출부(로딩 화면)가 성공/실패로 화면을 갈라야 해서
   // 에러를 상태에만 담지 않고 boolean으로도 돌려준다.
-  async function loadRecommendations(payload) {
+  async function loadRecommendations(condition) {
     isRecommending.value = true
     recommendError.value = null
 
     try {
-      const result = await postGoalRecommendations(payload)
+      const result = await fetchGoalRecommendations(condition)
       // 추천이 0개여도 정상 응답이다 — 화면에서 "조건에 맞는 대안 없음"으로 구분해 다룬다.
       recommendations.value = result?.recommendations ?? []
       return true
