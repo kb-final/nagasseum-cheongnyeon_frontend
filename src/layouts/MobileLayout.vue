@@ -27,6 +27,7 @@ const navItems = [
 const HIDDEN_NAV_ROUTE_NAMES = [
   'diagnosis',
   'goal-recommendations',
+  'goal-recommendation-detail',
   'edit-info',
   'asset-link-additional',
 ]

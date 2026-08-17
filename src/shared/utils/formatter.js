@@ -81,6 +81,23 @@ export function formatAreaRangeM2(areaMin, areaMax) {
   return `전용 ${areaMin}~${areaMax}m²`
 }
 
+// 33 -> 10 (전용면적 ㎡를 평으로 환산. mocks/data/goal.js의 PYEONG_TO_M2와 같은 상수를 쓴다 —
+// 그쪽은 mock 응답 생성 전용이라 이 shared 유틸을 의존하게 만들지 않고 값만 맞춰뒀다.)
+export function m2ToPyeong(m2) {
+  return Math.round(m2 / 3.3058)
+}
+
+// 70 -> "5년 10개월", 60 -> "5년", 8 -> "8개월"
+// (대출 활용 시 단축되는 개월 수처럼, 개월 수를 년/개월 단위로 함께 읽기 쉽게 표기할 때 사용)
+export function formatMonthsToYearsKo(months) {
+  const years = Math.floor(months / 12)
+  const remainMonths = months % 12
+
+  if (years === 0) return `${remainMonths}개월`
+  if (remainMonths === 0) return `${years}년`
+  return `${years}년 ${remainMonths}개월`
+}
+
 // 시세 변동액에 부호를 붙여 "▲ 500만 원" / "▼ 500만 원" / "500만 원"(변동 없음)으로 표기
 export function formatChangeAmount(amount) {
   const arrow = amount > 0 ? '▲ ' : amount < 0 ? '▼ ' : ''
