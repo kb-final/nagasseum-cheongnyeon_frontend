@@ -74,11 +74,22 @@ function goToDiagnosis() {
       <BaseButton size="lg" @click="goToDiagnosis">다시 진단하기</BaseButton>
     </div>
 
-    <ul v-else class="goal-recommendations-view__list">
-      <li v-for="recommendation in sortedRecommendations" :key="recommendation.type">
-        <RecommendationCard :recommendation="recommendation" @select="goToDetail" />
-      </li>
-    </ul>
+    <template v-else>
+      <ul class="goal-recommendations-view__list">
+        <li v-for="recommendation in sortedRecommendations" :key="recommendation.type">
+          <RecommendationCard :recommendation="recommendation" @select="goToDetail" />
+        </li>
+      </ul>
+
+      <BaseButton
+        variant="secondary"
+        size="lg"
+        class="goal-recommendations-view__retry"
+        @click="goToDiagnosis"
+      >
+        다시 진단하기
+      </BaseButton>
+    </template>
   </div>
 </template>
 
@@ -128,5 +139,14 @@ function goToDiagnosis() {
   align-items: center;
   gap: 16px;
   padding-top: 16px;
+}
+
+/* 민트(--color-mint-strong)는 이 화면 다른 곳에 안 쓰여서 혼자 붕 떠 보였다. 이 화면이 이미
+   강조색으로 쓰고 있는 초록 계열(전략 문구·"자세히 보기"의 --color-primary) 톤으로 맞춘다 —
+   SavingForecastCard/MonthlySavingEditModal의 CTA와 같은 --color-primary-soft 조합 재사용. */
+.goal-recommendations-view__retry {
+  margin-top: 4px;
+  background: var(--color-primary-soft, #e8f4ea);
+  color: #353934;
 }
 </style>
