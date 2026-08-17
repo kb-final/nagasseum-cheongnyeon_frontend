@@ -31,6 +31,36 @@ export async function postGoalDiagnosis(payload) {
   return data.data
 }
 
+// 값을 지정하지 않은 조건(null)은 쿼리 문자열에서 아예 뺀다.
+// axios도 null/undefined 파라미터는 직렬화하지 않지만, "조건 없음 = 파라미터 없음"이라는 계약을
+// 호출부가 아니라 여기서 명시적으로 보장한다. 빈 문자열도 조건 없음으로 취급한다
+// (백엔드 @NotBlank/@Pattern 검증에 빈 값이 걸려 400이 나는 것을 막는다).
+function toRecommendationParams(condition) {
+  return Object.fromEntries(
+    Object.entries(condition).filter(
+      ([, value]) => value !== null && value !== undefined && value !== '',
+    ),
+  )
+}
+
+// 희망 조건을 받아 추천 목표 대안 목록을 돌려준다 (PREFERENCE / REALISTIC / VALUE / HOLD_OUT).
+//
+// 명세서의 GET + Query Parameter를 따른다.
+// ⚠️ 백엔드 구현(GoalRecommendationController#recommend)은 아직 POST + @RequestBody라
+// 그대로 붙이면 405가 난다. 백엔드도 @GetMapping + @ModelAttribute로 바꿔야 동작한다.
+// (명세서에 "미확정 — 프론트와 합의 필요"로 남아 있던 항목을 명세서 기준으로 정리한 것)
+//
+// 쿼리 파라미터 이름은 백엔드 GoalRecommendationRequest 필드와 1:1로 같아 변환 없이 그대로 보낸다.
+// regionCode(시도 2자리 또는 시군구 5자리)만 필수이고 나머지는 전부 선택값이며,
+// 지정하지 않은 조건은 아예 쿼리에서 빼면 각 추천 알고리즘이 알아서 채운다.
+// memberId는 인증 토큰(@LoginMember)에서 추출하므로 별도 전달 불필요
+export async function fetchGoalRecommendations(condition) {
+  const { data } = await httpClient.get('/api/v1/goals/recommendations', {
+    params: toRecommendationParams(condition),
+  })
+  return data.data
+}
+
 // 목표 상세 화면 데이터 (목표 정보 · 달성 현황 · 저축 현황 · 예상 달성 시점)
 export async function fetchGoalDetail(goalId) {
   const { data } = await httpClient.get(`/api/v1/goals/${goalId}/detail`)
