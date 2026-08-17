@@ -1,4 +1,4 @@
-import { GUGUN_BY_SIDO, findRegionBySigunguCode } from '@/shared/constants/regions'
+import { SIDO_LIST, GUGUN_BY_SIDO, findRegionBySigunguCode } from '@/shared/constants/regions'
 
 // POST /api/v1/goals/diagnosis 응답 mock.
 // CLAUDE.md가 진단 응답의 정확한 필드 형태를 정의하지 않아 goal/goalHousing ERD를 참고해 추정한 형태 —
@@ -303,4 +303,123 @@ export const mockGoalNotFoundResponse = {
   success: false,
   data: null,
   error: { code: 'GOAL_001', message: '활성 목표를 찾을 수 없습니다.' },
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// POST /api/v1/goals/recommendations 응답 mock
+//
+// 필드 구성은 백엔드 GoalRecommendationResponse를 그대로 따른다. 명세서 예시에 있는
+// loanO.shortenedMonths는 백엔드 DTO(LoanOPlan)에 없어 여기서도 넣지 않는다 — 백엔드에
+// 추가되면 여기와 결과 화면을 같이 고쳐야 한다.
+//
+// VALUE 알고리즘은 아직 미구현이라(명세서 "알고리즘 구현 현황" 2026-08-12 기준) 응답에서 빠진다.
+// 대안을 내지 못한 알고리즘은 응답에서 제외되므로 recommendations 길이가 4보다 작을 수 있다는
+// 계약을, 목에서도 그대로 재현해 두는 편이 화면 검증에 유리하다.
+// ─────────────────────────────────────────────────────────────────────────────
+
+const PYEONG_TO_M2 = 3.3058
+
+// 실거래 시세가 없어 지역 코드로 대충 갈라 쓴다 — 데모용 근사치일 뿐 의미 있는 값이 아니다.
+const MOCK_RECOMMENDATION_MEDIAN = {
+  JEONSE: 350000000,
+  WOLSE: 50000000,
+}
+
+function resolveRegionName(regionCode) {
+  if (!regionCode) return ''
+  // 시도 2자리로 오면 시군구를 고르지 않는다 — 사용자가 묻지 않은 시군구를 정해주지 않는다는 규칙.
+  if (regionCode.length === 2) {
+    return SIDO_LIST.find((sido) => sido.code === regionCode)?.name ?? ''
+  }
+  const region = findRegionBySigunguCode(regionCode)
+  return region ? `${region.sidoName} ${region.sigunguName}` : ''
+}
+
+function buildRecommendationCondition(payload, overrides = {}) {
+  const dealType = overrides.dealType ?? payload.tradeType ?? 'JEONSE'
+  const sizeMin = overrides.sizeMin ?? payload.sizeMin ?? 15
+  const sizeMax = overrides.sizeMax ?? payload.sizeMax ?? 19
+  const regionCode = overrides.regionCode ?? payload.regionCode
+
+  return {
+    regionCode,
+    regionName: resolveRegionName(regionCode),
+    housingType: overrides.housingType ?? payload.propertyType ?? 'APT',
+    dealType,
+    // 요청은 평, 응답은 전용면적 ㎡ 기준이라 여기서 환산한다.
+    areaMin: Math.round(sizeMin * PYEONG_TO_M2),
+    areaMax: Math.round(sizeMax * PYEONG_TO_M2),
+    // 전세면 0, 월세면 실제 매달 내는 금액. 요청에 월세 범위가 있으면 그 중간값을 쓴다.
+    monthlyRent:
+      dealType === 'WOLSE'
+        ? roundTo(((payload.monthlyRentMin ?? 0) + (payload.monthlyRentMax ?? 800000)) / 2, 10000)
+        : 0,
+    sampleCount: overrides.sampleCount ?? 142,
+  }
+}
+
+function buildPlans(median, monthlySaving, loanAmount) {
+  const ownFundsWithoutLoan = Math.max(median - MOCK_RECOGNIZED_ASSETS, 0)
+  const ownFundsWithLoan = Math.max(ownFundsWithoutLoan - loanAmount, 0)
+  const monthsWithoutLoan = Math.max(Math.ceil(ownFundsWithoutLoan / monthlySaving), 1)
+  const monthsWithLoan = Math.max(Math.ceil(ownFundsWithLoan / monthlySaving), 1)
+
+  return {
+    loanX: {
+      targetAmount: ownFundsWithoutLoan,
+      targetDate: addMonths(currentYm(), monthsWithoutLoan),
+      monthlySaving,
+    },
+    loanO: {
+      loanAmount,
+      targetAmount: ownFundsWithLoan,
+      targetDate: addMonths(currentYm(), monthsWithLoan),
+      monthlySaving,
+    },
+  }
+}
+
+export function buildMockRecommendations(payload) {
+  const monthlySaving = 1000000
+  const dealType = payload.tradeType ?? 'JEONSE'
+  const median = MOCK_RECOMMENDATION_MEDIAN[dealType] ?? MOCK_RECOMMENDATION_MEDIAN.JEONSE
+
+  // 시도 2자리로 요청하면 REALISTIC은 시군구까지 좁혀서 답한다. 목 데이터에는 실거래가 없으니
+  // 그 시도의 첫 번째 구/군을 골라 "좁혀졌다"는 것만 재현한다.
+  const firstGugun = GUGUN_BY_SIDO[payload.regionCode?.slice(0, 2)]?.[0]?.code
+  const realisticRegionCode =
+    payload.regionCode?.length === 2 && firstGugun ? firstGugun : payload.regionCode
+
+  return {
+    recommendations: [
+      {
+        type: 'PREFERENCE',
+        title: '내가 원하는 조건 그대로',
+        reason: `선택하신 ${resolveRegionName(payload.regionCode)} 조건의 최근 실거래 중앙값이에요.`,
+        condition: buildRecommendationCondition(payload),
+        ...buildPlans(median, monthlySaving, 80000000),
+      },
+      {
+        type: 'REALISTIC',
+        title: '지금 소득으로 현실적인 선택',
+        reason: '현재 소득 수준에서 10년 안에 도달할 수 있는 조건을 찾았어요.',
+        condition: buildRecommendationCondition(payload, {
+          regionCode: realisticRegionCode,
+          sampleCount: 389,
+        }),
+        ...buildPlans(roundTo(median * 0.62, 1000000), monthlySaving, 70000000),
+      },
+      {
+        type: 'HOLD_OUT',
+        title: '조금 더 모으면 갈 수 있는 곳',
+        reason: '조건을 그대로 두고 시점만 늘렸을 때 도달 가능한 목표예요.',
+        condition: buildRecommendationCondition(payload, {
+          sizeMin: (payload.sizeMin ?? 15) + 5,
+          sizeMax: (payload.sizeMax ?? 19) + 5,
+          sampleCount: 76,
+        }),
+        ...buildPlans(roundTo(median * 1.35, 1000000), monthlySaving, 90000000),
+      },
+    ],
+  }
 }
