@@ -153,8 +153,11 @@ const view = computed(() => toFundingViewModel({ loanX: props.loanX, loanO: prop
   white-space: nowrap;
 }
 
+/* BaseDivider 기본값은 테마를 안 타는 legacy 변수(--border)라 라이트 모드에서 너무 짙게
+   보인다. 마이페이지(.my-page-view__row)와 같은 테마별 톤(--color-border)으로 맞춘다. */
 .recommendation-funding-card__divider {
   margin: 20px 0;
+  background: var(--color-border, #262626);
 }
 
 .recommendation-funding-card__highlight {
