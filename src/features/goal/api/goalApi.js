@@ -61,6 +61,15 @@ export async function fetchGoalRecommendations(condition) {
   return data.data
 }
 
+// 진단 결과 화면(추천 계획 비교 리스트)용 추천 목록 조회.
+// 조건 입력 단계(fetchGoalRecommendations)와 달리 조건 쿼리 없이 memberId(인증 토큰)만으로
+// 이미 계산되어 있는 추천 결과를 그대로 돌려받는다 — 새로고침이나 직접 진입에도 store에만
+// 의존하지 않고 항상 서버에서 다시 받아올 수 있게 하기 위함.
+export async function fetchGoalRecommendation() {
+  const { data } = await httpClient.get('/api/v1/goals/recommendation')
+  return data.data
+}
+
 // 목표 상세 화면 데이터 (목표 정보 · 달성 현황 · 저축 현황 · 예상 달성 시점)
 export async function fetchGoalDetail(goalId) {
   const { data } = await httpClient.get(`/api/v1/goals/${goalId}/detail`)

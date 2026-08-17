@@ -4,6 +4,7 @@ import { defineStore } from 'pinia'
 import {
   postGoalDiagnosis,
   fetchGoalRecommendations,
+  fetchGoalRecommendation,
   postGoal,
   fetchGoalDetail,
   fetchGoal,
@@ -71,6 +72,26 @@ export const useGoalStore = defineStore('goal', () => {
       return true
     } catch (e) {
       // 백엔드가 {success:false, error:{code,message,fields}}로 내려주므로, 있으면 그 메시지를 그대로 쓴다.
+      recommendError.value = e.response?.data?.error ?? e
+      recommendations.value = []
+      return false
+    } finally {
+      isRecommending.value = false
+    }
+  }
+
+  // 진단 결과 화면(추천 계획 비교 리스트)에 진입할 때 호출한다. 조건 입력 단계에서 이미
+  // recommendations를 채워뒀더라도, 이 화면은 서버가 들고 있는 값을 다시 받아와 최신 상태로
+  // 덮어쓴다 — 새로고침이나 링크로 직접 들어와도 store에만 의존하지 않도록 하기 위함.
+  async function loadRecommendationResult() {
+    isRecommending.value = true
+    recommendError.value = null
+
+    try {
+      const result = await fetchGoalRecommendation()
+      recommendations.value = result?.recommendations ?? []
+      return true
+    } catch (e) {
       recommendError.value = e.response?.data?.error ?? e
       recommendations.value = []
       return false
@@ -203,6 +224,7 @@ export const useGoalStore = defineStore('goal', () => {
     isRecommending,
     recommendError,
     loadRecommendations,
+    loadRecommendationResult,
     isSaving,
     saveError,
     saveGoal,

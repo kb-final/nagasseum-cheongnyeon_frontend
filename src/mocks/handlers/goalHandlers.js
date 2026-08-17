@@ -3,6 +3,7 @@ import { http, HttpResponse, delay } from 'msw'
 import {
   buildMockDiagnosisResult,
   buildMockRecommendations,
+  buildMockRecommendationResult,
   mockGoalSaveResponse,
   mockGoalDetail,
   mockGoal,
@@ -72,6 +73,20 @@ export const goalHandlers = [
     return HttpResponse.json({
       success: true,
       data: buildMockRecommendations(condition),
+      error: null,
+    })
+  }),
+
+  // 진단 결과 화면(추천 계획 비교 리스트) 전용 조회. 조건 쿼리 없이 memberId(인증 토큰)만으로
+  // 이미 계산된 추천 결과를 돌려받는다.
+  // 주의: 아래 `GET /goals/:goalId`가 세그먼트 하나짜리 경로를 모두 goalId로 매칭하므로,
+  // `market-trend`/`summary`와 마찬가지로 반드시 그보다 먼저 등록해야 한다.
+  http.get(`${API_BASE_URL}/api/v1/goals/recommendation`, async () => {
+    await delay(300)
+
+    return HttpResponse.json({
+      success: true,
+      data: buildMockRecommendationResult(),
       error: null,
     })
   }),

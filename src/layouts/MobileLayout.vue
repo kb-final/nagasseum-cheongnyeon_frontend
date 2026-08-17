@@ -24,7 +24,12 @@ const navItems = [
   { label: '마이', icon: MyIcon, to: '/my' },
 ]
 
-const HIDDEN_NAV_ROUTE_NAMES = ['diagnosis', 'edit-info', 'asset-link-additional']
+const HIDDEN_NAV_ROUTE_NAMES = [
+  'diagnosis',
+  'goal-recommendations',
+  'edit-info',
+  'asset-link-additional',
+]
 
 const activeIndex = computed(() =>
   navItems.findIndex((item) =>

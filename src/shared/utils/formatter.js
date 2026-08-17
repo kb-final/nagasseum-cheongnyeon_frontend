@@ -74,8 +74,28 @@ export function formatAreaRange(areaMin, areaMax) {
   return `${areaMin}~${areaMax}평`
 }
 
+// 33, 66 -> "전용 33~66m²" (추천 계획 비교 카드처럼 전용면적을 ㎡ 기준 그대로 보여줄 때 사용)
+// 합자 기호 "㎡"(U+33A1)는 NanumHuman 등 일부 폰트에 글리프가 없어 안 보일 수 있어,
+// 대신 위첨자 2(U+00B2)로 조합한 "m²"를 쓴다 — 폰트 호환성이 훨씬 넓다.
+export function formatAreaRangeM2(areaMin, areaMax) {
+  return `전용 ${areaMin}~${areaMax}m²`
+}
+
 // 시세 변동액에 부호를 붙여 "▲ 500만 원" / "▼ 500만 원" / "500만 원"(변동 없음)으로 표기
 export function formatChangeAmount(amount) {
   const arrow = amount > 0 ? '▲ ' : amount < 0 ? '▼ ' : ''
   return `${arrow} 설정 대비 ${formatManwon(Math.abs(amount))}`
+}
+
+// "300,000,000" -> "3억 원", "100,000,000" -> "1억 원", "70,000,000" -> "7,000만 원"
+// (진단 결과 비교 카드처럼 "모아야 할 금액"을 억/만원 단위로 함께 읽기 쉽게 표기할 때 사용.
+// formatEokManwon과 계산 로직은 같지만 "원" 단위를 항상 붙이고 억/만원 사이를 띄어 쓴다는
+// 표기 규칙만 다르다.)
+export function formatGoalAmount(amount, locale = 'ko-KR') {
+  const eok = Math.floor(amount / 100000000)
+  const manwon = Math.round((amount % 100000000) / 10000)
+
+  if (eok === 0) return `${manwon.toLocaleString(locale)}만 원`
+  if (manwon === 0) return `${eok}억 원`
+  return `${eok}억 ${manwon.toLocaleString(locale)}만 원`
 }
