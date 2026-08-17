@@ -47,7 +47,10 @@ async function handleSetAsGoal() {
 </script>
 
 <template>
-  <div class="recommendation-detail-view">
+  <div
+    class="recommendation-detail-view"
+    :class="{ 'recommendation-detail-view--animated': recommendation }"
+  >
     <AppHeader @back="router.back()" />
 
     <div v-if="goalStore.isRecommending" class="recommendation-detail-view__skeleton">
@@ -168,5 +171,32 @@ async function handleSetAsGoal() {
   padding: 12px 0 calc(12px + env(safe-area-inset-bottom, 0px));
   background: var(--color-app-bg, #111111);
   transform: translateX(-50%);
+}
+
+/*
+  홈/비교/목표 상세 화면과 같은 card-rise 진입 모션(main.css에 공용 정의)을 재사용한다.
+  로딩/에러/찾을 수 없음 상태에는 적용하지 않고, recommendation을 실제로 찾은 뒤에만
+  (v-else 분기) 애니메이션이 실행되게 게이트를 건다(GoalDetailView의 `detail` 게이트와 동일).
+  __footer는 제외한다 — card-rise가 쓰는 transform(translateY)이 footer 자신의 가운데 정렬용
+  transform(translateX(-50%))을 덮어써서 애니메이션이 끝난 뒤에도 정렬이 깨진 채로 남는다.
+*/
+.recommendation-detail-view--animated > *:not(.recommendation-detail-view__footer) {
+  animation: card-rise 0.35s ease-out both;
+}
+
+.recommendation-detail-view--animated > *:nth-child(2) {
+  animation-delay: 0.06s;
+}
+
+.recommendation-detail-view--animated > *:nth-child(3) {
+  animation-delay: 0.12s;
+}
+
+.recommendation-detail-view--animated > *:nth-child(4) {
+  animation-delay: 0.18s;
+}
+
+.recommendation-detail-view--animated > *:nth-child(5) {
+  animation-delay: 0.24s;
 }
 </style>

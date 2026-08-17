@@ -48,7 +48,10 @@ function goToDiagnosis() {
 </script>
 
 <template>
-  <div class="goal-recommendations-view">
+  <div
+    class="goal-recommendations-view"
+    :class="{ 'goal-recommendations-view--animated': sortedRecommendations.length > 0 }"
+  >
     <AppHeader title="진단 결과" @back="router.back()" />
 
     <div class="goal-recommendations-view__intro">
@@ -148,5 +151,26 @@ function goToDiagnosis() {
   margin-top: 4px;
   background: var(--color-primary-soft, #e8f4ea);
   color: #353934;
+}
+
+/*
+  홈/비교/목표 상세 화면과 같은 card-rise 진입 모션(main.css에 공용 정의)을 재사용한다.
+  로딩/에러/빈 상태에는 적용하지 않고, 실제 추천 목록이 준비된 뒤에만(v-else 분기) 애니메이션이
+  실행되게 sortedRecommendations.length로 게이트를 건다(GoalDetailView의 `detail` 게이트와 동일한 방식).
+*/
+.goal-recommendations-view--animated > * {
+  animation: card-rise 0.35s ease-out both;
+}
+
+.goal-recommendations-view--animated > *:nth-child(2) {
+  animation-delay: 0.06s;
+}
+
+.goal-recommendations-view--animated > *:nth-child(3) {
+  animation-delay: 0.12s;
+}
+
+.goal-recommendations-view--animated > *:nth-child(4) {
+  animation-delay: 0.18s;
 }
 </style>
