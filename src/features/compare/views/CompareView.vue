@@ -2,6 +2,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 
 import { formatEokManwon, formatManwon } from '@/shared/utils/formatter'
+import AppHeader from '@/shared/components/molecules/AppHeader.vue'
 
 import { useMemberStore } from '@/features/member/store/memberStore'
 
@@ -167,13 +168,14 @@ onMounted(async () => {
 
 <template>
   <div class="compare-view">
-    <header class="compare-view__header">
-      <h1>또래 비교</h1>
+    <AppHeader title="또래 비교" :show-back="false" />
+
+    <div class="compare-view__subheader">
       <p class="compare-view__desc">비슷한 자산의 또래와 목표·자산을 비교해보세요.</p>
       <span v-if="isSnapshotStale" class="compare-view__stale">
         {{ snapshotLabel }} 기준 · 2주 이상 지난 집계
       </span>
-    </header>
+    </div>
 
     <p v-if="!hasLoadedOnce" class="compare-view__notice">불러오는 중...</p>
 
@@ -523,23 +525,16 @@ onMounted(async () => {
   --c-card: var(--c-card-mint);
 }
 
-.compare-view__header {
+.compare-view__subheader {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 3px;
-  padding: 8px 0 6px;
+  padding: 10px 0 6px;
   text-align: center;
 }
 
-.compare-view__header h1 {
-  margin: 0;
-  font-size: 17px;
-  font-weight: 700;
-  color: var(--c-ink);
-}
-
-.compare-view__header p {
+.compare-view__subheader p {
   margin: 0;
   font-size: 11.5px;
   color: var(--c-ink-muted);

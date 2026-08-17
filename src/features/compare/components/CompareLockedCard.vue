@@ -4,8 +4,9 @@ import BaseButton from '@/shared/components/atoms/base/button/BaseButton.vue'
 
 const router = useRouter()
 
+// 마이페이지에서 "또래 비교 데이터 제공" 항목이 바로 보이도록 스크롤 대상을 쿼리로 알려준다.
 function goToAgreement() {
-  router.push({ name: 'my' })
+  router.push({ name: 'my', query: { scrollTo: 'compare-data-agreed' } })
 }
 </script>
 
@@ -77,6 +78,34 @@ function goToAgreement() {
   line-height: 1.45;
 }
 
+/*
+  홈/비교/목표 상세/마이페이지와 같은 card-rise 진입 모션(main.css에 공용 정의)을 재사용해서
+  잠금 화면 요소들도 순서대로 살짝 떠오르며 나타나게 한다.
+*/
+.locked > * {
+  animation: card-rise 0.35s ease-out both;
+}
+
+.locked > *:nth-child(2) {
+  animation-delay: 0.06s;
+}
+
+.locked > *:nth-child(3) {
+  animation-delay: 0.12s;
+}
+
+.locked > *:nth-child(4) {
+  animation-delay: 0.18s;
+}
+
+.locked > *:nth-child(5) {
+  animation-delay: 0.24s;
+}
+
+.locked > *:nth-child(6) {
+  animation-delay: 0.3s;
+}
+
 .locked__art {
   position: relative;
   width: 120px;
@@ -142,6 +171,7 @@ function goToAgreement() {
   border-radius: 999px;
   padding: 2px 10px;
   font-size: 10px;
+  font-weight: 700;
   letter-spacing: 1px;
   color: var(--badge);
 }
@@ -156,6 +186,7 @@ function goToAgreement() {
 .locked__body {
   margin: 20px 0 0;
   font-size: 12px;
+  font-weight: 600;
   line-height: 1.7;
   color: var(--c-ink-muted);
 }
@@ -181,6 +212,7 @@ function goToAgreement() {
   gap: 6px;
   margin: 0 0 8px;
   font-size: 12px;
+  font-weight: 700;
   color: var(--on-pale-strong);
 }
 
@@ -196,6 +228,7 @@ function goToAgreement() {
   padding: 0;
   list-style: none;
   font-size: 11px;
+  font-weight: 600;
 }
 
 .locked__info-list li {

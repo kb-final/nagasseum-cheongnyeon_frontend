@@ -6,6 +6,54 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: 'NanumHuman';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2501-1@1.1/NanumHumanTTFExtraLight.woff2')
+    format('woff2');
+  font-weight: 200;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'NanumHuman';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2501-1@1.1/NanumHumanTTFLight.woff2')
+    format('woff2');
+  font-weight: 300;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'NanumHuman';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2501-1@1.1/NanumHumanTTFRegular.woff2')
+    format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'NanumHuman';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2501-1@1.1/NanumHumanTTFBold.woff2')
+    format('woff2');
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'NanumHuman';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2501-1@1.1/NanumHumanTTFExtraBold.woff2')
+    format('woff2');
+  font-weight: 800;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'NanumHuman';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2501-1@1.1/NanumHumanTTFHeavy.woff2')
+    format('woff2');
+  font-weight: 900;
+  font-display: swap;
+}
+
 html {
   scrollbar-gutter: stable;
 }
@@ -86,13 +134,10 @@ html {
   --base-button-primary-text: #16281c;
 
   --sans: 'NeoDunggeunmo', system-ui, 'Segoe UI', Roboto, sans-serif;
-  /*
-    Journey/레벨 등 게이미피케이션 영역 밖(일반 금융 정보·UI 텍스트)에서 쓰는 일반 폰트.
-    프로젝트에 Pretendard 등 별도 웹폰트가 없어서 OS 기본 산세리프 스택으로 구성한다.
-  */
+  /* Journey/레벨 등 게이미피케이션 영역 밖(일반 금융 정보·UI 텍스트)에서 쓰는 일반 폰트. */
   --sans-normal:
-    -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', system-ui, Roboto,
-    'Noto Sans KR', sans-serif;
+    'NanumHuman', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', system-ui,
+    Roboto, 'Noto Sans KR', sans-serif;
 
   font: 18px/145% var(--sans-normal);
   letter-spacing: 0.18px;
