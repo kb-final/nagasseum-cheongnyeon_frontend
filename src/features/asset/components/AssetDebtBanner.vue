@@ -77,13 +77,13 @@ const totalBalance = computed(() =>
 .debt__title {
   flex: 1;
   color: var(--c-danger);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
 }
 
 .debt__total {
   color: var(--c-danger);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }

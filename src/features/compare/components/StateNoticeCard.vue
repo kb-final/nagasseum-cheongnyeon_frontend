@@ -45,7 +45,7 @@ defineProps({
 
 .state-card__title {
   margin: 0 0 5px;
-  font-size: 13.5px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--c-ink);
 }

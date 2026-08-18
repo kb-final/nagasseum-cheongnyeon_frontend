@@ -116,7 +116,8 @@ const label = computed(() => TYPE_LABELS[props.type] || props.type || '기타')
   overflow: hidden;
   margin: 0;
   color: var(--c-ink);
-  font-size: 12px;
+  font-size: 13px;
+  font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -135,14 +136,14 @@ const label = computed(() => TYPE_LABELS[props.type] || props.type || '기타')
   border-radius: 4px;
   background: var(--c-accent-soft);
   color: var(--c-accent);
-  font-size: 9.5px;
+  font-size: 11px;
   font-weight: 700;
 }
 
 .item-tile__institution {
   overflow: hidden;
   color: var(--c-ink-faint);
-  font-size: 10px;
+  font-size: 11px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -150,7 +151,7 @@ const label = computed(() => TYPE_LABELS[props.type] || props.type || '기타')
 .item-tile__amount {
   flex: none;
   color: var(--c-value);
-  font-size: 12.5px;
+  font-size: 13px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }

@@ -32,12 +32,7 @@ const extraChips = computed(() => props.appliedFilters.map((type) => FILTER_LABE
   <section class="cohort-card">
     <div class="cohort-card__head">
       <h2 class="cohort-card__title">내 또래 기준</h2>
-      <button type="button" class="cohort-card__edit" @click="$emit('edit')">
-        기준 수정
-        <svg width="7" height="9" viewBox="0 0 8 10" aria-hidden="true">
-          <path d="M0 0L8 5L0 10Z" fill="currentColor" />
-        </svg>
-      </button>
+      <button type="button" class="cohort-card__edit" @click="$emit('edit')">기준 수정 ›</button>
     </div>
 
     <div class="cohort-card__chips">
@@ -59,7 +54,7 @@ const extraChips = computed(() => props.appliedFilters.map((type) => FILTER_LABE
 .cohort-card {
   --surface: var(--c-card);
   --chip-bg: var(--c-accent-soft);
-  --chip-text: var(--c-value);
+  --chip-text: var(--c-ink);
   --mint: var(--c-accent);
 
   border: 1px solid var(--c-line);
@@ -79,19 +74,22 @@ const extraChips = computed(() => props.appliedFilters.map((type) => FILTER_LABE
 /* main.css의 h1,h2가 흰색이라 밝은 카드에서 글자가 사라진다. 여기서 덮어쓴다. */
 .cohort-card__title {
   margin: 0;
-  font-size: 14px;
+  font-size: 15px;
+  font-weight: 700;
   color: var(--c-ink);
 }
 
+/*
+  모양은 홈 화면의 "자세히 ›"와 같게 맞추고, 색은 본문색을 쓴다.
+  --c-ink는 테마를 따라가므로 다크에서는 밝은 글씨가 된다.
+*/
 .cohort-card__edit {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
+  flex: none;
   border: 0;
   padding: 0;
   background: none;
   font-size: 13px;
-  color: var(--mint);
+  color: var(--c-ink);
   cursor: pointer;
 }
 
@@ -109,6 +107,7 @@ const extraChips = computed(() => props.appliedFilters.map((type) => FILTER_LABE
   padding: 3px 10px;
   background: var(--chip-bg);
   font-size: 12px;
+  font-weight: 700;
   color: var(--chip-text);
 }
 
@@ -143,6 +142,6 @@ const extraChips = computed(() => props.appliedFilters.map((type) => FILTER_LABE
 }
 
 .cohort-card__summary b {
-  font-weight: inherit;
+  font-weight: 700;
 }
 </style>

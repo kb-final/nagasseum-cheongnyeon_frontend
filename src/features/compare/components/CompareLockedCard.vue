@@ -1,12 +1,12 @@
 <script setup>
 import { useRouter } from 'vue-router'
 import BaseButton from '@/shared/components/atoms/base/button/BaseButton.vue'
-import lockedImage from '@/features/compare/assets/locked.png'
 
 const router = useRouter()
 
+// 마이페이지에서 "또래 비교 데이터 제공" 항목이 바로 보이도록 스크롤 대상을 쿼리로 알려준다.
 function goToAgreement() {
-  router.push({ name: 'my' })
+  router.push({ name: 'my', query: { scrollTo: 'compare-data-agreed' } })
 }
 </script>
 
@@ -16,7 +16,18 @@ function goToAgreement() {
       <span class="locked__line"></span>
       <span class="locked__line"></span>
       <span class="locked__line"></span>
-      <span class="locked__lock"><img :src="lockedImage" alt="" /></span>
+      <span class="locked__lock">
+        <svg class="locked__lock-icon" viewBox="0 0 11 11" aria-hidden="true">
+          <rect x="3" y="0" width="5" height="1" />
+          <rect x="2" y="1" width="1" height="3" />
+          <rect x="8" y="1" width="1" height="3" />
+          <rect x="1" y="4" width="9" height="1" />
+          <rect x="1" y="5" width="1" height="5" />
+          <rect x="9" y="5" width="1" height="5" />
+          <rect x="5" y="6" width="1" height="3" />
+          <rect x="1" y="10" width="9" height="1" />
+        </svg>
+      </span>
     </div>
 
     <span class="locked__badge">LOCKED</span>
@@ -52,6 +63,12 @@ function goToAgreement() {
   --art-line: var(--c-accent-mid);
   --art-lock: var(--c-accent);
   --art-gap: var(--c-bg);
+  /*
+    자물쇠는 --art-lock 원 위에 올라간다. 그 원이 테마에 따라 밝은 민트와 진초록으로
+    뒤집히므로 아이콘도 같이 뒤집혀야 한다. 강조색 위에 얹는 색을 뜻하는 토큰을 쓴다.
+    (다크 진초록 9.5:1 / 라이트 흰색 6.5:1)
+  */
+  --art-lock-ink: var(--c-on-accent);
 
   display: flex;
   flex-direction: column;
@@ -59,6 +76,34 @@ function goToAgreement() {
   padding: 32px 0 0;
   text-align: center;
   line-height: 1.45;
+}
+
+/*
+  홈/비교/목표 상세/마이페이지와 같은 card-rise 진입 모션(main.css에 공용 정의)을 재사용해서
+  잠금 화면 요소들도 순서대로 살짝 떠오르며 나타나게 한다.
+*/
+.locked > * {
+  animation: card-rise 0.35s ease-out both;
+}
+
+.locked > *:nth-child(2) {
+  animation-delay: 0.06s;
+}
+
+.locked > *:nth-child(3) {
+  animation-delay: 0.12s;
+}
+
+.locked > *:nth-child(4) {
+  animation-delay: 0.18s;
+}
+
+.locked > *:nth-child(5) {
+  animation-delay: 0.24s;
+}
+
+.locked > *:nth-child(6) {
+  animation-delay: 0.3s;
 }
 
 .locked__art {
@@ -106,10 +151,18 @@ function goToAgreement() {
   box-sizing: border-box;
 }
 
-.locked__lock img {
-  width: 17px;
-  height: 17px;
-  image-rendering: pixelated;
+/*
+  자물쇠는 그림 파일이 아니라 SVG로 그린다. locked.png의 11×11 격자를 사각형 여덟 개로
+  옮긴 것이라 모양은 같다.
+
+  PNG를 11칸에서 17px로 늘리면 1.5배라 어떤 줄은 두 배로 굵어지고 어떤 줄은 그대로
+  남는다. 화면 배율이 125%·150%면 더 어긋난다. SVG는 도형이라 크기가 얼마든 같은
+  비율로 그려진다.
+*/
+.locked__lock-icon {
+  width: 15px;
+  height: 15px;
+  fill: var(--art-lock-ink);
 }
 
 .locked__badge {
@@ -118,6 +171,7 @@ function goToAgreement() {
   border-radius: 999px;
   padding: 2px 10px;
   font-size: 10px;
+  font-weight: 700;
   letter-spacing: 1px;
   color: var(--badge);
 }
@@ -125,18 +179,20 @@ function goToAgreement() {
 .locked__title {
   margin: 10px 0 0;
   font-size: 17px;
+  font-weight: 700;
   color: var(--c-ink);
 }
 
 .locked__body {
   margin: 20px 0 0;
   font-size: 12px;
+  font-weight: 600;
   line-height: 1.7;
   color: var(--c-ink-muted);
 }
 
 .locked__body b {
-  font-weight: inherit;
+  font-weight: 700;
   color: var(--c-ink);
 }
 
@@ -156,6 +212,7 @@ function goToAgreement() {
   gap: 6px;
   margin: 0 0 8px;
   font-size: 12px;
+  font-weight: 700;
   color: var(--on-pale-strong);
 }
 
@@ -171,6 +228,7 @@ function goToAgreement() {
   padding: 0;
   list-style: none;
   font-size: 11px;
+  font-weight: 600;
 }
 
 .locked__info-list li {

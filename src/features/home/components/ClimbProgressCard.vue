@@ -27,17 +27,17 @@ const hasGoal = computed(() => Boolean(props.goal && props.climb))
  * 그 사이는 직선으로 잇는다.
  */
 const PATH = [
-  { at: 0, left: 50.8, top: 98.7 },
-  { at: 10, left: 55.9, top: 90.4 },
-  { at: 20, left: 61.1, top: 82.2 },
-  { at: 30, left: 62.4, top: 74.9 },
-  { at: 40, left: 55.9, top: 69.3 },
-  { at: 50, left: 49.5, top: 64.4 },
-  { at: 60, left: 40.5, top: 59.1 },
-  { at: 70, left: 36.6, top: 52.8 },
-  { at: 80, left: 45.6, top: 47.5 },
-  { at: 90, left: 52.1, top: 42.6 },
-  { at: 100, left: 52.7, top: 34.0 },
+  { at: 0, left: 49.9, top: 99.8 },
+  { at: 10, left: 56.1, top: 92.1 },
+  { at: 20, left: 62.3, top: 85.1 },
+  { at: 30, left: 60.2, top: 78.1 },
+  { at: 40, left: 56.1, top: 72.1 },
+  { at: 50, left: 49.9, top: 65.1 },
+  { at: 60, left: 43.8, top: 58.1 },
+  { at: 70, left: 37.6, top: 51.2 },
+  { at: 80, left: 35.5, top: 44.2 },
+  { at: 90, left: 41.7, top: 37.2 },
+  { at: 100, left: 47.9, top: 30.2 },
 ]
 
 const progress = computed(() =>

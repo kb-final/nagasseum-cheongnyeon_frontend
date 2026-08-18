@@ -109,7 +109,11 @@ onMounted(() => {
   --c-card: var(--color-surface);
   --c-line: var(--color-border);
   --c-ink: var(--color-text-primary);
-  --c-ink-muted: var(--color-text-secondary);
+  /*
+    카드 설명 글 색. 디자인에서 지정한 값이라 공용 토큰 대신 직접 쓴다.
+    흰 카드에서 6.2:1, 앱 배경에서 5.8:1로 기준(4.5:1)을 넘는다. 비교 화면과 같은 값.
+  */
+  --c-ink-muted: #5b6358;
   /*
     공용 --color-text-tertiary(#8f968c)는 흰 카드에서 3.04:1로 기준(4.5:1)에 못 미친다.
     여기 쓰이는 기관명이 10px라 더 불리해서 한 단계 진하게 쓴다. 비교 화면과 같은 값.
@@ -137,6 +141,14 @@ onMounted(() => {
   --c-hero-btn-ink: #ffffff;
 }
 
+/*
+  AppHeader는 공용 컴포넌트라 파일을 고치지 않는다. 제목이 font-weight 400이라
+  화면에서 제일 큰 글자인데도 얇게 보여서 이 화면에서만 굵기를 덮는다.
+*/
+.asset-detail-view :deep(.app-header__title) {
+  font-weight: 700;
+}
+
 .asset-detail-view__skeleton {
   display: flex;
   flex-direction: column;
@@ -156,7 +168,7 @@ onMounted(() => {
   border-radius: 10px;
   background: var(--c-danger-soft);
   color: var(--c-danger);
-  font-size: 11.5px;
+  font-size: 11px;
   line-height: 1.5;
 }
 </style>

@@ -53,7 +53,8 @@ const barItems = computed(() =>
 
 .card__title {
   margin: 0 0 8px;
-  font-size: 14px;
+  font-size: 15px;
+  font-weight: 700;
 }
 
 .card__desc {
@@ -64,7 +65,7 @@ const barItems = computed(() =>
 }
 
 .card__desc b {
-  font-weight: inherit;
+  font-weight: 700;
   color: var(--mint);
 }
 </style>

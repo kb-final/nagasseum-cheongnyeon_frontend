@@ -46,7 +46,7 @@ const timelinePoints = computed(() => {
     },
     {
       key: 'target',
-      label: '목표',
+      label: '현재 목표',
       monthsDiff: 0,
       amount: props.savingStatus.fixedSaving,
     },
