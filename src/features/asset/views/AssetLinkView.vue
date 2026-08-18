@@ -83,7 +83,7 @@ onMounted(() =>
 </script>
 
 <template>
-  <div class="asset-link-view">
+  <div class="asset-link-view asset-link-view--animated">
     <AppHeader title="자산 연동" :show-back="!isOnboarding" @back="router.back()" />
     <BaseBreadcrumb
       v-if="isOnboarding"
@@ -146,6 +146,22 @@ onMounted(() =>
 
 .asset-link-view__steps {
   align-self: center;
+}
+
+.asset-link-view--animated > * {
+  animation: card-rise 0.35s ease-out both;
+}
+
+.asset-link-view--animated > *:nth-child(2) {
+  animation-delay: 0.04s;
+}
+
+.asset-link-view--animated > *:nth-child(3) {
+  animation-delay: 0.08s;
+}
+
+.asset-link-view--animated > *:nth-child(4) {
+  animation-delay: 0.12s;
 }
 
 .asset-link-view__body {
