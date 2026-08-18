@@ -21,7 +21,7 @@ const view = computed(() => toFundingViewModel({ loanX: props.loanX, loanO: prop
     <section class="recommendation-funding-card__section">
       <h3 class="recommendation-funding-card__section-title">대출 없이</h3>
 
-      <p class="recommendation-funding-card__row-label">모아야 할 금액</p>
+      <p class="recommendation-funding-card__row-label">추가 준비 금액</p>
       <p class="recommendation-funding-card__amount">{{ view.withoutLoan.targetAmountLabel }}</p>
 
       <div class="recommendation-funding-card__stats">
@@ -54,7 +54,7 @@ const view = computed(() => toFundingViewModel({ loanX: props.loanX, loanO: prop
             }}</strong>
           </div>
           <div class="recommendation-funding-card__stat">
-            <span class="recommendation-funding-card__row-label">내가 모아야 할 금액</span>
+            <span class="recommendation-funding-card__row-label">직접 준비할 금액</span>
             <strong class="recommendation-funding-card__stat-value">{{
               view.withLoan.targetAmountLabel
             }}</strong>

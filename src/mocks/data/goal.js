@@ -430,9 +430,18 @@ export function buildMockRecommendations(payload) {
 // 조건 입력 단계(recommendations, 쿼리 조건 기반)와 달리 memberId(인증 토큰)만으로 이미 계산된
 // 추천 결과를 돌려받는 엔드포인트라 조건을 입력받지 않는다. 필드 구성·값은 명세서 예시
 // (PREFERENCE/REALISTIC)를 그대로 옮기고, 명세서에 없던 HOLD_OUT만 같은 형식으로 채워 넣었다.
+//
+// area는 이제 ㎡가 아니라 평 단위로 내려온다고 가정한다. currentAvailableAmount/monthlySaving/
+// targetDate는 recommendations 배열 밖의 공통 진단 기준이며, condition.marketMedianAmount와
+// REALISTIC의 reachableAmountAtTargetDate는 아직 백엔드 응답에 없을 수 있는 필드라 이 mock에서만
+// 명세서 예시값(현재 활용 가능 자금 5,000만 원 · 목표 시점 2034-12 · REALISTIC 실거래 중앙값
+// 1억 5,000만 원)에 맞춰 채워 넣었다 — 실제 값은 없으면 화면이 해당 영역을 자동으로 숨긴다.
 // ─────────────────────────────────────────────────────────────────────────────
 export function buildMockRecommendationResult() {
   return {
+    currentAvailableAmount: 50000000,
+    monthlySaving: 1000000,
+    targetDate: '2034-12',
     recommendations: [
       {
         type: 'PREFERENCE',
@@ -443,9 +452,10 @@ export function buildMockRecommendationResult() {
           regionName: '서울 마포구',
           housingType: 'APT',
           dealType: 'JEONSE',
-          areaMin: 33,
-          areaMax: 66,
+          areaMin: 10,
+          areaMax: 20,
           monthlyRent: 0,
+          marketMedianAmount: 350000000,
           sampleCount: 142,
         },
         loanX: {
@@ -470,11 +480,13 @@ export function buildMockRecommendationResult() {
           regionName: '경기 수원시 영통구',
           housingType: 'APT',
           dealType: 'JEONSE',
-          areaMin: 33,
-          areaMax: 66,
+          areaMin: 15,
+          areaMax: 20,
           monthlyRent: 0,
+          marketMedianAmount: 150000000,
           sampleCount: 389,
         },
+        reachableAmountAtTargetDate: 150000000,
         loanX: {
           targetAmount: 100000000,
           targetDate: '2034-12',
@@ -497,9 +509,10 @@ export function buildMockRecommendationResult() {
           regionName: '서울 마포구',
           housingType: 'APT',
           dealType: 'JEONSE',
-          areaMin: 33,
-          areaMax: 66,
+          areaMin: 10,
+          areaMax: 20,
           monthlyRent: 0,
+          marketMedianAmount: 350000000,
           sampleCount: 142,
         },
         loanX: {

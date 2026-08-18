@@ -20,9 +20,13 @@ const view = computed(() => toHousingViewModel(props.condition))
     <p class="recommendation-housing-card__type">{{ view.typeLine }}</p>
     <p class="recommendation-housing-card__area">{{ view.areaLine }}</p>
 
-    <template v-if="view.sampleCountLabel">
+    <template v-if="view.marketMedianAmountLabel">
       <BaseDivider class="recommendation-housing-card__divider" />
-      <p class="recommendation-housing-card__sample">{{ view.sampleCountLabel }}</p>
+      <p class="recommendation-housing-card__row-label">실거래 중앙값</p>
+      <p class="recommendation-housing-card__median">{{ view.marketMedianAmountLabel }}</p>
+      <p v-if="view.sampleCountLabel" class="recommendation-housing-card__sample">
+        {{ view.sampleCountLabel }}
+      </p>
     </template>
   </BaseCard>
 </template>
@@ -67,8 +71,22 @@ const view = computed(() => toHousingViewModel(props.condition))
   background: var(--color-border, #262626);
 }
 
-.recommendation-housing-card__sample {
+.recommendation-housing-card__row-label {
   margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary, #9aa09a);
+}
+
+.recommendation-housing-card__median {
+  margin: 4px 0 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--color-text-primary, #ffffff);
+}
+
+.recommendation-housing-card__sample {
+  margin: 6px 0 0;
   font-size: 12px;
   color: var(--color-text-secondary, #9aa09a);
 }

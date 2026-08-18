@@ -38,7 +38,7 @@ function handleSelect() {
 
     <div class="recommendation-card__stats">
       <div class="recommendation-card__stat">
-        <span class="recommendation-card__stat-label">모아야 할 금액</span>
+        <span class="recommendation-card__stat-label">추가 준비 금액</span>
         <strong class="recommendation-card__stat-value">{{ view.targetAmountLabel }}</strong>
       </div>
       <div class="recommendation-card__stat">

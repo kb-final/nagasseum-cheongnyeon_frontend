@@ -74,17 +74,10 @@ export function formatAreaRange(areaMin, areaMax) {
   return `${areaMin}~${areaMax}평`
 }
 
-// 33, 66 -> "전용 33~66m²" (추천 계획 비교 카드처럼 전용면적을 ㎡ 기준 그대로 보여줄 때 사용)
-// 합자 기호 "㎡"(U+33A1)는 NanumHuman 등 일부 폰트에 글리프가 없어 안 보일 수 있어,
-// 대신 위첨자 2(U+00B2)로 조합한 "m²"를 쓴다 — 폰트 호환성이 훨씬 넓다.
-export function formatAreaRangeM2(areaMin, areaMax) {
-  return `전용 ${areaMin}~${areaMax}m²`
-}
-
-// 33 -> 10 (전용면적 ㎡를 평으로 환산. mocks/data/goal.js의 PYEONG_TO_M2와 같은 상수를 쓴다 —
-// 그쪽은 mock 응답 생성 전용이라 이 shared 유틸을 의존하게 만들지 않고 값만 맞춰뒀다.)
-export function m2ToPyeong(m2) {
-  return Math.round(m2 / 3.3058)
+// 15, 20 -> "전용 15~20평" (추천 계획 비교 카드처럼 전용면적을 평 기준으로 보여줄 때 사용.
+// recommendation API의 condition.areaMin/areaMax는 ㎡가 아니라 평 단위로 내려온다.)
+export function formatAreaRangePyeong(areaMin, areaMax) {
+  return `전용 ${areaMin}~${areaMax}평`
 }
 
 // 70 -> "5년 10개월", 60 -> "5년", 8 -> "8개월"
@@ -96,6 +89,13 @@ export function formatMonthsToYearsKo(months) {
   if (years === 0) return `${remainMonths}개월`
   if (remainMonths === 0) return `${years}년`
   return `${years}년 ${remainMonths}개월`
+}
+
+// "2034-12", "2040-06" -> 66 (연월 문자열 사이의 개월 수 차이. 뒤 시점이 더 나중일수록 양수)
+export function monthsBetweenYm(fromYm, toYm) {
+  const [fromYear, fromMonth] = fromYm.split('-').map(Number)
+  const [toYear, toMonth] = toYm.split('-').map(Number)
+  return (toYear - fromYear) * 12 + (toMonth - fromMonth)
 }
 
 // 시세 변동액에 부호를 붙여 "▲ 500만 원" / "▼ 500만 원" / "500만 원"(변동 없음)으로 표기

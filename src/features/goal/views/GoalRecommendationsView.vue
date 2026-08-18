@@ -9,7 +9,10 @@ import BaseEmptyState from '@/shared/components/atoms/feedback/EmptyState/BaseEm
 
 import RecommendationCard from '@/features/goal/components/RecommendationCard.vue'
 import { useGoalStore } from '@/features/goal/store/goalStore'
-import { sortRecommendations } from '@/features/goal/utils/recommendationViewModel'
+import {
+  sortRecommendations,
+  toDiagnosisBasisViewModel,
+} from '@/features/goal/utils/recommendationViewModel'
 
 const SKELETON_CARD_COUNT = 3
 
@@ -22,6 +25,7 @@ const router = useRouter()
 const goalStore = useGoalStore()
 
 const sortedRecommendations = computed(() => sortRecommendations(goalStore.recommendations))
+const diagnosisBasisRows = computed(() => toDiagnosisBasisViewModel(goalStore.recommendationBasis))
 
 onMounted(() => {
   goalStore.loadRecommendationResult()
@@ -59,6 +63,20 @@ function goToDiagnosis() {
       <p class="goal-recommendations-view__description">
         원하는 조건, 목표 시점에 따라 달라지는 선택지를 확인할 수 있어요.
       </p>
+    </div>
+
+    <div v-if="diagnosisBasisRows.length" class="goal-recommendations-view__basis">
+      <p class="goal-recommendations-view__basis-label">이번 진단 기준</p>
+      <div class="goal-recommendations-view__basis-row">
+        <div
+          v-for="row in diagnosisBasisRows"
+          :key="row.label"
+          class="goal-recommendations-view__basis-item"
+        >
+          <span class="goal-recommendations-view__basis-item-label">{{ row.label }}</span>
+          <strong class="goal-recommendations-view__basis-item-value">{{ row.value }}</strong>
+        </div>
+      </div>
     </div>
 
     <ul v-if="goalStore.isRecommending" class="goal-recommendations-view__list">
@@ -127,6 +145,53 @@ function goToDiagnosis() {
   color: var(--color-text-secondary, #9aa09a);
 }
 
+/*
+  세 계획에 공통으로 적용된 진단 기준을 보여주는 보조 정보 영역. 결과 카드처럼 강조되면 "네 번째
+  카드"로 오해할 수 있어 BaseCard를 쓰지 않고, 위아래 얇은 구분선만으로 본문과 살짝 구획한다.
+*/
+.goal-recommendations-view__basis {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 2px;
+  border-top: 1px solid var(--color-border, #262626);
+  border-bottom: 1px solid var(--color-border, #262626);
+}
+
+.goal-recommendations-view__basis-label {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-secondary, #9aa09a);
+}
+
+.goal-recommendations-view__basis-row {
+  display: flex;
+  gap: 16px;
+}
+
+.goal-recommendations-view__basis-item {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.goal-recommendations-view__basis-item-label {
+  font-size: 11px;
+  color: var(--color-text-secondary, #9aa09a);
+}
+
+.goal-recommendations-view__basis-item-value {
+  overflow: hidden;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-primary, #ffffff);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .goal-recommendations-view__list {
   display: flex;
   flex-direction: column;
@@ -172,5 +237,9 @@ function goToDiagnosis() {
 
 .goal-recommendations-view--animated > *:nth-child(4) {
   animation-delay: 0.18s;
+}
+
+.goal-recommendations-view--animated > *:nth-child(5) {
+  animation-delay: 0.24s;
 }
 </style>
