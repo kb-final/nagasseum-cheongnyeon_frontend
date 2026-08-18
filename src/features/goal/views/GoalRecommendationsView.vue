@@ -11,7 +11,7 @@ import RecommendationCard from '@/features/goal/components/RecommendationCard.vu
 import { useGoalStore } from '@/features/goal/store/goalStore'
 import {
   sortRecommendations,
-  toDiagnosisBasisViewModel,
+  toDiagnosisBasisLabel,
 } from '@/features/goal/utils/recommendationViewModel'
 
 const SKELETON_CARD_COUNT = 3
@@ -25,7 +25,9 @@ const router = useRouter()
 const goalStore = useGoalStore()
 
 const sortedRecommendations = computed(() => sortRecommendations(goalStore.recommendations))
-const diagnosisBasisRows = computed(() => toDiagnosisBasisViewModel(goalStore.recommendationBasis))
+const currentAvailableAmountLabel = computed(() =>
+  toDiagnosisBasisLabel(goalStore.recommendationBasis),
+)
 
 onMounted(() => {
   goalStore.loadRecommendationResult()
@@ -65,19 +67,10 @@ function goToDiagnosis() {
       </p>
     </div>
 
-    <div v-if="diagnosisBasisRows.length" class="goal-recommendations-view__basis">
-      <p class="goal-recommendations-view__basis-label">이번 진단 기준</p>
-      <div class="goal-recommendations-view__basis-row">
-        <div
-          v-for="row in diagnosisBasisRows"
-          :key="row.label"
-          class="goal-recommendations-view__basis-item"
-        >
-          <span class="goal-recommendations-view__basis-item-label">{{ row.label }}</span>
-          <strong class="goal-recommendations-view__basis-item-value">{{ row.value }}</strong>
-        </div>
-      </div>
-    </div>
+    <p v-if="currentAvailableAmountLabel" class="goal-recommendations-view__basis">
+      현재 활용 가능 자금 <strong>{{ currentAvailableAmountLabel }}</strong
+      >을 반영했어요.
+    </p>
 
     <ul v-if="goalStore.isRecommending" class="goal-recommendations-view__list">
       <li v-for="n in SKELETON_CARD_COUNT" :key="n">
@@ -146,50 +139,22 @@ function goToDiagnosis() {
 }
 
 /*
-  세 계획에 공통으로 적용된 진단 기준을 보여주는 보조 정보 영역. 결과 카드처럼 강조되면 "네 번째
-  카드"로 오해할 수 있어 BaseCard를 쓰지 않고, 위아래 얇은 구분선만으로 본문과 살짝 구획한다.
+  세 계획에 공통으로 적용된 진단 기준(현재 활용 가능 자금)을 보여주는 보조 문구. 결과 카드처럼
+  강조되면 "네 번째 카드"로 오해할 수 있어 BaseCard 없이 본문 톤의 한 줄 문장으로만 둔다.
+  이 문구는 아래 recommendation 카드들이 계산된 공통 기준이라, 첫 카드와는 부모의 기본
+  gap(16px)보다 조금 더 가깝게(음수 margin-bottom으로 상쇄) 붙여 하나의 흐름으로 읽히게 한다.
+  intro와의 위 간격은 그대로 16px을 유지한다.
 */
 .goal-recommendations-view__basis {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 12px 2px;
-  border-top: 1px solid var(--color-border, #262626);
-  border-bottom: 1px solid var(--color-border, #262626);
-}
-
-.goal-recommendations-view__basis-label {
-  margin: 0;
-  font-size: 12px;
-  font-weight: 700;
+  margin: 0 0 -4px;
+  font-size: 16px;
+  line-height: 1.6;
   color: var(--color-text-secondary, #9aa09a);
 }
 
-.goal-recommendations-view__basis-row {
-  display: flex;
-  gap: 16px;
-}
-
-.goal-recommendations-view__basis-item {
-  display: flex;
-  flex: 1 1 0;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.goal-recommendations-view__basis-item-label {
-  font-size: 11px;
-  color: var(--color-text-secondary, #9aa09a);
-}
-
-.goal-recommendations-view__basis-item-value {
-  overflow: hidden;
-  font-size: 13px;
+.goal-recommendations-view__basis strong {
   font-weight: 700;
   color: var(--color-text-primary, #ffffff);
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .goal-recommendations-view__list {
@@ -209,13 +174,15 @@ function goToDiagnosis() {
   padding-top: 16px;
 }
 
-/* 민트(--color-mint-strong)는 이 화면 다른 곳에 안 쓰여서 혼자 붕 떠 보였다. 이 화면이 이미
-   강조색으로 쓰고 있는 초록 계열(전략 문구·"자세히 보기"의 --color-primary) 톤으로 맞춘다 —
-   SavingForecastCard/MonthlySavingEditModal의 CTA와 같은 --color-primary-soft 조합 재사용. */
+/* 이 화면의 주 행동은 카드를 선택해 상세를 보는 것이라, "다시 진단하기"는 그보다 낮은 위계의
+   secondary action이어야 한다. filled green(연한 --color-primary-soft)은 비활성 버튼처럼
+   보이거나 recommendation 선택 CTA와 위계가 헷갈릴 수 있어, BaseCard가 이미 쓰는 표면색
+   (--color-surface)에 얇은 테두리(--color-border)만 두르는 outline 스타일로 낮춘다. */
 .goal-recommendations-view__retry {
   margin-top: 4px;
-  background: var(--color-primary-soft, #e8f4ea);
-  color: #353934;
+  background: var(--color-surface, #161616);
+  border-color: var(--color-border, #262626);
+  color: var(--color-text-primary, #ffffff);
 }
 
 /*

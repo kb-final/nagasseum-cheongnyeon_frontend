@@ -56,15 +56,24 @@ export function sortRecommendations(recommendations) {
   )
 }
 
-// "서울 마포구 · 아파트 · 전세"
-function toConditionTitle(condition) {
-  return [
+// 결과 화면 카드용 "지역 · 유형 · 거래 · 면적" 한 줄 요약. 세 계획을 빠르게 비교하는 게 목적이라
+// 상세 화면(toHousingViewModel)처럼 지역/조건/면적을 줄바꿈해서 나누지 않고 하나로 합친다.
+// "전용" 접두어는 붙이지 않고 면적(평)을 그대로 이어붙인다.
+// "서울 마포구 · 아파트 · 전세 · 10~20평" (월세면서 실제 월세액이 있으면 "· 월 60만 원"을 이어붙인다)
+function toConditionSummary(condition) {
+  const summary = [
     condition.regionName,
     HOUSING_TYPE_LABEL[condition.housingType] ?? condition.housingType,
     DEAL_TYPE_LABEL[condition.dealType] ?? condition.dealType,
+    `${condition.areaMin}~${condition.areaMax}평`,
   ]
     .filter(Boolean)
     .join(' · ')
+
+  if (condition.dealType === 'WOLSE' && condition.monthlyRent > 0) {
+    return `${summary} · 월 ${formatGoalAmount(condition.monthlyRent)}`
+  }
+  return summary
 }
 
 // "전용 15~20평" (월세면서 실제 월세액이 있으면 "· 월 60만 원"을 이어붙인다)
@@ -85,8 +94,7 @@ export function toRecommendationViewModel(recommendation) {
     type,
     title: RECOMMENDATION_TITLE_MAP[type] ?? recommendation.title,
     strategy: RECOMMENDATION_STRATEGY_MAP[type] ?? '',
-    conditionTitle: toConditionTitle(condition),
-    conditionArea: toConditionArea(condition),
+    conditionSummary: toConditionSummary(condition),
     targetAmountLabel: formatGoalAmount(loanX.targetAmount),
     targetDateFieldLabel: TARGET_DATE_LABEL_MAP[type] ?? DEFAULT_TARGET_DATE_LABEL,
     targetDateLabel: formatYearMonth(loanX.targetDate),
@@ -98,7 +106,7 @@ export function toRecommendationDescription(recommendation) {
   return RECOMMENDATION_DESCRIPTION_MAP[recommendation.type] ?? recommendation.reason
 }
 
-// 상세 화면 "주거 조건" 카드용. 목록 카드(toConditionTitle)와 달리 지역명을 독립된 줄로 강조하고
+// 상세 화면 "주거 조건" 카드용. 목록 카드(toConditionSummary)와 달리 지역명을 독립된 줄로 강조하고
 // 유형·거래는 별도 줄로 낮춰 보여줘야 해서 별도로 조합한다. marketMedianAmount는 아직 백엔드
 // 응답에 없을 수 있어(23번 요구사항) null-safe하게 처리하고, 없으면 호출부가 그 줄을 숨긴다.
 export function toHousingViewModel(condition) {
@@ -209,26 +217,12 @@ export function toBasisViewModel(recommendation, commonTargetDate) {
   }
 }
 
-// 진단 결과 화면 상단 "이번 진단 기준" 영역용. 세 계획에 공통으로 적용된 값이라 화면당 한 번만
-// 보여준다. basis 자체가 없거나(구버전 응답 등) 개별 필드가 없으면 해당 항목만 빠진다 — 전부
-// 없으면 호출부가 영역 자체를 숨긴다(23번 요구사항).
-export function toDiagnosisBasisViewModel(basis) {
-  if (!basis) return []
-
-  const rows = []
-  if (typeof basis.currentAvailableAmount === 'number') {
-    rows.push({
-      label: '현재 활용 가능 자금',
-      value: formatGoalAmount(basis.currentAvailableAmount),
-    })
-  }
-  if (typeof basis.monthlySaving === 'number') {
-    rows.push({ label: '월 저축', value: formatGoalAmount(basis.monthlySaving) })
-  }
-  if (basis.targetDate) {
-    rows.push({ label: '목표 시점', value: formatYearMonth(basis.targetDate) })
-  }
-  return rows
+// 진단 결과 화면 상단 "현재 활용 가능 자금 OOO을 기준으로 계산했어요" 문구용 금액 라벨.
+// 세 계획에 공통으로 적용된 값이라 화면당 한 번만 보여준다. basis 자체가 없거나(구버전 응답 등)
+// currentAvailableAmount가 없으면 null을 돌려주고, 호출부가 문구 자체를 숨긴다(23번 요구사항).
+export function toDiagnosisBasisLabel(basis) {
+  if (!basis || typeof basis.currentAvailableAmount !== 'number') return null
+  return formatGoalAmount(basis.currentAvailableAmount)
 }
 
 // 상세 화면 "이 목표를 준비하려면" 카드용. loanO가 없는 recommendation이 향후 있을 수 있어
