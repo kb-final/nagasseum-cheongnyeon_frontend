@@ -25,6 +25,11 @@ export const useGoalStore = defineStore('goal', () => {
   const isRecommending = ref(false)
   const recommendError = ref(null)
 
+  // 진단 결과 화면(GET /goals/recommendation) 응답에서 recommendations를 제외한 나머지 —
+  // 세 계획에 공통으로 적용된 진단 기준(현재 활용 가능 자금/월 저축/목표 시점). 아직 응답에
+  // 없을 수 있어 null로 시작하고, 없으면 화면에서 "이번 진단 기준" 영역 자체를 숨긴다.
+  const recommendationBasis = ref(null)
+
   const isSaving = ref(false)
   const saveError = ref(null)
 
@@ -90,10 +95,17 @@ export const useGoalStore = defineStore('goal', () => {
     try {
       const result = await fetchGoalRecommendation()
       recommendations.value = result?.recommendations ?? []
+      // recommendations를 뺀 나머지 필드가 공통 진단 기준이다. 필드가 하나도 없는 구버전
+      // 응답이면 빈 객체가 되는데, 이때는 toDiagnosisBasisViewModel이 빈 배열을 돌려줘
+      // 화면에서 자연히 숨겨진다.
+      const basis = { ...result }
+      delete basis.recommendations
+      recommendationBasis.value = basis
       return true
     } catch (e) {
       recommendError.value = e.response?.data?.error ?? e
       recommendations.value = []
+      recommendationBasis.value = null
       return false
     } finally {
       isRecommending.value = false
@@ -223,6 +235,7 @@ export const useGoalStore = defineStore('goal', () => {
     recommendations,
     isRecommending,
     recommendError,
+    recommendationBasis,
     loadRecommendations,
     loadRecommendationResult,
     isSaving,

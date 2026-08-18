@@ -33,17 +33,20 @@ function handleSelect() {
 
     <BaseDivider class="recommendation-card__divider" />
 
-    <p class="recommendation-card__condition-title">{{ view.conditionTitle }}</p>
-    <p class="recommendation-card__condition-area">{{ view.conditionArea }}</p>
+    <p class="recommendation-card__condition">{{ view.conditionSummary }}</p>
 
     <div class="recommendation-card__stats">
       <div class="recommendation-card__stat">
-        <span class="recommendation-card__stat-label">모아야 할 금액</span>
-        <strong class="recommendation-card__stat-value">{{ view.targetAmountLabel }}</strong>
+        <span class="recommendation-card__stat-label">추가 준비 금액</span>
+        <strong class="recommendation-card__stat-value recommendation-card__stat-value--amount">{{
+          view.targetAmountLabel
+        }}</strong>
       </div>
       <div class="recommendation-card__stat">
         <span class="recommendation-card__stat-label">{{ view.targetDateFieldLabel }}</span>
-        <strong class="recommendation-card__stat-value">{{ view.targetDateLabel }}</strong>
+        <strong class="recommendation-card__stat-value recommendation-card__stat-value--date">{{
+          view.targetDateLabel
+        }}</strong>
       </div>
     </div>
 
@@ -58,8 +61,17 @@ function handleSelect() {
 .recommendation-card {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
+  /* BaseCard--lg의 기본 상하 padding(20px)이 세 카드를 나란히 비교하기엔 다소 여유로워
+     상하만 20%가량 줄인다. 좌우는 다른 카드들과의 정렬을 위해 그대로 둔다. */
+  padding-top: 16px;
+  padding-bottom: 16px;
   cursor: pointer;
+}
+
+.recommendation-card:focus-visible {
+  outline: 2px solid var(--color-primary, #1d6b3f);
+  outline-offset: 2px;
 }
 
 .recommendation-card__title {
@@ -70,7 +82,7 @@ function handleSelect() {
 }
 
 .recommendation-card__strategy {
-  margin: 0 0 8px;
+  margin: 0 0 6px;
   font-size: 13px;
   font-weight: 600;
   color: var(--color-primary, #1d6b3f);
@@ -79,24 +91,17 @@ function handleSelect() {
 /* BaseDivider 기본값은 테마를 안 타는 legacy 변수(--border)라 라이트 모드에서 너무 짙게
    보인다. 마이페이지(.my-page-view__row)와 같은 테마별 톤(--color-border)으로 맞춘다. */
 .recommendation-card__divider {
-  margin: 4px 0 12px;
+  margin: 3px 0 9px;
   background: var(--color-border, #262626);
 }
 
-.recommendation-card__condition-title {
-  margin: 0 0 4px;
-  overflow: hidden;
-  font-size: 15px;
-  font-weight: 700;
+/* 지역·유형·거래·면적을 한 줄로 합친 요약. 빠른 비교가 목적이라 상세 화면처럼 줄바꿈해서
+   나누지 않는다. 폭이 좁아 다 안 들어가면(긴 지역명 등) 잘라내지 않고 자연스럽게 줄바꿈한다. */
+.recommendation-card__condition {
+  margin: 0 0 12px;
+  font-size: 14px;
+  font-weight: 600;
   color: var(--color-text-primary, #ffffff);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.recommendation-card__condition-area {
-  margin: 0 0 16px;
-  font-size: 13px;
-  color: var(--color-text-secondary, #9aa09a);
 }
 
 .recommendation-card__stats {
@@ -121,10 +126,19 @@ function handleSelect() {
 .recommendation-card__stat-value {
   overflow: hidden;
   font-size: 17px;
-  font-weight: 700;
   color: var(--color-text-primary, #ffffff);
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* 세 계획을 비교할 때 "추가 준비 금액"을 먼저 읽도록, 크기는 그대로 두고 두 값의
+   font-weight 단계만 벌린다 (금액을 더 굵게 / 시점을 한 단계 낮춤). 새 색상·배경은 쓰지 않는다. */
+.recommendation-card__stat-value--amount {
+  font-weight: 800;
+}
+
+.recommendation-card__stat-value--date {
+  font-weight: 600;
 }
 
 .recommendation-card__more {
@@ -132,7 +146,7 @@ function handleSelect() {
   align-items: center;
   justify-content: flex-end;
   gap: 2px;
-  margin-top: 12px;
+  margin-top: 10px;
   font-size: 13px;
   font-weight: 700;
   color: var(--color-primary, #1d6b3f);
