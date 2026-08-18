@@ -5,7 +5,9 @@ defineProps({
   title: { type: String, required: true },
   // 있으면 rows/timeline 위에 안내 문장으로 보여준다 (예: PREFERENCE의 "이 계획은 이렇게 구성했어요")
   description: { type: String, default: null },
-  // [{ label, value }] — 예: REALISTIC의 "목표 시점 / 목표 시점까지 준비 가능한 금액"
+  // [{ label, value, emphasis }] — 예: REALISTIC의 "목표 시점 / 목표 시점까지 준비 가능한 금액".
+  // emphasis:true인 row는 이 recommendation이 만들어진 직접적인 근거값이라는 뜻으로 value를
+  // 한 단계 더 굵게 보여준다.
   rows: { type: Array, default: () => [] },
   // HOLD_OUT처럼 "기준 목표 시점 -> 예상 도달 시점"을 화살표로 이어 보여줘야 할 때만 채운다
   timeline: {
@@ -34,7 +36,11 @@ defineProps({
 
     <div v-for="row in rows" :key="row.label" class="recommendation-basis-card__row">
       <span class="recommendation-basis-card__row-label">{{ row.label }}</span>
-      <span class="recommendation-basis-card__row-value">{{ row.value }}</span>
+      <span
+        class="recommendation-basis-card__row-value"
+        :class="{ 'recommendation-basis-card__row-value--emphasis': row.emphasis }"
+        >{{ row.value }}</span
+      >
     </div>
 
     <p v-if="description" class="recommendation-basis-card__description">{{ description }}</p>
@@ -48,7 +54,7 @@ defineProps({
 }
 
 .recommendation-basis-card__label {
-  margin: 0 0 12px;
+  margin: 0 0 10px;
   font-size: 13px;
   font-weight: 700;
   color: var(--color-text-secondary, #9aa09a);
@@ -85,32 +91,42 @@ defineProps({
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 10px 0;
+  padding: 9px 0;
 }
 
-.recommendation-basis-card__row:not(:last-child) {
-  border-bottom: 1px solid var(--color-border, #262626);
+/* ":not(:last-child)"는 BaseCard의 진짜 마지막 자식 기준이라, row 뒤에 divider·설명 문구가
+   더 있으면 마지막 row도 "마지막 자식이 아님"으로 걸려 자체 border-bottom이 그려지고 바로 아래
+   BaseDivider와 겹쳐 선이 두 줄로 보였다. row끼리의 인접 형제로만 판단해 row 사이 경계에만
+   선이 그어지게 한다(마지막 row 뒤에 무엇이 오든 영향받지 않음). */
+.recommendation-basis-card__row + .recommendation-basis-card__row {
+  border-top: 1px solid var(--color-border, #262626);
 }
 
+/* 상세 화면 전체 row-label/핵심 값 공통 톤(12px·600 / 17px·700) —
+   RecommendationHousingCard/AmountBreakdownCard/FundingCard와 동일. */
 .recommendation-basis-card__row-label {
-  font-size: 14px;
+  font-size: 12px;
+  font-weight: 600;
   color: var(--color-text-secondary, #9aa09a);
 }
 
 .recommendation-basis-card__row-value {
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 700;
   color: var(--color-text-primary, #ffffff);
 }
 
-.recommendation-basis-card__description {
-  margin: 12px 0 0;
-  font-size: 13px;
-  line-height: 1.6;
-  color: var(--color-text-secondary, #9aa09a);
+/* 이 recommendation이 만들어진 직접적인 근거값(예: REALISTIC의 "목표 시점까지 준비 가능한
+   금액")이라는 걸 나타내기 위해 다른 row보다 한 단계 더 굵게 한다. 색상/크기는 그대로 둔다. */
+.recommendation-basis-card__row-value--emphasis {
+  font-weight: 800;
 }
 
-.recommendation-basis-card__row + .recommendation-basis-card__description {
-  margin-top: 12px;
+/* 상세 화면의 다른 캡션(RecommendationAmountBreakdownCard__note,
+   RecommendationFundingCard__note)과 같은 톤(12px)으로 맞춘다. */
+.recommendation-basis-card__description {
+  margin: 10px 0 0;
+  font-size: 12px;
+  color: var(--color-text-secondary, #9aa09a);
 }
 </style>

@@ -43,7 +43,7 @@ const DEFAULT_TARGET_DATE_LABEL = '예상 도달 시점'
 // 정의되지 않은 type만 API가 내려주는 reason을 대체 문구로 쓴다(화면이 비어 보이지 않도록).
 const RECOMMENDATION_DESCRIPTION_MAP = {
   PREFERENCE: '희망 조건의 실거래 수준과 필요한 준비 금액을 확인해보세요.',
-  REALISTIC: '목표 시점은 유지하면서 현재 상황에 맞는 주거 조건을 찾았어요.',
+  REALISTIC: '목표 시점까지 준비 가능한 금액 안에서 주거 조건을 찾았어요.',
   HOLD_OUT: '주거 조건은 유지하고 필요한 준비 기간을 계산했어요.',
 }
 
@@ -168,16 +168,17 @@ export function toBasisViewModel(recommendation, commonTargetDate) {
   if (type === 'REALISTIC') {
     const rows = [{ label: '목표 시점', value: formatYearMonth(loanX.targetDate) }]
     if (typeof recommendation.reachableAmountAtTargetDate === 'number') {
+      // 이 recommendation이 만들어진 직접적인 기준값이라 목표 시점보다 한 단계 더 강조한다.
       rows.push({
         label: '목표 시점까지 준비 가능한 금액',
         value: formatGoalAmount(recommendation.reachableAmountAtTargetDate),
+        emphasis: true,
       })
     }
 
     return {
       title: '왜 이 조건이 나왔나요?',
-      description:
-        '목표 시점까지 준비할 수 있는 금액 범위에서 실제 거래가 가능한 주거 조건을 찾았어요.',
+      description: '이 금액 범위에서 실제 거래가 가능한 주거 조건을 찾았어요.',
       rows,
       timeline: null,
     }
@@ -224,10 +225,16 @@ export function toDiagnosisBasisLabel(basis) {
 
 // 상세 화면 "이 목표를 준비하려면" 카드용. loanO가 없는 recommendation이 향후 있을 수 있어
 // withLoan을 null로 돌려주면 호출부가 그 section을 통째로 렌더링하지 않는다.
-export function toFundingViewModel({ loanX, loanO }) {
+//
+// "대출 없이" 영역의 날짜는 type마다 의미가 다르다 — REALISTIC은 목표 시점을 그대로 유지한
+// 결과라 "목표 시점"(TARGET_DATE_LABEL_MAP), 나머지는 새로 계산된 예상치라 "예상 도달 시점".
+// 대출 활용 영역의 날짜는 항상 대출을 반영해 앞당겨진 계산 결과이므로 type과 무관하게
+// "예상 도달 시점"으로 고정한다.
+export function toFundingViewModel({ loanX, loanO, type }) {
   return {
     withoutLoan: {
       targetAmountLabel: formatGoalAmount(loanX.targetAmount),
+      targetDateFieldLabel: TARGET_DATE_LABEL_MAP[type] ?? DEFAULT_TARGET_DATE_LABEL,
       targetDateLabel: formatYearMonth(loanX.targetDate),
       monthlySavingLabel: formatGoalAmount(loanX.monthlySaving),
     },

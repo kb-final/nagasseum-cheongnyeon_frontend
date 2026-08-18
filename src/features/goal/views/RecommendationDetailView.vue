@@ -108,7 +108,11 @@ function goToRecommendations() {
           :timeline="basisView.timeline"
         />
         <RecommendationAmountBreakdownCard v-if="amountBreakdownView" :view="amountBreakdownView" />
-        <RecommendationFundingCard :loan-x="recommendation.loanX" :loan-o="recommendation.loanO" />
+        <RecommendationFundingCard
+          :loan-x="recommendation.loanX"
+          :loan-o="recommendation.loanO"
+          :type="recommendation.type"
+        />
       </div>
 
       <p v-if="goalStore.saveError" class="recommendation-detail-view__error">
@@ -173,7 +177,7 @@ function goToRecommendations() {
 
 .recommendation-detail-view__description {
   margin: 0;
-  font-size: 13.2px;
+  font-size: 13px;
   line-height: 1.6;
   color: var(--color-text-secondary, #9aa09a);
 }

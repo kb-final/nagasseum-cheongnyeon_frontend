@@ -17,8 +17,7 @@ const view = computed(() => toHousingViewModel(props.condition))
     <p class="recommendation-housing-card__label">주거 조건</p>
 
     <p class="recommendation-housing-card__region">{{ view.regionName }}</p>
-    <p class="recommendation-housing-card__type">{{ view.typeLine }}</p>
-    <p class="recommendation-housing-card__area">{{ view.areaLine }}</p>
+    <p class="recommendation-housing-card__type">{{ view.typeLine }} · {{ view.areaLine }}</p>
 
     <template v-if="view.marketMedianAmountLabel">
       <BaseDivider class="recommendation-housing-card__divider" />
@@ -51,17 +50,13 @@ const view = computed(() => toHousingViewModel(props.condition))
   color: var(--color-text-primary, #ffffff);
 }
 
+/* 매물 유형 · 거래 유형 · 평수를 한 줄로 합친다(요청에 따라 면적을 별도 줄로 두지 않음).
+   스타일은 기존 매물/거래 유형 톤을 그대로 쓴다. */
 .recommendation-housing-card__type {
   margin: 0 0 4px;
   font-size: 15px;
   font-weight: 600;
   color: var(--color-text-primary, #ffffff);
-}
-
-.recommendation-housing-card__area {
-  margin: 0;
-  font-size: 13px;
-  color: var(--color-text-secondary, #9aa09a);
 }
 
 /* BaseDivider 기본값은 테마를 안 타는 legacy 변수(--border)라 라이트 모드에서 너무 짙게

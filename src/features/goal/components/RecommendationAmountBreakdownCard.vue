@@ -64,11 +64,15 @@ defineProps({
   padding: 3px 0;
 }
 
+/* 상세 화면 전체 row-label 공통 톤(12px/600) — RecommendationHousingCard/FundingCard와 동일. */
 .recommendation-amount-breakdown-card__row-label {
-  font-size: 13px;
+  font-size: 12px;
+  font-weight: 600;
   color: var(--color-text-secondary, #9aa09a);
 }
 
+/* 실거래 중앙값·현재 활용 가능 자금은 계산의 "입력값"이라 결론(추가 준비 금액)보다
+   한 단계 낮은 tier로 둔다. */
 .recommendation-amount-breakdown-card__row-value {
   font-size: 14px;
   font-weight: 600;
@@ -86,8 +90,10 @@ defineProps({
   padding: 3px 0 0;
 }
 
+/* 상세 화면 전체 "핵심 값" 공통 크기(17px)에 weight만 800으로 올려 결론임을 강조한다
+   (RecommendationBasisCard__row-value--emphasis, RecommendationFundingCard__stat-value와 동일 tier). */
 .recommendation-amount-breakdown-card__total-value {
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 800;
   color: var(--color-text-primary, #ffffff);
 }

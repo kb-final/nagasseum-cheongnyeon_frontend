@@ -9,9 +9,13 @@ const props = defineProps({
   loanX: { type: Object, required: true },
   // 대출 활용 플랜이 없는 recommendation도 있을 수 있어 필수값이 아니다.
   loanO: { type: Object, default: null },
+  // "대출 없이" 영역의 날짜 label이 type마다 달라(REALISTIC은 "목표 시점") 필요하다.
+  type: { type: String, default: null },
 })
 
-const view = computed(() => toFundingViewModel({ loanX: props.loanX, loanO: props.loanO }))
+const view = computed(() =>
+  toFundingViewModel({ loanX: props.loanX, loanO: props.loanO, type: props.type }),
+)
 </script>
 
 <template>
@@ -26,7 +30,9 @@ const view = computed(() => toFundingViewModel({ loanX: props.loanX, loanO: prop
 
       <div class="recommendation-funding-card__stats">
         <div class="recommendation-funding-card__stat">
-          <span class="recommendation-funding-card__row-label">예상 도달 시점</span>
+          <span class="recommendation-funding-card__row-label">{{
+            view.withoutLoan.targetDateFieldLabel
+          }}</span>
           <strong class="recommendation-funding-card__stat-value">{{
             view.withoutLoan.targetDateLabel
           }}</strong>
@@ -127,11 +133,12 @@ const view = computed(() => toFundingViewModel({ loanX: props.loanX, loanO: prop
 }
 
 /* "왜 이 금액이 필요한지"의 결론은 준비 금액 계산 카드(RecommendationAmountBreakdownCard)가
-   이미 보여주므로, 여기서 같은 금액을 다시 크게 반복하지 않는다. 값은 유지하되 한 단계만
-   줄여서 이 카드의 핵심(예상 도달 시점·월 저축)보다 위계가 낮아지도록 한다. */
+   이미 보여주므로, 여기서 같은 금액을 다시 크게 반복하지 않는다. 상세 화면 전체 "핵심 값"
+   공통 크기(17px/700)로 맞춰, 이 카드 안에서도 예상 도달 시점·월 저축(stat-value)과
+   같은 위계로 보이게 한다. */
 .recommendation-funding-card__amount {
   margin: 4px 0 14px;
-  font-size: 20px;
+  font-size: 17px;
   font-weight: 700;
   color: var(--color-text-primary, #ffffff);
 }
