@@ -9,14 +9,18 @@ import BaseEmptyState from '@/shared/components/atoms/feedback/EmptyState/BaseEm
 
 import RecommendationHousingCard from '@/features/goal/components/RecommendationHousingCard.vue'
 import RecommendationBasisCard from '@/features/goal/components/RecommendationBasisCard.vue'
+import RecommendationAmountBreakdownCard from '@/features/goal/components/RecommendationAmountBreakdownCard.vue'
 import RecommendationFundingCard from '@/features/goal/components/RecommendationFundingCard.vue'
 import { useGoalStore } from '@/features/goal/store/goalStore'
 import {
   RECOMMENDATION_TITLE_MAP,
   toRecommendationDescription,
-  toRecommendationBasisRows,
+  toBasisViewModel,
+  toAmountBreakdownViewModel,
   toGoalCreationPayload,
 } from '@/features/goal/utils/recommendationViewModel'
+
+const RESULT_ROUTE_NAME = 'goal-recommendations'
 
 const props = defineProps({
   type: { type: String, required: true },
@@ -33,7 +37,21 @@ const recommendation = computed(
 
 const title = computed(() => RECOMMENDATION_TITLE_MAP[props.type] ?? recommendation.value?.title)
 const description = computed(() => toRecommendationDescription(recommendation.value))
-const basisRows = computed(() => toRecommendationBasisRows(recommendation.value))
+const basisView = computed(() =>
+  recommendation.value
+    ? toBasisViewModel(recommendation.value, goalStore.recommendationBasis?.targetDate)
+    : null,
+)
+// 실거래 중앙값·현재 활용 가능 자금 중 하나라도 아직 응답에 없으면 null이 되고, 그 경우
+// 카드 자체를 숨긴다(23번 요구사항 — 없는 값으로 계산식을 지어내지 않는다).
+const amountBreakdownView = computed(() => {
+  if (!recommendation.value) return null
+  return toAmountBreakdownViewModel({
+    marketMedianAmount: recommendation.value.condition.marketMedianAmount,
+    currentAvailableAmount: goalStore.recommendationBasis?.currentAvailableAmount,
+    additionalAmount: recommendation.value.loanX.targetAmount,
+  })
+})
 
 onMounted(() => {
   if (!recommendation.value) goalStore.loadRecommendationResult()
@@ -43,6 +61,10 @@ async function handleSetAsGoal() {
   const saved = await goalStore.saveGoal(toGoalCreationPayload(recommendation.value))
   if (!saved) return
   router.push({ name: 'home' })
+}
+
+function goToRecommendations() {
+  router.push({ name: RESULT_ROUTE_NAME })
 }
 </script>
 
@@ -78,8 +100,20 @@ async function handleSetAsGoal() {
 
       <div class="recommendation-detail-view__cards">
         <RecommendationHousingCard :condition="recommendation.condition" />
-        <RecommendationBasisCard v-if="basisRows.length" :rows="basisRows" />
-        <RecommendationFundingCard :loan-x="recommendation.loanX" :loan-o="recommendation.loanO" />
+        <RecommendationBasisCard
+          v-if="basisView"
+          :title="basisView.title"
+          :description="basisView.description"
+          :description-emphasis="basisView.descriptionEmphasis"
+          :rows="basisView.rows"
+          :timeline="basisView.timeline"
+        />
+        <RecommendationAmountBreakdownCard v-if="amountBreakdownView" :view="amountBreakdownView" />
+        <RecommendationFundingCard
+          :loan-x="recommendation.loanX"
+          :loan-o="recommendation.loanO"
+          :type="recommendation.type"
+        />
       </div>
 
       <p v-if="goalStore.saveError" class="recommendation-detail-view__error">
@@ -90,6 +124,13 @@ async function handleSetAsGoal() {
         <BaseButton size="lg" :disabled="goalStore.isSaving" @click="handleSetAsGoal">
           이 계획으로 목표 설정하기
         </BaseButton>
+        <button
+          type="button"
+          class="recommendation-detail-view__compare"
+          @click="goToRecommendations"
+        >
+          다른 계획 비교하기
+        </button>
       </div>
     </template>
   </div>
@@ -101,8 +142,8 @@ async function handleSetAsGoal() {
   flex-direction: column;
   gap: 16px;
   /* 하단 CTA(__footer)가 fixed라 문서 흐름에서 빠지므로, 마지막 카드가 CTA에 가려지지
-     않도록 그 높이(버튼 53px + 상하 패딩)만큼 여유를 미리 확보해둔다. */
-  padding-bottom: 96px;
+     않도록 그 높이(버튼 53px + 텍스트 액션 + 상하 패딩)만큼 여유를 미리 확보해둔다. */
+  padding-bottom: 140px;
 }
 
 .recommendation-detail-view__skeleton {
@@ -137,7 +178,7 @@ async function handleSetAsGoal() {
 
 .recommendation-detail-view__description {
   margin: 0;
-  font-size: 13.2px;
+  font-size: 13px;
   line-height: 1.6;
   color: var(--color-text-secondary, #9aa09a);
 }
@@ -166,11 +207,27 @@ async function handleSetAsGoal() {
   left: 50%;
   bottom: 0;
   z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
   width: calc(100% - 32px);
   max-width: 368px;
   padding: 12px 0 calc(12px + env(safe-area-inset-bottom, 0px));
   background: var(--color-app-bg, #111111);
   transform: translateX(-50%);
+}
+
+/* 주 CTA(BaseButton)와 위계가 확실히 구분되도록, 배경 없는 텍스트 액션으로만 둔다. */
+.recommendation-detail-view__compare {
+  border: 0;
+  padding: 4px;
+  background: none;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-primary, #1d6b3f);
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 /*

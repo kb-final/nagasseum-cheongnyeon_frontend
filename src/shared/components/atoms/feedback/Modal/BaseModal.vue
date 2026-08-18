@@ -9,23 +9,25 @@ defineEmits(['update:modelValue'])
 
 <template>
   <Teleport to="body">
-    <div
-      v-if="modelValue"
-      class="base-modal-overlay"
-      @click.self="$emit('update:modelValue', false)"
-    >
-      <div class="base-modal">
-        <header v-if="title" class="base-modal__header">
-          <h2>{{ title }}</h2>
-        </header>
-        <div class="base-modal__body">
-          <slot />
+    <Transition name="base-modal">
+      <div
+        v-if="modelValue"
+        class="base-modal-overlay"
+        @click.self="$emit('update:modelValue', false)"
+      >
+        <div class="base-modal">
+          <header v-if="title" class="base-modal__header">
+            <h2>{{ title }}</h2>
+          </header>
+          <div class="base-modal__body">
+            <slot />
+          </div>
+          <footer v-if="$slots.footer" class="base-modal__footer">
+            <slot name="footer" />
+          </footer>
         </div>
-        <footer v-if="$slots.footer" class="base-modal__footer">
-          <slot name="footer" />
-        </footer>
       </div>
-    </div>
+    </Transition>
   </Teleport>
 </template>
 
@@ -38,6 +40,28 @@ defineEmits(['update:modelValue'])
   align-items: center;
   justify-content: center;
   z-index: 1000;
+}
+
+/* 시트(CohortEditSheet)의 슬라이드업과 달리 화면 중앙 모달이라 배경 페이드 +
+   살짝 커지는 정도로만 가볍게 준다. */
+.base-modal-enter-active,
+.base-modal-leave-active {
+  transition: opacity 0.18s ease;
+}
+
+.base-modal-enter-active .base-modal,
+.base-modal-leave-active .base-modal {
+  transition: transform 0.18s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.base-modal-enter-from,
+.base-modal-leave-to {
+  opacity: 0;
+}
+
+.base-modal-enter-from .base-modal,
+.base-modal-leave-to .base-modal {
+  transform: scale(0.96);
 }
 
 .base-modal {
