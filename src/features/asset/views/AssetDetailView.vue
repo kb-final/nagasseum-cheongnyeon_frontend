@@ -19,7 +19,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="asset-detail-view">
+  <div class="asset-detail-view asset-detail-view--animated">
     <AppHeader title="자산 인벤토리" @back="router.back()" />
 
     <template v-if="assetStore.assetDetail">
@@ -102,6 +102,30 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 14px;
+}
+
+/*
+  비교/마이페이지와 같은 card-rise 진입 모션(main.css에 공용 정의)을 재사용해서
+  홈에서 자산 인벤토리로 들어올 때도 헤더 아래 카드가 순서대로 떠오르며 나타나게 한다.
+*/
+.asset-detail-view--animated > * {
+  animation: card-rise 0.35s ease-out both;
+}
+
+.asset-detail-view--animated > *:nth-child(2) {
+  animation-delay: 0.04s;
+}
+
+.asset-detail-view--animated > *:nth-child(3) {
+  animation-delay: 0.08s;
+}
+
+.asset-detail-view--animated > *:nth-child(4) {
+  animation-delay: 0.12s;
+}
+
+.asset-detail-view--animated > *:nth-child(5) {
+  animation-delay: 0.16s;
 }
 
 :root[data-theme='light'] .asset-detail-view {
