@@ -1,5 +1,7 @@
 import {
   GoalConditionStepsView,
+  GoalRecommendationsView,
+  RecommendationDetailView,
   DiagnosisView,
   GoalDetailView,
   GoalEmptyView,
@@ -10,6 +12,21 @@ export const goalRoutes = [
   // 라우트 이름은 'diagnosis' 그대로 둔다 — MobileLayout의 하단 탭 숨김 목록과
   // 홈/목표 빈 화면의 '/diagnosis' 이동이 이 이름·경로를 참조하고 있다.
   { path: 'diagnosis', name: 'diagnosis', component: GoalConditionStepsView },
+  // 조건 입력을 마치면 이동하는 진단 결과(추천 계획 비교) 화면. 라우트 이름은
+  // GoalConditionStepsView가 이미 참조하고 있는 'goal-recommendations' 그대로 쓴다.
+  {
+    path: 'goals/recommendations',
+    name: 'goal-recommendations',
+    component: GoalRecommendationsView,
+  },
+  // 추천 카드를 눌렀을 때 이동하는 상세 화면. GoalRecommendationsView.goToDetail()이
+  // 이미 이 라우트 이름을 참조하고 있었다 — 라우트가 등록되는 순간 그대로 이어진다.
+  {
+    path: 'goals/recommendations/:type',
+    name: 'goal-recommendation-detail',
+    component: RecommendationDetailView,
+    props: true,
+  },
   { path: 'goals', name: 'goal-empty', component: GoalEmptyView },
   // 목표 수정은 진단 폼(UC-12)을 그대로 재사용하되, goalId가 있으면 생성(POST)이 아니라
   // 수정(PUT)으로 저장한다. 쿼리가 아니라 경로로 둬야 goalId가 빠진 주소가 아예 성립하지 않아,

@@ -423,3 +423,91 @@ export function buildMockRecommendations(payload) {
     ],
   }
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GET /api/v1/goals/recommendation 응답 mock (진단 결과 화면 전용)
+//
+// 조건 입력 단계(recommendations, 쿼리 조건 기반)와 달리 memberId(인증 토큰)만으로 이미 계산된
+// 추천 결과를 돌려받는 엔드포인트라 조건을 입력받지 않는다. 필드 구성·값은 명세서 예시
+// (PREFERENCE/REALISTIC)를 그대로 옮기고, 명세서에 없던 HOLD_OUT만 같은 형식으로 채워 넣었다.
+// ─────────────────────────────────────────────────────────────────────────────
+export function buildMockRecommendationResult() {
+  return {
+    recommendations: [
+      {
+        type: 'PREFERENCE',
+        title: '내가 원하는 조건 그대로',
+        reason: '선택하신 마포구 아파트 전세 기준 중앙값입니다.',
+        condition: {
+          regionCode: '11440',
+          regionName: '서울 마포구',
+          housingType: 'APT',
+          dealType: 'JEONSE',
+          areaMin: 33,
+          areaMax: 66,
+          monthlyRent: 0,
+          sampleCount: 142,
+        },
+        loanX: {
+          targetAmount: 300000000,
+          targetDate: '2051-08',
+          monthlySaving: 1000000,
+        },
+        loanO: {
+          loanAmount: 80000000,
+          targetAmount: 220000000,
+          targetDate: '2044-12',
+          monthlySaving: 1000000,
+          shortenedMonths: 80,
+        },
+      },
+      {
+        type: 'REALISTIC',
+        title: '지금 소득으로 현실적인 선택',
+        reason: '현재 소득 수준에서 10년 내 달성 가능한 조건을 찾았습니다.',
+        condition: {
+          regionCode: '41135',
+          regionName: '경기 수원시 영통구',
+          housingType: 'APT',
+          dealType: 'JEONSE',
+          areaMin: 33,
+          areaMax: 66,
+          monthlyRent: 0,
+          sampleCount: 389,
+        },
+        loanX: {
+          targetAmount: 100000000,
+          targetDate: '2034-12',
+          monthlySaving: 1000000,
+        },
+        loanO: {
+          loanAmount: 70000000,
+          targetAmount: 30000000,
+          targetDate: '2029-02',
+          monthlySaving: 1000000,
+          shortenedMonths: 70,
+        },
+      },
+      {
+        type: 'HOLD_OUT',
+        title: '조금 더 모으면 갈 수 있는 곳',
+        reason: '조건을 그대로 두고 시점만 늘렸을 때 도달 가능한 목표예요.',
+        condition: {
+          regionCode: '11440',
+          regionName: '서울 마포구',
+          housingType: 'APT',
+          dealType: 'JEONSE',
+          areaMin: 33,
+          areaMax: 66,
+          monthlyRent: 0,
+          sampleCount: 142,
+        },
+        loanX: {
+          targetAmount: 300000000,
+          targetDate: '2040-06',
+          monthlySaving: 1000000,
+        },
+      },
+    ],
+  }
+}
