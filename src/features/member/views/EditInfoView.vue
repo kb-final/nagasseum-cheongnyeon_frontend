@@ -113,9 +113,12 @@ async function handleSave() {
         v-model="monthlyIncomeManwon"
         label="월 소득"
         :max-length="5"
+        :show-counter="false"
         placeholder="만원 단위로 입력"
         helper-text="또래 비교에서 내 소득 구간을 표시하는 데 쓰입니다"
-      />
+      >
+        <template #suffix>만원</template>
+      </BaseInputField>
 
       <div class="edit-info-view__field">
         <div class="edit-info-view__field-label-row">
