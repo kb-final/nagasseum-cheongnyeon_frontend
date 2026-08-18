@@ -33,6 +33,27 @@ const institutions = computed(() =>
     })),
 )
 
+// 은행 > 증권 > 카드 순으로 섹션을 나눠 보여준다. 기관 수가 카테고리당 많지 않아
+// 아코디언 없이 전부 펼친 채로 둬도 스크롤 부담이 크지 않다.
+const BUSINESS_TYPE_ORDER = ['BK', 'ST', 'CD']
+
+const groupedInstitutions = computed(() => {
+  const groups = new Map()
+  for (const institution of institutions.value) {
+    const group = groups.get(institution.businessType) ?? []
+    group.push(institution)
+    groups.set(institution.businessType, group)
+  }
+
+  return BUSINESS_TYPE_ORDER.filter((businessType) => groups.has(businessType)).map(
+    (businessType) => ({
+      businessType,
+      label: BUSINESS_TYPE_LABELS[businessType] ?? businessType,
+      institutions: groups.get(businessType),
+    }),
+  )
+})
+
 const selectedCount = computed(() => selectedIds.value.length)
 const canSubmit = computed(() => selectedCount.value > 0)
 
@@ -85,15 +106,24 @@ onMounted(() =>
         </li>
       </ul>
 
-      <ul v-else class="asset-link-view__list">
-        <li v-for="institution in institutions" :key="institution.id">
-          <AssetInstitutionCard
-            :institution="institution"
-            :selected="isSelected(institution.id)"
-            @toggle="toggleInstitution"
-          />
-        </li>
-      </ul>
+      <div v-else class="asset-link-view__groups">
+        <section
+          v-for="group in groupedInstitutions"
+          :key="group.businessType"
+          class="asset-link-view__group"
+        >
+          <h3 class="asset-link-view__group-title">{{ group.label }}</h3>
+          <ul class="asset-link-view__list">
+            <li v-for="institution in group.institutions" :key="institution.id">
+              <AssetInstitutionCard
+                :institution="institution"
+                :selected="isSelected(institution.id)"
+                @toggle="toggleInstitution"
+              />
+            </li>
+          </ul>
+        </section>
+      </div>
     </div>
 
     <div class="asset-link-view__footer">
@@ -140,6 +170,27 @@ onMounted(() =>
 .asset-link-view__subtitle {
   margin: 0;
   font-size: 13.1px;
+  color: var(--color-text-secondary);
+}
+
+.asset-link-view__groups {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.asset-link-view__group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* 마이페이지 섹션 제목과 같은 스타일로 맞춘다. */
+.asset-link-view__group-title {
+  margin: 0;
+  padding: 0 4px;
+  font-size: 14.5px;
+  font-weight: 600;
   color: var(--color-text-secondary);
 }
 
