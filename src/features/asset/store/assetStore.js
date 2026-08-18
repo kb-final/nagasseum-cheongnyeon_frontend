@@ -38,6 +38,34 @@ export const FLOW_CONTEXT = {
   ADDITIONAL: 'additional',
 }
 
+const FLOW_CONTEXT_STORAGE_KEY = 'assetFlowContext'
+
+/*
+  flowContext는 자산 연동(asset-link → asset-auth → asset-syncing) 흐름 중간에 있는
+  화면이 "회원가입 중" 온보딩인지 "마이페이지에서 추가 연동"인지 구분하는 값이다.
+  메모리 상태로만 두면 이 흐름 도중 새로고침했을 때 스토어가 초기화되며 기본값인
+  ONBOARDING으로 돌아가버려서, 추가 연동 중이었는데도 회원가입 온보딩 화면(진행
+  단계 표시, 뒤로가기 버튼 숨김)으로 보이고 동기화 완료 후 홈으로 잘못 이동한다.
+  로그인 세션처럼 오래 남을 값이 아니라 진행 중인 흐름만 보존하면 되므로
+  localStorage(useTheme.js)가 아닌 sessionStorage를 쓴다.
+*/
+function readStoredFlowContext() {
+  try {
+    const stored = sessionStorage.getItem(FLOW_CONTEXT_STORAGE_KEY)
+    return Object.values(FLOW_CONTEXT).includes(stored) ? stored : null
+  } catch {
+    return null
+  }
+}
+
+function writeStoredFlowContext(context) {
+  try {
+    sessionStorage.setItem(FLOW_CONTEXT_STORAGE_KEY, context)
+  } catch {
+    // 저장 실패해도 화면 동작에는 영향 없음
+  }
+}
+
 const ACCOUNT_TYPE_LABELS = {
   DEPOSIT: '자유입출금',
   SAVINGS: '적금',
@@ -149,7 +177,7 @@ export const useAssetStore = defineStore('asset', () => {
 
   const connections = ref([])
   const isConnectionsLoaded = ref(false)
-  const flowContext = ref(FLOW_CONTEXT.ONBOARDING)
+  const flowContext = ref(readStoredFlowContext() ?? FLOW_CONTEXT.ONBOARDING)
 
   async function fetchOrganizations({ force = false } = {}) {
     if (isLoaded.value && !force) return organizations.value
@@ -213,6 +241,7 @@ export const useAssetStore = defineStore('asset', () => {
 
   function setFlowContext(context) {
     flowContext.value = context
+    writeStoredFlowContext(context)
   }
 
   async function fetchAssetDetail() {
