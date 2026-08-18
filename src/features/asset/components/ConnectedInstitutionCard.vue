@@ -48,12 +48,27 @@ defineEmits(['delete'])
     background: var(--color-primary-soft);
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.24);
   }
+
+  /*
+    hover 배경(--color-primary-soft)은 테마와 무관하게 항상 밝은 민트 톤이라,
+    다크 모드의 --color-text-primary(흰색)를 쓰면 글자가 배경에 묻힌다.
+    선택 상태(InstitutionCardBase.vue)와 동일하게 고정 잉크색으로 덮어쓴다.
+  */
+  .connected-institution-card:hover :deep(.institution-card__name),
+  .connected-institution-card:hover :deep(.institution-card__category) {
+    color: var(--color-mint-deep);
+  }
 }
 
 .connected-institution-card:active {
   transform: scale(0.98);
   background: var(--color-primary-soft);
   transition-duration: 0.08s;
+}
+
+.connected-institution-card:active :deep(.institution-card__name),
+.connected-institution-card:active :deep(.institution-card__category) {
+  color: var(--color-mint-deep);
 }
 
 .connected-institution-card__delete {
