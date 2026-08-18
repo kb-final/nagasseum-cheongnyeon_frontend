@@ -221,6 +221,7 @@ function goToRecommendations() {
   font-size: 13px;
   font-weight: 700;
   color: var(--color-primary, #1d6b3f);
+  text-decoration: underline;
   cursor: pointer;
 }
 
