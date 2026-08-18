@@ -9,6 +9,14 @@ defineEmits(['update:modelValue'])
 
 <template>
   <nav class="bottom-nav">
+    <span
+      v-if="modelValue >= 0"
+      class="bottom-nav__indicator"
+      :style="{
+        width: `calc((100% - 12px) / ${items.length})`,
+        transform: `translateX(${modelValue * 100}%)`,
+      }"
+    />
     <button
       v-for="(item, index) in items"
       :key="item.label"
@@ -27,6 +35,7 @@ defineEmits(['update:modelValue'])
 
 <style scoped>
 .bottom-nav {
+  position: relative;
   display: flex;
   align-items: center;
   width: 100%;
@@ -38,7 +47,23 @@ defineEmits(['update:modelValue'])
   box-sizing: border-box;
 }
 
+/*
+  탭마다 따로 배경을 켜고 끄는 대신, 알약 배경 하나를 활성 탭 위치로 슬라이드시킨다.
+  translateX(%)는 자기 자신의 너비 기준이라 인덱스만큼 곱하면 정확히 그 탭 자리로 간다.
+*/
+.bottom-nav__indicator {
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  left: 6px;
+  border-radius: 22px;
+  background: var(--color-nav-active-bg, #e3ffe8);
+  transition: transform 0.25s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
 .bottom-nav__item {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex: 1;
   flex-direction: column;
@@ -51,13 +76,10 @@ defineEmits(['update:modelValue'])
   background: transparent;
   color: var(--color-nav-inactive, #3e5a49);
   cursor: pointer;
-  transition:
-    background-color 0.18s ease,
-    color 0.18s ease;
+  transition: color 0.18s ease;
 }
 
 .bottom-nav__item--active {
-  background: var(--color-nav-active-bg, #e3ffe8);
   color: var(--color-nav-active, #16281c);
 }
 
