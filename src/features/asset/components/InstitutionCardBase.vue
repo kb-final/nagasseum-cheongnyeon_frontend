@@ -55,6 +55,16 @@ const shortLabel = computed(() => props.institution.shortName ?? props.instituti
   background: var(--color-primary-soft);
 }
 
+/*
+  선택 배경(--color-primary-soft)은 테마와 무관하게 항상 밝은 민트 톤이라,
+  테마를 따라가는 --color-text-primary(다크에서 흰색)를 쓰면 다크 모드에서
+  텍스트가 배경에 묻혀 안 보인다. 체크 아이콘과 동일하게 고정 잉크색을 쓴다.
+*/
+.institution-card--selected .institution-card__name,
+.institution-card--selected .institution-card__category {
+  color: var(--color-mint-deep);
+}
+
 .institution-card__logo {
   display: flex;
   align-items: center;

@@ -68,7 +68,7 @@ async function handleSave() {
 </script>
 
 <template>
-  <div class="edit-info-view">
+  <div class="edit-info-view edit-info-view--animated">
     <AppHeader title="회원정보 수정" @back="router.back()" />
 
     <section class="edit-info-view__avatar-section">
@@ -113,9 +113,12 @@ async function handleSave() {
         v-model="monthlyIncomeManwon"
         label="월 소득"
         :max-length="5"
+        :show-counter="false"
         placeholder="만원 단위로 입력"
         helper-text="또래 비교에서 내 소득 구간을 표시하는 데 쓰입니다"
-      />
+      >
+        <template #suffix>만원</template>
+      </BaseInputField>
 
       <div class="edit-info-view__field">
         <div class="edit-info-view__field-label-row">
@@ -172,6 +175,22 @@ async function handleSave() {
   flex-direction: column;
   gap: 24px;
   padding-bottom: 24px;
+}
+
+.edit-info-view--animated > * {
+  animation: card-rise 0.35s ease-out both;
+}
+
+.edit-info-view--animated > *:nth-child(2) {
+  animation-delay: 0.04s;
+}
+
+.edit-info-view--animated > *:nth-child(3) {
+  animation-delay: 0.08s;
+}
+
+.edit-info-view--animated > *:nth-child(4) {
+  animation-delay: 0.12s;
 }
 
 :root[data-theme='light'] .edit-info-view {

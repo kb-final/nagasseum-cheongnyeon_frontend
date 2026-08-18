@@ -10,6 +10,7 @@ defineProps({
   placeholder: { type: String, default: '' },
   helperText: { type: String, default: '' },
   maxLength: { type: Number, default: 0 },
+  showCounter: { type: Boolean, default: true },
 })
 
 defineEmits(['update:modelValue'])
@@ -29,10 +30,12 @@ defineEmits(['update:modelValue'])
         :maxlength="maxLength || undefined"
         @update:model-value="$emit('update:modelValue', $event)"
       />
-      <span v-if="maxLength" class="base-input-field__counter">
+      <span v-if="maxLength && showCounter" class="base-input-field__counter">
         {{ String(modelValue).length }}/{{ maxLength }}
       </span>
-      <slot name="suffix" />
+      <span v-if="$slots.suffix" class="base-input-field__suffix">
+        <slot name="suffix" />
+      </span>
     </div>
     <p v-if="helperText" class="base-input-field__helper">{{ helperText }}</p>
   </div>
@@ -66,6 +69,16 @@ defineEmits(['update:modelValue'])
   transform: translateY(-50%);
   font-size: 12.4px;
   color: #565c57;
+  pointer-events: none;
+}
+
+.base-input-field__suffix {
+  position: absolute;
+  top: 50%;
+  right: 16px;
+  transform: translateY(-50%);
+  font-size: 13px;
+  color: var(--color-text-secondary, #9aa09a);
   pointer-events: none;
 }
 

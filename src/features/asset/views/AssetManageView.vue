@@ -86,7 +86,7 @@ onMounted(() =>
 </script>
 
 <template>
-  <div class="asset-manage-view">
+  <div class="asset-manage-view asset-manage-view--animated">
     <AppHeader title="자산 연동 관리" @back="router.back()" />
 
     <div class="asset-manage-view__body">
@@ -148,6 +148,22 @@ onMounted(() =>
   display: flex;
   flex-direction: column;
   gap: 24px;
+}
+
+/*
+  비교/마이페이지와 같은 card-rise 진입 모션(main.css에 공용 정의)을 재사용해서
+  헤더 아래 목록/버튼이 순서대로 살짝 떠오르며 나타나게 한다.
+*/
+.asset-manage-view--animated > * {
+  animation: card-rise 0.35s ease-out both;
+}
+
+.asset-manage-view--animated > *:nth-child(2) {
+  animation-delay: 0.04s;
+}
+
+.asset-manage-view--animated > *:nth-child(3) {
+  animation-delay: 0.08s;
 }
 
 .asset-manage-view__list {
