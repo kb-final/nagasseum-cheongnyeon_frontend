@@ -51,6 +51,9 @@ defineEmits(['update:modelValue'])
   background: transparent;
   color: var(--color-nav-inactive, #3e5a49);
   cursor: pointer;
+  transition:
+    background-color 0.18s ease,
+    color 0.18s ease;
 }
 
 .bottom-nav__item--active {
@@ -64,6 +67,23 @@ defineEmits(['update:modelValue'])
   justify-content: center;
   width: 17px;
   height: 17px;
+}
+
+/* 탭이 활성화되는 순간에만 아이콘이 살짝 튀는 정도로 가볍게 준다. */
+.bottom-nav__item--active .bottom-nav__icon {
+  animation: bottom-nav-icon-pop 0.28s ease;
+}
+
+@keyframes bottom-nav-icon-pop {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.18);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 .bottom-nav__icon :deep(svg) {
