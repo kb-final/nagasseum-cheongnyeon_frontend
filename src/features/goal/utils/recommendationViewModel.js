@@ -1,5 +1,5 @@
 import {
-  formatAreaRangePyeong,
+  formatAreaRange,
   formatGoalAmount,
   formatYearMonth,
   formatMonthsToYearsKo,
@@ -42,7 +42,7 @@ const DEFAULT_TARGET_DATE_LABEL = '예상 도달 시점'
 // 상세 화면 상단 한 줄 설명. REALISTIC/PREFERENCE/HOLD_OUT 모두 문구가 확정돼 있고,
 // 정의되지 않은 type만 API가 내려주는 reason을 대체 문구로 쓴다(화면이 비어 보이지 않도록).
 const RECOMMENDATION_DESCRIPTION_MAP = {
-  PREFERENCE: '희망 조건을 중심으로 주거 계획을 구성했어요.',
+  PREFERENCE: '희망 조건의 실거래 수준과 필요한 준비 금액을 확인해보세요.',
   REALISTIC: '목표 시점은 유지하면서 현재 상황에 맞는 주거 조건을 찾았어요.',
   HOLD_OUT: '주거 조건은 유지하고 필요한 준비 기간을 계산했어요.',
 }
@@ -76,9 +76,10 @@ function toConditionSummary(condition) {
   return summary
 }
 
-// "전용 15~20평" (월세면서 실제 월세액이 있으면 "· 월 60만 원"을 이어붙인다)
+// "15~20평" (월세면서 실제 월세액이 있으면 "· 월 60만 원"을 이어붙인다)
+// 결과 화면과 용어를 통일하기 위해 "전용" 접두어는 붙이지 않는다.
 function toConditionArea(condition) {
-  const areaLabel = formatAreaRangePyeong(condition.areaMin, condition.areaMax)
+  const areaLabel = formatAreaRange(condition.areaMin, condition.areaMax)
 
   if (condition.dealType === 'WOLSE' && condition.monthlyRent > 0) {
     return `${areaLabel} · 월 ${formatGoalAmount(condition.monthlyRent)}`
@@ -123,7 +124,7 @@ export function toHousingViewModel(condition) {
         : null,
     sampleCountLabel:
       condition.sampleCount > 0
-        ? `실거래 ${condition.sampleCount.toLocaleString('ko-KR')}건 기준`
+        ? `같은 조건의 실거래 ${condition.sampleCount.toLocaleString('ko-KR')}건 기준`
         : null,
   }
 }
@@ -151,7 +152,9 @@ export function toAmountBreakdownViewModel({
 // title/description/rows/timeline 중 필요한 조합만 채워 돌려준다. 정의되지 않은 type은
 // rows/timeline 없이 API의 reason만 보여준다(문구를 지어내지 않음).
 //
-// - PREFERENCE: 설명 문장만 (희망 조건을 그대로 반영했다는 논리는 이미 주거 조건 카드로 보여줬음)
+// - PREFERENCE: null — 상단 설명("희망 조건을 중심으로 주거 계획을 구성했어요")과 바로 아래
+//   주거 조건 카드(실제 조건 + 실거래 중앙값)만으로 이미 충분히 설명되어, 같은 내용을 다시
+//   요약하는 카드를 별도로 두지 않는다(정보 중복 제거). 호출부가 null이면 카드 자체를 숨긴다.
 // - REALISTIC: 목표 시점 · 목표 시점까지 준비 가능한 금액 rows (reachableAmountAtTargetDate는
 //   아직 백엔드 응답에 없을 수 있어 null-safe하게 처리)
 // - HOLD_OUT: 기준 목표 시점 -> 예상 도달 시점 timeline (공통 진단 기준의 targetDate가 있을 때만)
@@ -159,13 +162,7 @@ export function toBasisViewModel(recommendation, commonTargetDate) {
   const { type, loanX } = recommendation
 
   if (type === 'PREFERENCE') {
-    return {
-      title: '이 계획은 이렇게 구성했어요',
-      description:
-        '진단에 적용된 희망 조건을 중심으로 실제 거래 수준과 필요한 준비 금액을 계산했어요.',
-      rows: [],
-      timeline: null,
-    }
+    return null
   }
 
   if (type === 'REALISTIC') {

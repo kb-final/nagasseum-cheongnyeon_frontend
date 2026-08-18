@@ -38,7 +38,7 @@ defineProps({
     </div>
 
     <p class="recommendation-amount-breakdown-card__note">
-      현재 활용 가능한 자금을 반영해 앞으로 추가로 필요한 금액을 계산했어요.
+      현재 활용 가능 자금을 반영해 계산했어요.
     </p>
   </BaseCard>
 </template>
@@ -50,7 +50,7 @@ defineProps({
 }
 
 .recommendation-amount-breakdown-card__label {
-  margin: 0 0 12px;
+  margin: 0 0 10px;
   font-size: 13px;
   font-weight: 700;
   color: var(--color-text-secondary, #9aa09a);
@@ -61,7 +61,7 @@ defineProps({
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 4px 0;
+  padding: 3px 0;
 }
 
 .recommendation-amount-breakdown-card__row-label {
@@ -78,12 +78,12 @@ defineProps({
 /* BaseDivider 기본값은 테마를 안 타는 legacy 변수(--border)라 라이트 모드에서 너무 짙게
    보인다. 마이페이지(.my-page-view__row)와 같은 테마별 톤(--color-border)으로 맞춘다. */
 .recommendation-amount-breakdown-card__divider {
-  margin: 8px 0;
+  margin: 7px 0;
   background: var(--color-border, #262626);
 }
 
 .recommendation-amount-breakdown-card__row--total {
-  padding: 4px 0 0;
+  padding: 3px 0 0;
 }
 
 .recommendation-amount-breakdown-card__total-value {
@@ -93,7 +93,7 @@ defineProps({
 }
 
 .recommendation-amount-breakdown-card__note {
-  margin: 12px 0 0;
+  margin: 10px 0 0;
   font-size: 12px;
   color: var(--color-text-secondary, #9aa09a);
 }

@@ -74,12 +74,6 @@ export function formatAreaRange(areaMin, areaMax) {
   return `${areaMin}~${areaMax}평`
 }
 
-// 15, 20 -> "전용 15~20평" (추천 계획 비교 카드처럼 전용면적을 평 기준으로 보여줄 때 사용.
-// recommendation API의 condition.areaMin/areaMax는 ㎡가 아니라 평 단위로 내려온다.)
-export function formatAreaRangePyeong(areaMin, areaMax) {
-  return `전용 ${areaMin}~${areaMax}평`
-}
-
 // 70 -> "5년 10개월", 60 -> "5년", 8 -> "8개월"
 // (대출 활용 시 단축되는 개월 수처럼, 개월 수를 년/개월 단위로 함께 읽기 쉽게 표기할 때 사용)
 export function formatMonthsToYearsKo(months) {

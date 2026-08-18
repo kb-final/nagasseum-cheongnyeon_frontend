@@ -26,7 +26,7 @@ const view = computed(() => toFundingViewModel({ loanX: props.loanX, loanO: prop
 
       <div class="recommendation-funding-card__stats">
         <div class="recommendation-funding-card__stat">
-          <span class="recommendation-funding-card__row-label">예상 목표</span>
+          <span class="recommendation-funding-card__row-label">예상 도달 시점</span>
           <strong class="recommendation-funding-card__stat-value">{{
             view.withoutLoan.targetDateLabel
           }}</strong>
@@ -48,22 +48,22 @@ const view = computed(() => toFundingViewModel({ loanX: props.loanX, loanO: prop
 
         <div class="recommendation-funding-card__stats">
           <div class="recommendation-funding-card__stat">
-            <span class="recommendation-funding-card__row-label">예상 대출 금액</span>
+            <span class="recommendation-funding-card__row-label">추가 준비 금액</span>
             <strong class="recommendation-funding-card__stat-value">{{
-              view.withLoan.loanAmountLabel
+              view.withLoan.targetAmountLabel
             }}</strong>
           </div>
           <div class="recommendation-funding-card__stat">
-            <span class="recommendation-funding-card__row-label">직접 준비할 금액</span>
+            <span class="recommendation-funding-card__row-label">예상 대출 금액</span>
             <strong class="recommendation-funding-card__stat-value">{{
-              view.withLoan.targetAmountLabel
+              view.withLoan.loanAmountLabel
             }}</strong>
           </div>
         </div>
 
         <div class="recommendation-funding-card__stats recommendation-funding-card__stats--gap">
           <div class="recommendation-funding-card__stat">
-            <span class="recommendation-funding-card__row-label">예상 목표</span>
+            <span class="recommendation-funding-card__row-label">예상 도달 시점</span>
             <strong class="recommendation-funding-card__stat-value">{{
               view.withLoan.targetDateLabel
             }}</strong>
@@ -77,7 +77,10 @@ const view = computed(() => toFundingViewModel({ loanX: props.loanX, loanO: prop
         </div>
 
         <p v-if="view.withLoan.shortenedLabel" class="recommendation-funding-card__highlight">
-          대출을 활용하면 예상 도달 시점이 {{ view.withLoan.shortenedLabel }} 빨라져요
+          대출을 활용하면 예상 도달 시점이
+          <strong class="recommendation-funding-card__highlight-emphasis"
+            >{{ view.withLoan.shortenedLabel }} 빨라져요</strong
+          >
         </p>
 
         <p class="recommendation-funding-card__note">
@@ -95,7 +98,7 @@ const view = computed(() => toFundingViewModel({ loanX: props.loanX, loanO: prop
 }
 
 .recommendation-funding-card__label {
-  margin: 0 0 12px;
+  margin: 0 0 10px;
   font-size: 13px;
   font-weight: 700;
   color: var(--color-text-secondary, #9aa09a);
@@ -107,22 +110,29 @@ const view = computed(() => toFundingViewModel({ loanX: props.loanX, loanO: prop
 }
 
 .recommendation-funding-card__section-title {
-  margin: 0 0 12px;
+  margin: 0 0 10px;
   font-size: 15px;
   font-weight: 700;
   color: var(--color-text-primary, #ffffff);
 }
 
 .recommendation-funding-card__row-label {
+  /* "대출 없이" 영역에서는 이 라벨이 <p>라 브라우저 기본 문단 여백이 붙어, 같은 라벨이
+     <span>으로 쓰이는 "대출을 활용하면" 영역보다 섹션 제목과 더 떨어져 보였다.
+     margin을 0으로 고정해 두 영역의 간격을 section-title의 margin-bottom(12px)로 통일한다. */
+  margin: 0;
   font-size: 12px;
   font-weight: 600;
   color: var(--color-text-secondary, #9aa09a);
 }
 
+/* "왜 이 금액이 필요한지"의 결론은 준비 금액 계산 카드(RecommendationAmountBreakdownCard)가
+   이미 보여주므로, 여기서 같은 금액을 다시 크게 반복하지 않는다. 값은 유지하되 한 단계만
+   줄여서 이 카드의 핵심(예상 도달 시점·월 저축)보다 위계가 낮아지도록 한다. */
 .recommendation-funding-card__amount {
-  margin: 4px 0 16px;
-  font-size: 24px;
-  font-weight: 800;
+  margin: 4px 0 14px;
+  font-size: 20px;
+  font-weight: 700;
   color: var(--color-text-primary, #ffffff);
 }
 
@@ -132,14 +142,14 @@ const view = computed(() => toFundingViewModel({ loanX: props.loanX, loanO: prop
 }
 
 .recommendation-funding-card__stats--gap {
-  margin-top: 12px;
+  margin-top: 10px;
 }
 
 .recommendation-funding-card__stat {
   display: flex;
   flex: 1 1 0;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
   min-width: 0;
 }
 
@@ -156,12 +166,12 @@ const view = computed(() => toFundingViewModel({ loanX: props.loanX, loanO: prop
 /* BaseDivider 기본값은 테마를 안 타는 legacy 변수(--border)라 라이트 모드에서 너무 짙게
    보인다. 마이페이지(.my-page-view__row)와 같은 테마별 톤(--color-border)으로 맞춘다. */
 .recommendation-funding-card__divider {
-  margin: 20px 0;
+  margin: 17px 0;
   background: var(--color-border, #262626);
 }
 
 .recommendation-funding-card__highlight {
-  margin: 16px 0 0;
+  margin: 14px 0 0;
   padding: 12px 14px;
   border-radius: 12px;
   background: var(--color-primary-soft, #e8f4ea);
@@ -171,8 +181,14 @@ const view = computed(() => toFundingViewModel({ loanX: props.loanX, loanO: prop
   line-height: 1.4;
 }
 
+/* 강조 box 안에서도 "얼마나 빨라지는지"가 핵심이라, 그 부분만 한 단계 더 굵게 한다.
+   새 색상/배경 없이 font-weight만으로 구분한다. */
+.recommendation-funding-card__highlight-emphasis {
+  font-weight: 800;
+}
+
 .recommendation-funding-card__note {
-  margin: 12px 0 0;
+  margin: 10px 0 0;
   font-size: 12px;
   color: var(--color-text-secondary, #9aa09a);
 }
