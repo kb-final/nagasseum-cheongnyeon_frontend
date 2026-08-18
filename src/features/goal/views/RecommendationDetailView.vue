@@ -104,6 +104,7 @@ function goToRecommendations() {
           v-if="basisView"
           :title="basisView.title"
           :description="basisView.description"
+          :description-emphasis="basisView.descriptionEmphasis"
           :rows="basisView.rows"
           :timeline="basisView.timeline"
         />

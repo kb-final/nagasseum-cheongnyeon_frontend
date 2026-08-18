@@ -44,7 +44,7 @@ const DEFAULT_TARGET_DATE_LABEL = '예상 도달 시점'
 const RECOMMENDATION_DESCRIPTION_MAP = {
   PREFERENCE: '희망 조건의 실거래 수준과 필요한 준비 금액을 확인해보세요.',
   REALISTIC: '목표 시점까지 준비 가능한 금액 안에서 주거 조건을 찾았어요.',
-  HOLD_OUT: '주거 조건은 유지하고 필요한 준비 기간을 계산했어요.',
+  HOLD_OUT: '주거 조건을 유지했을 때 필요한 준비 기간을 계산했어요.',
 }
 
 // API 배열을 화면에 표시할 순서로 정렬한다. 정의된 type 우선순위 뒤로는 원래 순서를 유지한다.
@@ -191,10 +191,11 @@ export function toBasisViewModel(recommendation, commonTargetDate) {
 
     return {
       title: '준비 기간은 이렇게 달라져요',
-      description:
-        extraMonths > 0
-          ? `주거 조건을 유지하면 기존 목표 시점보다 약 ${formatMonthsToYearsKo(extraMonths)}의 준비 기간이 더 필요해요.`
-          : null,
+      description: extraMonths > 0 ? '주거 조건을 유지하면 기준 목표 시점보다' : null,
+      // "N년 M개월 더 필요해요" 부분만 별도로 돌려주면 컴포넌트가 그 부분만 굵게 강조한다
+      // (HOLD_OUT에서 가장 먼저 읽혀야 하는 핵심 결과라 문장 안에서 시각적 우선순위를 높인다).
+      descriptionEmphasis:
+        extraMonths > 0 ? `${formatMonthsToYearsKo(extraMonths)} 더 필요해요.` : null,
       rows: [],
       timeline: commonTargetDate
         ? {

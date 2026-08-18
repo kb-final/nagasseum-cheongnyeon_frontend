@@ -520,6 +520,15 @@ export function buildMockRecommendationResult() {
           targetDate: '2040-06',
           monthlySaving: 1000000,
         },
+        // HOLD_OUT도 대출 활용 시나리오를 화면에서 확인할 수 있도록 loanO를 추가했다.
+        // (원래 명세서 예시에는 없던 항목 — PREFERENCE/REALISTIC과 같은 형식으로 채웠다.)
+        loanO: {
+          loanAmount: 90000000,
+          targetAmount: 210000000,
+          targetDate: '2034-08',
+          monthlySaving: 1000000,
+          shortenedMonths: 70,
+        },
       },
     ],
   }
