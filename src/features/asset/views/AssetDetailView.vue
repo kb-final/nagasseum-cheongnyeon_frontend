@@ -1,14 +1,28 @@
 <script setup>
-import { onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 import AppHeader from '@/shared/components/molecules/AppHeader.vue'
+import BaseButton from '@/shared/components/atoms/base/button/BaseButton.vue'
+import BaseModal from '@/shared/components/atoms/feedback/Modal/BaseModal.vue'
+import BaseInputField from '@/shared/components/molecules/BaseInputField.vue'
 import BaseSkeleton from '@/shared/components/atoms/feedback/Skeleton/BaseSkeleton.vue'
+import { formatNumber } from '@/shared/utils/formatter'
 
 import AssetTotalCard from '@/features/asset/components/AssetTotalCard.vue'
 import AssetInventoryGrid from '@/features/asset/components/AssetInventoryGrid.vue'
 import AssetDebtBanner from '@/features/asset/components/AssetDebtBanner.vue'
 import { useAssetStore } from '@/features/asset/store/assetStore'
+
+// 온보딩의 보증금 입력(DepositInfoView)과 같은 상한. 두 화면이 같은 값을 다루므로 맞춘다.
+const MAX_AMOUNT = 10 ** 18
+
+/*
+  새로 등록할 때 쓰는 자산 종류. 지금 수동 자산은 전월세 보증금 하나뿐이라 고정값이다
+  (assetStore의 MANUAL_ASSET_TYPE_LABELS도 DEPOSIT 하나만 갖고 있다).
+  종류가 늘어나면 이 값 대신 선택 단계가 필요해진다.
+*/
+const DEPOSIT_ASSET_TYPE = 'DEPOSIT'
 
 const router = useRouter()
 const assetStore = useAssetStore()
@@ -16,6 +30,104 @@ const assetStore = useAssetStore()
 onMounted(() => {
   if (!assetStore.assetDetail) assetStore.fetchAssetDetail()
 })
+
+/*
+  직접 등록한 자산(보증금 등) 수정 팝업.
+
+  가입 때 한 번 입력하면 고칠 곳이 없다는 QA 지적을 받아, 그 금액이 실제로 보이는 자리인
+  인벤토리 타일에서 바로 열도록 했다. 값이 null이면 팝업이 닫힌 상태다.
+*/
+const isEditorOpen = ref(false)
+// 고칠 대상. null이면 새로 등록하는 중이다.
+const editingAsset = ref(null)
+// 화면에는 콤마를 넣어 보여주고, 서버에는 숫자만 보낸다 (DepositInfoView와 같은 방식).
+const amountInput = ref('')
+const isSaving = ref(false)
+// 삭제는 되돌릴 수 없어 한 번 더 묻는다. 팝업을 겹쳐 띄우면 뒤로가기 동작이 꼬여서
+// 같은 팝업 안에서 확인 단계로 전환한다.
+const isConfirmingDelete = ref(false)
+const errorMessage = ref('')
+
+const numericAmount = computed(() => Number(amountInput.value.replace(/,/g, '')) || 0)
+// 0원은 "자산이 없다"는 뜻이라 삭제로 처리해야 맞다. 저장으로는 막는다.
+const canSave = computed(() => !isSaving.value && numericAmount.value > 0)
+
+const modalTitle = computed(() => {
+  if (isConfirmingDelete.value) return '삭제할까요?'
+  return editingAsset.value?.name ?? '현재 거주 보증금'
+})
+
+function openEditor(asset) {
+  editingAsset.value = asset
+  amountInput.value = formatNumber(asset.amount ?? 0)
+  isConfirmingDelete.value = false
+  errorMessage.value = ''
+  isEditorOpen.value = true
+}
+
+function openCreator() {
+  editingAsset.value = null
+  // 등록은 빈 칸에서 시작한다. 0을 채워두면 지우고 쓰는 손이 한 번 더 간다.
+  amountInput.value = ''
+  isConfirmingDelete.value = false
+  errorMessage.value = ''
+  isEditorOpen.value = true
+}
+
+function closeEditor() {
+  // 저장·삭제 요청이 날아가는 중에 닫으면 결과를 알릴 곳이 없어진다.
+  if (isSaving.value) return
+  isEditorOpen.value = false
+}
+
+function handleAmountInput(value) {
+  const digits = String(value).replace(/\D/g, '')
+  amountInput.value = digits ? formatNumber(Math.min(Number(digits), MAX_AMOUNT)) : ''
+}
+
+async function handleSave() {
+  if (!canSave.value) return
+
+  isSaving.value = true
+  errorMessage.value = ''
+
+  try {
+    // 두 액션 모두 끝나면 스토어가 fetchAssetDetail로 목록까지 다시 불러온다.
+    if (editingAsset.value) {
+      await assetStore.editManualAsset(editingAsset.value.manualId, {
+        assetType: editingAsset.value.assetType,
+        amount: numericAmount.value,
+      })
+    } else {
+      await assetStore.addManualAsset({
+        assetType: DEPOSIT_ASSET_TYPE,
+        amount: numericAmount.value,
+      })
+    }
+    isEditorOpen.value = false
+  } catch (error) {
+    errorMessage.value =
+      error.response?.data?.error?.message ?? '저장에 실패했어요. 잠시 후 다시 시도해주세요.'
+  } finally {
+    isSaving.value = false
+  }
+}
+
+async function handleDelete() {
+  isSaving.value = true
+  errorMessage.value = ''
+
+  try {
+    await assetStore.removeManualAsset(editingAsset.value.manualId)
+    isEditorOpen.value = false
+  } catch (error) {
+    errorMessage.value =
+      error.response?.data?.error?.message ?? '삭제에 실패했어요. 잠시 후 다시 시도해주세요.'
+    isConfirmingDelete.value = false
+  } finally {
+    isSaving.value = false
+  }
+}
 </script>
 
 <template>
@@ -37,6 +149,8 @@ onMounted(() => {
       <AssetInventoryGrid
         :institutions="assetStore.assetDetail.institutions"
         :manual-assets="assetStore.assetDetail.manualAssets"
+        @edit="openEditor"
+        @add="openCreator"
       />
 
       <AssetDebtBanner :loans="assetStore.assetDetail.loans" />
@@ -51,6 +165,69 @@ onMounted(() => {
     <p v-else-if="assetStore.detailError" class="asset-detail-view__error">
       자산 정보를 불러오지 못했어요.
     </p>
+
+    <!--
+      BaseModal은 body로 teleport되므로 이 화면이 들고 있는 --c-* 변수가 닿지 않는다.
+      팝업 안에서는 공용 테마 토큰(--color-*)과 공용 컴포넌트만 쓴다.
+    -->
+    <BaseModal :model-value="isEditorOpen" :title="modalTitle" @update:model-value="closeEditor">
+      <div class="asset-detail-view__modal">
+        <p v-if="isConfirmingDelete" class="asset-detail-view__modal-text">
+          {{ editingAsset?.name }} 항목이 자산 목록에서 사라져요. 총자산 계산에서도 빠집니다.
+        </p>
+
+        <template v-else>
+          <BaseInputField
+            :model-value="amountInput"
+            label="금액"
+            type="text"
+            placeholder="0"
+            @update:model-value="handleAmountInput"
+          >
+            <template #suffix>원</template>
+          </BaseInputField>
+
+          <!-- 아직 없는 자산은 지울 수 없다. 등록 모드에서는 감춘다. -->
+          <button
+            v-if="editingAsset"
+            type="button"
+            class="asset-detail-view__modal-delete"
+            :disabled="isSaving"
+            @click="isConfirmingDelete = true"
+          >
+            이 자산 삭제하기
+          </button>
+        </template>
+
+        <p v-if="errorMessage" class="asset-detail-view__modal-error">{{ errorMessage }}</p>
+      </div>
+
+      <template #footer>
+        <template v-if="isConfirmingDelete">
+          <BaseButton
+            variant="secondary"
+            size="modal"
+            :disabled="isSaving"
+            @click="isConfirmingDelete = false"
+          >
+            취소
+          </BaseButton>
+          <BaseButton variant="primary" size="modal" :disabled="isSaving" @click="handleDelete">
+            {{ isSaving ? '삭제 중...' : '삭제' }}
+          </BaseButton>
+        </template>
+
+        <template v-else>
+          <BaseButton variant="secondary" size="modal" :disabled="isSaving" @click="closeEditor">
+            취소
+          </BaseButton>
+          <BaseButton variant="primary" size="modal" :disabled="!canSave" @click="handleSave">
+            <template v-if="isSaving">{{ editingAsset ? '저장 중...' : '등록 중...' }}</template>
+            <template v-else>{{ editingAsset ? '저장' : '등록' }}</template>
+          </BaseButton>
+        </template>
+      </template>
+    </BaseModal>
   </div>
 </template>
 
@@ -193,6 +370,67 @@ onMounted(() => {
   background: var(--c-danger-soft);
   color: var(--c-danger);
   font-size: 11px;
+  line-height: 1.5;
+}
+
+/*
+  아래 규칙들은 teleport된 팝업 안에서 쓰인다. slot 안의 노드는 이 컴포넌트가 만든 것이라
+  scoped 스타일이 그대로 붙지만, 이 화면 루트(.asset-detail-view)의 --c-* 변수는
+  body로 옮겨간 팝업까지 상속되지 않으므로 공용 테마 토큰만 쓴다.
+*/
+
+/*
+  BaseInputField·BaseFieldBadge·BaseInput은 테마를 안 타는 legacy 변수
+  (--text-h / --text / --border)를 쓴다. 정의가 없으면 폴백이 흰색(#ffffff)이라
+  라이트 모드의 밝은 팝업 배경에서 라벨이 안 보인다. 공용 컴포넌트를 고치는 대신
+  이 팝업 안에서만 시맨틱 토큰으로 바꿔 끼운다(GoalConditionStepsView와 같은 방식).
+*/
+.asset-detail-view__modal {
+  --text-h: var(--color-text-primary);
+  --text: var(--color-text-secondary);
+  --border: var(--color-border);
+  --card-bg: var(--color-surface);
+}
+
+/*
+  필수/선택 배지를 감춘다. 이 팝업에는 입력이 금액 하나뿐이라 무엇과 구분하라는 표시인지
+  알 수 없고, 비우면 저장 버튼이 이미 비활성화되어 배지가 더 알려주는 것이 없다.
+  BaseInputField는 라벨이 있으면 배지를 항상 붙이고 끄는 prop이 없어서, 공용 컴포넌트를
+  고치는 대신 이 팝업 안에서만 감춘다.
+*/
+.asset-detail-view__modal :deep(.base-field-badge) {
+  display: none;
+}
+
+.asset-detail-view__modal-text {
+  margin: 0;
+  color: var(--color-text-secondary, #9aa09a);
+  font-size: 13.2px;
+  line-height: 1.6;
+}
+
+.asset-detail-view__modal-delete {
+  margin-top: 14px;
+  padding: 6px 0;
+  border: none;
+  background: none;
+  color: var(--color-point, #c1442e);
+  font: inherit;
+  font-size: 13.2px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.asset-detail-view__modal-delete:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.asset-detail-view__modal-error {
+  margin: 12px 0 0;
+  color: var(--color-point, #c1442e);
+  font-size: 12px;
   line-height: 1.5;
 }
 </style>
