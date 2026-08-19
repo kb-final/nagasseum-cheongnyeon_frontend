@@ -140,13 +140,8 @@ function handleSkip() {
 }
 
 .deposit-info-view__suffix {
-  position: absolute;
-  top: 50%;
-  right: 16px;
-  transform: translateY(-50%);
   color: var(--color-text-secondary);
   font-size: 14px;
-  pointer-events: none;
 }
 
 .deposit-info-view__footer {

@@ -11,6 +11,7 @@ import GoalRegionStep from '@/features/goal/components/steps/GoalRegionStep.vue'
 import GoalChoiceStep from '@/features/goal/components/steps/GoalChoiceStep.vue'
 import GoalRangeStep from '@/features/goal/components/steps/GoalRangeStep.vue'
 import GoalTargetDateStep from '@/features/goal/components/steps/GoalTargetDateStep.vue'
+import GoalMonthlySavingStep from '@/features/goal/components/steps/GoalMonthlySavingStep.vue'
 import GoalRecommendationLoading from '@/features/goal/components/steps/GoalRecommendationLoading.vue'
 import { useGoalConditionSteps } from '@/features/goal/composables/useGoalConditionSteps'
 import { useGoalStore } from '@/features/goal/store/goalStore'
@@ -66,6 +67,10 @@ async function submit() {
     phase.value = 'error'
     return
   }
+
+  // 진단을 마치고 결과 화면으로 "처음" 넘어가는 순간에만 세운다 — 결과 화면이 마운트 시
+  // 이 값을 한 번 읽고 바로 꺼서, 상세 화면을 오가는 재진입에서는 인트로가 다시 재생되지 않는다.
+  goalStore.playResultIntro = true
 
   try {
     await router.push({ name: RESULT_ROUTE_NAME })
@@ -125,6 +130,11 @@ function handleSkip() {
               :format-value="currentStep.formatValue"
             />
 
+            <GoalMonthlySavingStep
+              v-else-if="currentStep.kind === 'amount'"
+              v-model="form.monthlySaving"
+            />
+
             <GoalTargetDateStep v-else v-model="form.targetDate" />
           </GoalStepFrame>
         </Transition>
@@ -137,9 +147,13 @@ function handleSkip() {
         <!--
           건너뛸 수 없는 단계에서도 자리는 남겨둔다. 버튼이 생겼다 사라지면 '다음' 버튼의
           세로 위치가 단계마다 흔들려서, 연속으로 누를 때 엉뚱한 곳을 누르게 된다.
+
+          마지막 단계에서 이 버튼은 단순히 다음으로 넘어가는 것이 아니라 곧바로 제출까지 한다
+          (handleSkip -> skip()이 true -> submit()). '건너뛸게요'로만 두면 다음 화면이 하나 더
+          남은 것처럼 읽혀서, 문구로 제출임을 드러낸다.
         -->
         <button v-if="canSkip" type="button" class="goal-steps-view__skip" @click="handleSkip">
-          이 조건은 건너뛸게요
+          {{ isLastStep ? '이 조건 건너뛰고 목표 찾기' : '이 조건은 건너뛸게요' }}
         </button>
         <span v-else class="goal-steps-view__skip-placeholder" />
       </div>

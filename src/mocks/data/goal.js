@@ -428,108 +428,160 @@ export function buildMockRecommendations(payload) {
 // GET /api/v1/goals/recommendation 응답 mock (진단 결과 화면 전용)
 //
 // 조건 입력 단계(recommendations, 쿼리 조건 기반)와 달리 memberId(인증 토큰)만으로 이미 계산된
-// 추천 결과를 돌려받는 엔드포인트라 조건을 입력받지 않는다. 필드 구성·값은 명세서 예시
-// (PREFERENCE/REALISTIC)를 그대로 옮기고, 명세서에 없던 HOLD_OUT만 같은 형식으로 채워 넣었다.
-//
-// area는 이제 ㎡가 아니라 평 단위로 내려온다고 가정한다. currentAvailableAmount/monthlySaving/
-// targetDate는 recommendations 배열 밖의 공통 진단 기준이며, condition.marketMedianAmount와
-// REALISTIC의 reachableAmountAtTargetDate는 아직 백엔드 응답에 없을 수 있는 필드라 이 mock에서만
-// 명세서 예시값(현재 활용 가능 자금 5,000만 원 · 목표 시점 2034-12 · REALISTIC 실거래 중앙값
-// 1억 5,000만 원)에 맞춰 채워 넣었다 — 실제 값은 없으면 화면이 해당 영역을 자동으로 숨긴다.
+// 추천 결과를 돌려받는 엔드포인트라 조건을 입력받지 않는다. 필드 구성은 실제 백엔드 응답
+// 예시를 그대로 옮긴 것이다(2026-08-19 확인):
+// - originalPreference: 진단 시 사용자가 입력한 원래 희망 조건 + 목표 시점/월 저축액.
+//   targetDate는 사용자가 목표 시점을 입력하지 않았으면 null일 수 있다 — 이때는
+//   recommendations에 PREFERENCE_DATE_FIXED 자체가 없다(아래
+//   buildMockRecommendationResultWithoutDateFixed 참고).
+// - recommendations[].type: PREFERENCE_SAVING_FIXED(월 저축 고정) / PREFERENCE_DATE_FIXED
+//   (목표 시점 고정, 없을 수 있음) / REALISTIC / HOLD_OUT 4종.
 // ─────────────────────────────────────────────────────────────────────────────
 export function buildMockRecommendationResult() {
   return {
-    currentAvailableAmount: 50000000,
-    monthlySaving: 1000000,
-    targetDate: '2034-12',
+    originalPreference: {
+      condition: {
+        regionCode: '11290',
+        regionName: '서울특별시 성북구',
+        housingType: 'APT',
+        dealType: 'JEONSE',
+        areaMin: null,
+        areaMax: null,
+        depositMin: null,
+        depositMax: null,
+        monthlyRentMin: null,
+        monthlyRentMax: null,
+      },
+      targetDate: '2031-08',
+      monthlySaving: 500000,
+    },
     recommendations: [
       {
-        type: 'PREFERENCE',
-        title: '내가 원하는 조건 그대로',
-        reason: '선택하신 마포구 아파트 전세 기준 중앙값입니다.',
+        type: 'PREFERENCE_SAVING_FIXED',
         condition: {
-          regionCode: '11440',
-          regionName: '서울 마포구',
+          regionCode: '11290',
+          regionName: '서울특별시 성북구',
           housingType: 'APT',
           dealType: 'JEONSE',
-          areaMin: 10,
-          areaMax: 20,
+          areaMin: 15,
+          areaMax: 19,
+          depositMin: 0,
+          depositMax: 100000000000,
           monthlyRent: 0,
-          marketMedianAmount: 350000000,
-          sampleCount: 142,
+          sampleCount: 814,
+          marketMedianAmount: 632104997,
         },
         loanX: {
-          targetAmount: 300000000,
+          targetAmount: 632104997,
           targetDate: '2051-08',
-          monthlySaving: 1000000,
+          monthlySaving: 500000,
         },
         loanO: {
           loanAmount: 80000000,
-          targetAmount: 220000000,
+          targetAmount: 552104997,
           targetDate: '2044-12',
-          monthlySaving: 1000000,
+          monthlySaving: 500000,
           shortenedMonths: 80,
         },
       },
       {
-        type: 'REALISTIC',
-        title: '지금 소득으로 현실적인 선택',
-        reason: '현재 소득 수준에서 10년 내 달성 가능한 조건을 찾았습니다.',
+        type: 'PREFERENCE_DATE_FIXED',
         condition: {
-          regionCode: '41135',
-          regionName: '경기 수원시 영통구',
+          regionCode: '11290',
+          regionName: '서울특별시 성북구',
           housingType: 'APT',
           dealType: 'JEONSE',
           areaMin: 15,
-          areaMax: 20,
+          areaMax: 19,
+          depositMin: 0,
+          depositMax: 100000000000,
           monthlyRent: 0,
-          marketMedianAmount: 150000000,
-          sampleCount: 389,
+          sampleCount: 814,
+          marketMedianAmount: 632104997,
         },
-        reachableAmountAtTargetDate: 150000000,
         loanX: {
-          targetAmount: 100000000,
-          targetDate: '2034-12',
-          monthlySaving: 1000000,
+          targetAmount: 632104997,
+          targetDate: '2031-08',
+          monthlySaving: 5200000,
+        },
+        loanO: {
+          loanAmount: 80000000,
+          targetAmount: 552104997,
+          targetDate: '2031-08',
+          monthlySaving: 3900000,
+          shortenedMonths: 0,
+        },
+      },
+      {
+        type: 'REALISTIC',
+        condition: {
+          regionCode: '11290',
+          regionName: '서울특별시 성북구',
+          housingType: 'APT',
+          dealType: 'JEONSE',
+          areaMin: 4,
+          areaMax: 9,
+          depositMin: 0,
+          depositMax: 100000000000,
+          monthlyRent: 0,
+          sampleCount: 5,
+          marketMedianAmount: 170000000,
+        },
+        loanX: {
+          targetAmount: 170000000,
+          targetDate: '2028-08',
+          monthlySaving: 0,
         },
         loanO: {
           loanAmount: 70000000,
-          targetAmount: 30000000,
-          targetDate: '2029-02',
-          monthlySaving: 1000000,
-          shortenedMonths: 70,
+          targetAmount: 100000000,
+          targetDate: '2027-02',
+          monthlySaving: 0,
+          shortenedMonths: 18,
         },
       },
       {
         type: 'HOLD_OUT',
-        title: '조금 더 모으면 갈 수 있는 곳',
-        reason: '조건을 그대로 두고 시점만 늘렸을 때 도달 가능한 목표예요.',
         condition: {
-          regionCode: '11440',
-          regionName: '서울 마포구',
+          regionCode: '11290',
+          regionName: '서울특별시 성북구',
           housingType: 'APT',
           dealType: 'JEONSE',
           areaMin: 10,
-          areaMax: 20,
+          areaMax: 14,
+          depositMin: 0,
+          depositMax: 100000000000,
           monthlyRent: 0,
-          marketMedianAmount: 350000000,
-          sampleCount: 142,
+          sampleCount: 91,
+          marketMedianAmount: 262500000,
         },
         loanX: {
-          targetAmount: 300000000,
-          targetDate: '2040-06',
-          monthlySaving: 1000000,
+          targetAmount: 262500000,
+          targetDate: '2030-08',
+          monthlySaving: 500000,
         },
-        // HOLD_OUT도 대출 활용 시나리오를 화면에서 확인할 수 있도록 loanO를 추가했다.
-        // (원래 명세서 예시에는 없던 항목 — PREFERENCE/REALISTIC과 같은 형식으로 채웠다.)
         loanO: {
-          loanAmount: 90000000,
-          targetAmount: 210000000,
-          targetDate: '2034-08',
-          monthlySaving: 1000000,
-          shortenedMonths: 70,
+          loanAmount: 80000000,
+          targetAmount: 182500000,
+          targetDate: '2028-10',
+          monthlySaving: 500000,
+          shortenedMonths: 22,
         },
       },
     ],
+  }
+}
+
+// 목표 시점을 입력하지 않고 진단한 경우의 응답 mock. 이때는 PREFERENCE_DATE_FIXED
+// recommendation 자체가 응답에 없다 — 결과 화면의 "희망 조건을 기준으로" 영역에 카드가 1개만
+// 있어도 빈 자리 없이 자연스럽게 이어지는지 확인할 때 쓴다. mockGoalNotFoundResponse와 같은
+// 방식으로, 기본으로 연결돼 있지는 않으니 확인하려면 goalHandlers.js의
+// GET /goals/recommendation 핸들러에서 buildMockRecommendationResult 대신 이 함수를 임시로
+// 호출해보면 된다.
+export function buildMockRecommendationResultWithoutDateFixed() {
+  const base = buildMockRecommendationResult()
+  return {
+    originalPreference: { ...base.originalPreference, targetDate: null },
+    recommendations: base.recommendations.filter((item) => item.type !== 'PREFERENCE_DATE_FIXED'),
   }
 }

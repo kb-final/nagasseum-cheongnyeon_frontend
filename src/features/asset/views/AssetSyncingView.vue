@@ -2,6 +2,8 @@
 import { onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 
+import BaseClimbingLoader from '@/shared/components/atoms/feedback/ClimbingLoader/BaseClimbingLoader.vue'
+
 import { FLOW_CONTEXT, useAssetStore } from '@/features/asset/store/assetStore'
 
 const SYNC_DISPLAY_DURATION_MS = 1800
@@ -35,8 +37,8 @@ onUnmounted(() => {
 
 <template>
   <div class="asset-syncing-view">
-    <div class="asset-syncing-view__spinner" />
-    <h2 class="asset-syncing-view__title">고도를 측정하고 있어요</h2>
+    <BaseClimbingLoader />
+    <h2 class="asset-syncing-view__title">베이스캠프를 차리고 있어요</h2>
     <p class="asset-syncing-view__subtitle">연동한 기관의 자산 정보를 안전하게 받아오고 있어요</p>
   </div>
 </template>
@@ -54,16 +56,6 @@ onUnmounted(() => {
   text-align: center;
 }
 
-.asset-syncing-view__spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid var(--color-toggle-off, #383e3a);
-  /* 연민트는 밝은 배경에서 1.07:1이라 회전하는 게 안 보인다. */
-  border-top-color: var(--color-heading-accent);
-  border-radius: 50%;
-  animation: asset-syncing-spin 0.8s linear infinite;
-}
-
 .asset-syncing-view__title {
   margin: 0;
   font-size: 15.9px;
@@ -75,11 +67,5 @@ onUnmounted(() => {
   margin: 0;
   font-size: 13.1px;
   color: var(--color-text-secondary);
-}
-
-@keyframes asset-syncing-spin {
-  to {
-    transform: rotate(360deg);
-  }
 }
 </style>

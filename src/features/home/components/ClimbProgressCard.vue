@@ -5,7 +5,7 @@ import BaseCard from '@/shared/components/atoms/base/card/BaseCard.vue'
 import { formatManwon } from '@/shared/utils/formatter'
 
 import climbBackground from '@/assets/images/climb-bg.png'
-import climberImage from '@/assets/images/climber.png'
+import { useAvatar } from '@/shared/composables/useAvatar'
 
 /**
  * 목표가 없으면 climb·goal이 null로 온다. 그때도 일러스트는 그대로 보여주고
@@ -17,6 +17,9 @@ const props = defineProps({
 })
 
 defineEmits(['create-goal'])
+
+// 산을 오르는 캐릭터는 회원이 고른 프로필 캐릭터와 같아야 한다
+const { avatarSrc } = useAvatar()
 
 const hasGoal = computed(() => Boolean(props.goal && props.climb))
 
@@ -138,7 +141,7 @@ const segments = computed(() =>
       <img class="climb-card__bg" :src="climbBackground" alt="" />
 
       <div class="climb-card__climber" :style="climberPosition">
-        <img class="climb-card__climber-img" :src="climberImage" alt="" />
+        <img class="climb-card__climber-img" :src="avatarSrc" alt="" />
       </div>
     </div>
 

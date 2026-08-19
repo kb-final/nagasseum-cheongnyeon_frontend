@@ -87,7 +87,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div v-if="assetStore.currentInstitution" class="asset-auth-view">
+  <div v-if="assetStore.currentInstitution" class="asset-auth-view asset-auth-view--animated">
     <AppHeader :title="`${assetStore.currentInstitution.name} 인증`" @back="router.back()" />
     <BaseBreadcrumb class="asset-auth-view__steps" :steps="ONBOARDING_STEPS" :current="3" />
 
@@ -204,6 +204,22 @@ onMounted(() => {
 
 .asset-auth-view__steps {
   align-self: center;
+}
+
+.asset-auth-view--animated > * {
+  animation: card-rise 0.35s ease-out both;
+}
+
+.asset-auth-view--animated > *:nth-child(2) {
+  animation-delay: 0.04s;
+}
+
+.asset-auth-view--animated > *:nth-child(3) {
+  animation-delay: 0.08s;
+}
+
+.asset-auth-view--animated > *:nth-child(4) {
+  animation-delay: 0.12s;
 }
 
 .asset-auth-view__body {
