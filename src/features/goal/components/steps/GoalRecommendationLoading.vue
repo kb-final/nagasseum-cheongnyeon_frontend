@@ -69,10 +69,23 @@ onBeforeUnmount(() => {
 }
 
 .goal-recommendation-loading__climber {
+  /*
+    climber.png는 1086x1448(세로로 긴 3:4) 이미지다. 예전 96x96 정사각 스프라이트 시절의
+    56x56 고정값을 그대로 두면 3:4 그림을 1:1 상자에 욱여넣게 되어 위아래로 눌린다.
+    가로만 정하고 세로는 비율대로 따라오게 둔다(홈 ClimbProgressCard와 같은 처리).
+  */
   width: 56px;
-  height: 56px;
-  /* 픽셀 아트라 확대 시 보간되지 않도록 원본 화질을 유지한다 (BaseDualRangeSlider와 같은 처리) */
-  image-rendering: pixelated;
+  height: auto;
+  /*
+    flex-direction:column 컨테이너 안에서는 세로가 main axis라, 공간이 모자라면
+    flex-shrink 기본값(1)에 걸려 세로만 더 줄어든다. 축소 대상에서 뺀다.
+  */
+  flex-shrink: 0;
+  /*
+    image-rendering: pixelated는 원본을 확대할 때 쓰는 값이다. 지금은 1448px을 약 75px로
+    줄이는 축소라, 최근접 보간이 픽셀 행/열을 불규칙하게 버려 오히려 계단이 생긴다.
+    브라우저 기본 보간에 맡긴다.
+  */
   animation: goal-loading-hop 0.9s ease-in-out infinite;
 }
 
