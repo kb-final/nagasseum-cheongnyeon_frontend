@@ -7,7 +7,7 @@ import BaseButton from '@/shared/components/atoms/base/button/BaseButton.vue'
 import BaseFieldBadge from '@/shared/components/atoms/base/badge/BaseFieldBadge.vue'
 import BaseInputField from '@/shared/components/molecules/BaseInputField.vue'
 import BaseOptionCardGroup from '@/shared/components/atoms/form/OptionCardGroup/BaseOptionCardGroup.vue'
-import BaseProfileIcon from '@/shared/components/atoms/base/icon/BaseProfileIcon.vue'
+import climberImage from '@/assets/images/climber.png'
 import { INCOME_BRACKET_OPTIONS } from '@/shared/constants/incomeBracket'
 import { OCCUPATION_OPTIONS } from '@/shared/constants/occupation'
 
@@ -73,7 +73,14 @@ async function handleSave() {
 
     <section class="edit-info-view__avatar-section">
       <div class="edit-info-view__avatar">
-        <BaseProfileIcon />
+        <!--
+          마이페이지 프로필과 같은 그림·같은 크롭을 쓴다. 잘라내는 원을 따로 두는 이유는,
+          바깥 .edit-info-view__avatar에 overflow: hidden을 걸면 아래 연필 배지까지
+          잘려나가기 때문이다.
+        -->
+        <span class="edit-info-view__avatar-clip">
+          <img class="edit-info-view__avatar-img" :src="climberImage" alt="" />
+        </span>
         <span class="edit-info-view__avatar-edit">
           <svg viewBox="0 0 16 16" width="9" height="9">
             <path
@@ -224,8 +231,32 @@ async function handleSave() {
   width: 84px;
   height: 84px;
   border-radius: 42px;
-  background: var(--accent, #e3ffe8);
-  color: var(--color-mint-deep, #16281c);
+  /* 마이페이지 프로필과 같은 배경. 라이트에서는 흰색, 다크에서는 어두운 카드색이 된다
+     (다크에서 흰 원은 화면에서 혼자 튄다). color는 사람 실루엣 아이콘을 쓰던 시절의
+     잔재라 함께 제거했다 — 지금 원 안의 그림은 이미지고, 연필 배지는 색을 따로 정한다. */
+  background: var(--color-surface, #161616);
+}
+
+.edit-info-view__avatar-clip {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  /* 부모와 같은 원형으로 잘라낸다 */
+  border-radius: inherit;
+  overflow: hidden;
+}
+
+/*
+  전신 그림에서 모자 위~가슴 구간만 확대해 보여준다. 세 값은 MyPageView와 같은 계산
+  결과이며, 컨테이너 크기에 대한 비율이라 원 지름이 달라도(84px) 그대로 쓸 수 있다.
+  계산식은 MyPageView.vue의 같은 자리 주석을 참고할 것.
+*/
+.edit-info-view__avatar-img {
+  position: absolute;
+  top: 4.6%;
+  left: -11.7%;
+  width: 123.4%;
+  height: auto;
 }
 
 .edit-info-view__avatar-edit {
