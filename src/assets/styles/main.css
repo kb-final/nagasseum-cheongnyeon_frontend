@@ -120,6 +120,10 @@ html {
   --climb-card-surface: #cdedd3;
   --climb-card-ink: #12281c;
   --climb-card-ink-muted: #6f8b79;
+  /* NEW QUEST 배지·"목표 설정하러 가기" 버튼 배경/글자 전용. climb-card-ink는 카드 제목
+     글자색으로도 같이 쓰여서 값을 못 바꾸므로 배지·버튼만 따로 뺐다. */
+  --climb-card-cta-bg: #12281c;
+  --climb-card-cta-text: #ffd939;
   --asset-tile-surface: #cdedd3;
   --asset-tile-label: #4f6f5b;
   --asset-tile-ink-muted: #6f8b79;
@@ -189,6 +193,8 @@ html {
   --climb-card-surface: #f6f3c4;
   --climb-card-ink: #12281c;
   --climb-card-ink-muted: #6f8b79;
+  --climb-card-cta-bg: #12281c;
+  --climb-card-cta-text: #ffd939;
   /* 등반 카드는 배경이 밝은 민트라, 목표 화면과 같은 진한 회색 빈 칸(--color-progress-inactive)을
      쓰면 카드 톤과 어울리지 않고 튄다. 카드 배경과 잘 섞이는 차분한 톤을 홈 전용으로 둔다. */
   --climb-card-progress-inactive: #e6e6b2;
@@ -235,6 +241,10 @@ html {
   --climb-card-surface: #f6f3c4;
   --climb-card-ink: #353934;
   --climb-card-ink-muted: #5b6358;
+  /* 다른 primary CTA(--base-button-primary-bg/text)와 같은 초록+흰 글씨 조합으로 맞춘다.
+     climb-card-ink(어두운 배경+노란 글씨)는 밝은 카드 위에서 튀어서 라이트에서만 바꾼다. */
+  --climb-card-cta-bg: #1d6b3f;
+  --climb-card-cta-text: #ffffff;
   --climb-card-progress-inactive: #e6e6b2;
   --asset-tile-surface: #ffffff;
   --asset-tile-label: #8f968c;

@@ -276,8 +276,8 @@ const segments = computed(() =>
   flex: none;
   padding: 3px 8px;
   border-radius: 999px;
-  background: var(--climb-card-ink, #12281c);
-  color: var(--color-accent, #ffd939);
+  background: var(--climb-card-cta-bg, #12281c);
+  color: var(--climb-card-cta-text, #ffd939);
   font-size: 10px;
   font-weight: 900;
   letter-spacing: 0.06em;
@@ -320,8 +320,8 @@ const segments = computed(() =>
   padding: 9px 0;
   border: none;
   border-radius: 999px;
-  background: var(--climb-card-ink, #12281c);
-  color: var(--color-accent, #ffd939);
+  background: var(--climb-card-cta-bg, #12281c);
+  color: var(--climb-card-cta-text, #ffd939);
   font: inherit;
   font-size: 13.5px;
   font-weight: 900;
