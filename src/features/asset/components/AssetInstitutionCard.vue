@@ -62,4 +62,8 @@ defineEmits(['toggle'])
   border-color: transparent;
   background: var(--color-heading-accent);
 }
+
+:root[data-theme='light'] .asset-institution-card__indicator--selected {
+  color: #ffffff;
+}
 </style>
