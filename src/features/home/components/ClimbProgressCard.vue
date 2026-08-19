@@ -28,17 +28,17 @@ const hasGoal = computed(() => Boolean(props.goal && props.climb))
  * 그 사이는 직선으로 잇는다.
  */
 const PATH = [
-  { at: 0, left: 49.9, top: 99.8 },
-  { at: 10, left: 56.1, top: 92.1 },
-  { at: 20, left: 62.3, top: 85.1 },
-  { at: 30, left: 60.2, top: 78.1 },
-  { at: 40, left: 56.1, top: 72.1 },
-  { at: 50, left: 49.9, top: 65.1 },
-  { at: 60, left: 43.8, top: 58.1 },
-  { at: 70, left: 37.6, top: 51.2 },
-  { at: 80, left: 35.5, top: 44.2 },
-  { at: 90, left: 41.7, top: 37.2 },
-  { at: 100, left: 47.9, top: 30.2 },
+  { at: 0, left: 44.5, top: 99.8 },
+  { at: 10, left: 47.1, top: 93.2 },
+  { at: 20, left: 52.5, top: 86.7 },
+  { at: 30, left: 58.5, top: 80.1 },
+  { at: 40, left: 61.3, top: 73.5 },
+  { at: 50, left: 57.8, top: 67.0 },
+  { at: 60, left: 49.5, top: 60.4 },
+  { at: 70, left: 43.4, top: 53.8 },
+  { at: 80, left: 50.7, top: 47.3 },
+  { at: 90, left: 54.4, top: 40.7 },
+  { at: 100, left: 49.9, top: 34.2 },
 ]
 
 const progress = computed(() =>
@@ -225,7 +225,7 @@ const segments = computed(() =>
 */
 .climb-card__climber {
   position: absolute;
-  width: 15%;
+  width: 13%;
   /* 발끝이 길에 닿아야 해서 아래쪽을 기준으로 잡는다. */
   transform: translate(-50%, -100%);
   /* 길을 따라 걸어 올라가는 움직임은 requestAnimationFrame으로 프레임마다 좌표를
