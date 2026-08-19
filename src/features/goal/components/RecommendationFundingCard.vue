@@ -9,12 +9,12 @@ const props = defineProps({
   loanX: { type: Object, required: true },
   // 대출 활용 플랜이 없는 recommendation도 있을 수 있어 필수값이 아니다.
   loanO: { type: Object, default: null },
-  // "대출 없이" 영역의 날짜 label이 type마다 달라(REALISTIC은 "목표 시점") 필요하다.
+  // "대출 없이" 영역의 구성이 PREFERENCE_DATE_FIXED만 달라 필요하다.
   type: { type: String, default: null },
 })
 
 const view = computed(() =>
-  toFundingViewModel({ loanX: props.loanX, loanO: props.loanO, type: props.type }),
+  toFundingViewModel({ type: props.type, loanX: props.loanX, loanO: props.loanO }),
 )
 </script>
 
@@ -25,23 +25,17 @@ const view = computed(() =>
     <section class="recommendation-funding-card__section">
       <h3 class="recommendation-funding-card__section-title">대출 없이</h3>
 
-      <p class="recommendation-funding-card__row-label">추가 준비 금액</p>
-      <p class="recommendation-funding-card__amount">{{ view.withoutLoan.targetAmountLabel }}</p>
+      <p class="recommendation-funding-card__row-label">{{ view.withoutLoan.primaryLabel }}</p>
+      <p class="recommendation-funding-card__amount">{{ view.withoutLoan.primaryValueLabel }}</p>
 
-      <div class="recommendation-funding-card__stats">
-        <div class="recommendation-funding-card__stat">
-          <span class="recommendation-funding-card__row-label">{{
-            view.withoutLoan.targetDateFieldLabel
-          }}</span>
-          <strong class="recommendation-funding-card__stat-value">{{
-            view.withoutLoan.targetDateLabel
-          }}</strong>
-        </div>
-        <div class="recommendation-funding-card__stat">
-          <span class="recommendation-funding-card__row-label">월 저축</span>
-          <strong class="recommendation-funding-card__stat-value">{{
-            view.withoutLoan.monthlySavingLabel
-          }}</strong>
+      <div v-if="view.withoutLoan.rows.length > 0" class="recommendation-funding-card__stats">
+        <div
+          v-for="row in view.withoutLoan.rows"
+          :key="row.label"
+          class="recommendation-funding-card__stat"
+        >
+          <span class="recommendation-funding-card__row-label">{{ row.label }}</span>
+          <strong class="recommendation-funding-card__stat-value">{{ row.value }}</strong>
         </div>
       </div>
     </section>
@@ -53,40 +47,36 @@ const view = computed(() =>
         <h3 class="recommendation-funding-card__section-title">대출을 활용하면</h3>
 
         <div class="recommendation-funding-card__stats">
-          <div class="recommendation-funding-card__stat">
-            <span class="recommendation-funding-card__row-label">추가 준비 금액</span>
-            <strong class="recommendation-funding-card__stat-value">{{
-              view.withLoan.targetAmountLabel
-            }}</strong>
-          </div>
-          <div class="recommendation-funding-card__stat">
-            <span class="recommendation-funding-card__row-label">예상 대출 금액</span>
-            <strong class="recommendation-funding-card__stat-value">{{
-              view.withLoan.loanAmountLabel
-            }}</strong>
-          </div>
-        </div>
-
-        <div class="recommendation-funding-card__stats recommendation-funding-card__stats--gap">
-          <div class="recommendation-funding-card__stat">
-            <span class="recommendation-funding-card__row-label">예상 도달 시점</span>
-            <strong class="recommendation-funding-card__stat-value">{{
-              view.withLoan.targetDateLabel
-            }}</strong>
-          </div>
-          <div class="recommendation-funding-card__stat">
-            <span class="recommendation-funding-card__row-label">월 저축</span>
-            <strong class="recommendation-funding-card__stat-value">{{
-              view.withLoan.monthlySavingLabel
-            }}</strong>
-          </div>
-        </div>
-
-        <p v-if="view.withLoan.shortenedLabel" class="recommendation-funding-card__highlight">
-          대출을 활용하면 예상 도달 시점이
-          <strong class="recommendation-funding-card__highlight-emphasis"
-            >{{ view.withLoan.shortenedLabel }} 빨라져요</strong
+          <div
+            v-for="row in view.withLoan.firstRow"
+            :key="row.label"
+            class="recommendation-funding-card__stat"
           >
+            <span class="recommendation-funding-card__row-label">{{ row.label }}</span>
+            <strong class="recommendation-funding-card__stat-value">{{ row.value }}</strong>
+          </div>
+        </div>
+
+        <div
+          v-if="view.withLoan.secondRow.length > 0"
+          class="recommendation-funding-card__stats recommendation-funding-card__stats--gap"
+        >
+          <div
+            v-for="row in view.withLoan.secondRow"
+            :key="row.label"
+            class="recommendation-funding-card__stat"
+          >
+            <span class="recommendation-funding-card__row-label">{{ row.label }}</span>
+            <strong class="recommendation-funding-card__stat-value">{{ row.value }}</strong>
+          </div>
+        </div>
+
+        <p v-if="view.withLoan.highlight" class="recommendation-funding-card__highlight">
+          {{ view.withLoan.highlight.prefix }}
+          <strong class="recommendation-funding-card__highlight-emphasis">{{
+            view.withLoan.highlight.emphasis
+          }}</strong>
+          {{ view.withLoan.highlight.suffix }}
         </p>
 
         <p class="recommendation-funding-card__note">
@@ -132,10 +122,8 @@ const view = computed(() =>
   color: var(--color-text-secondary, #9aa09a);
 }
 
-/* "왜 이 금액이 필요한지"의 결론은 준비 금액 계산 카드(RecommendationAmountBreakdownCard)가
-   이미 보여주므로, 여기서 같은 금액을 다시 크게 반복하지 않는다. 상세 화면 전체 "핵심 값"
-   공통 크기(17px/700)로 맞춰, 이 카드 안에서도 예상 도달 시점·월 저축(stat-value)과
-   같은 위계로 보이게 한다. */
+/* 상세 화면 전체 "핵심 값" 공통 크기(17px)에 weight만 700으로 맞춰, 이 카드 안에서도
+   예상 도달 시점·월 저축(stat-value)과 같은 위계로 보이게 한다. */
 .recommendation-funding-card__amount {
   margin: 4px 0 14px;
   font-size: 17px;
@@ -188,7 +176,7 @@ const view = computed(() =>
   line-height: 1.4;
 }
 
-/* 강조 box 안에서도 "얼마나 빨라지는지"가 핵심이라, 그 부분만 한 단계 더 굵게 한다.
+/* 강조 box 안에서도 핵심 숫자가 가장 먼저 읽혀야 해서, 그 부분만 한 단계 더 굵게 한다.
    새 색상/배경 없이 font-weight만으로 구분한다. */
 .recommendation-funding-card__highlight-emphasis {
   font-weight: 800;

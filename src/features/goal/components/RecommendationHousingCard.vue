@@ -14,7 +14,7 @@ const view = computed(() => toHousingViewModel(props.condition))
 
 <template>
   <BaseCard class="recommendation-housing-card">
-    <p class="recommendation-housing-card__label">주거 조건</p>
+    <p class="recommendation-housing-card__label">이런 집이에요</p>
 
     <p class="recommendation-housing-card__region">{{ view.regionName }}</p>
     <p class="recommendation-housing-card__type">{{ view.typeLine }} · {{ view.areaLine }}</p>

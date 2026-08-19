@@ -37,16 +37,28 @@ function handleSelect() {
 
     <div class="recommendation-card__stats">
       <div class="recommendation-card__stat">
-        <span class="recommendation-card__stat-label">추가 준비 금액</span>
-        <strong class="recommendation-card__stat-value recommendation-card__stat-value--amount">{{
-          view.targetAmountLabel
-        }}</strong>
+        <span class="recommendation-card__stat-label">{{ view.leftLabel }}</span>
+        <strong
+          class="recommendation-card__stat-value"
+          :class="
+            view.resultSide === 'left'
+              ? 'recommendation-card__stat-value--primary'
+              : 'recommendation-card__stat-value--secondary'
+          "
+          >{{ view.leftValue }}</strong
+        >
       </div>
       <div class="recommendation-card__stat">
-        <span class="recommendation-card__stat-label">{{ view.targetDateFieldLabel }}</span>
-        <strong class="recommendation-card__stat-value recommendation-card__stat-value--date">{{
-          view.targetDateLabel
-        }}</strong>
+        <span class="recommendation-card__stat-label">{{ view.rightLabel }}</span>
+        <strong
+          class="recommendation-card__stat-value"
+          :class="
+            view.resultSide === 'right'
+              ? 'recommendation-card__stat-value--primary'
+              : 'recommendation-card__stat-value--secondary'
+          "
+          >{{ view.rightValue }}</strong
+        >
       </div>
     </div>
 
@@ -131,13 +143,15 @@ function handleSelect() {
   white-space: nowrap;
 }
 
-/* 세 계획을 비교할 때 "추가 준비 금액"을 먼저 읽도록, 크기는 그대로 두고 두 값의
-   font-weight 단계만 벌린다 (금액을 더 굵게 / 시점을 한 단계 낮춤). 새 색상·배경은 쓰지 않는다. */
-.recommendation-card__stat-value--amount {
+/* 두 값 중 실제 "계산된 결과값"(view.resultSide) 쪽만 font-weight를 한 단계 높인다 — 크기는
+   그대로 두고 무게감만 벌린다. type마다 결과값이 왼쪽/오른쪽 어디에 오는지 달라(예:
+   PREFERENCE_SAVING_FIXED는 오른쪽 "예상 도달 시점", REALISTIC은 왼쪽 "목표 금액") 클래스는
+   위치가 아니라 템플릿에서 resultSide로 골라 붙인다. 새 색상·배경은 쓰지 않는다. */
+.recommendation-card__stat-value--primary {
   font-weight: 800;
 }
 
-.recommendation-card__stat-value--date {
+.recommendation-card__stat-value--secondary {
   font-weight: 600;
 }
 

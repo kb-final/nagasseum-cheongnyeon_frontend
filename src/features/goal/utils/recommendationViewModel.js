@@ -3,48 +3,40 @@ import {
   formatGoalAmount,
   formatYearMonth,
   formatMonthsToYearsKo,
-  monthsBetweenYm,
 } from '@/shared/utils/formatter'
 import { HOUSING_TYPE_LABEL, DEAL_TYPE_LABEL } from '@/shared/constants/housing'
 
 // 진단 결과 화면(추천 계획 비교 리스트)의 카드 정렬 순서. API 배열 순서를 그대로 믿지 않고
 // 항상 이 순서로 재정렬한다. 목록에 없는(향후 추가될) type은 정의된 type들 뒤에 붙인다.
+// PREFERENCE_DATE_FIXED는 사용자가 목표 시점을 입력하지 않으면 응답 자체에 없을 수 있다
+// (없으면 그냥 카드가 하나 빠질 뿐, 빈 자리나 placeholder를 만들지 않는다).
 const TYPE_ORDER = {
-  PREFERENCE: 0,
-  REALISTIC: 1,
-  HOLD_OUT: 2,
+  PREFERENCE_SAVING_FIXED: 0,
+  PREFERENCE_DATE_FIXED: 1,
+  REALISTIC: 2,
+  HOLD_OUT: 3,
 }
+
+// 결과 화면에서 "희망 조건을 기준으로" 그룹에 묶이는 type. 나머지(REALISTIC/HOLD_OUT 등)는
+// "다른 선택지도 살펴보세요" 그룹으로 분류된다.
+const PREFERENCE_GROUP_TYPES = new Set(['PREFERENCE_SAVING_FIXED', 'PREFERENCE_DATE_FIXED'])
 
 // API의 title을 그대로 쓰지 않고 화면 전용 제목으로 바꾼다.
 export const RECOMMENDATION_TITLE_MAP = {
-  PREFERENCE: '희망 조건 기준 계획',
-  REALISTIC: '목표 시점에 맞춘 계획',
-  HOLD_OUT: '주거 조건을 유지한 계획',
+  PREFERENCE_SAVING_FIXED: '지금 저축대로 모으면',
+  PREFERENCE_DATE_FIXED: '목표 시점에 맞추려면',
+  REALISTIC: '현재 준비 상황을 반영하면',
+  HOLD_OUT: '선택의 폭을 넓혀보면',
 }
 
-// 제목 아래 한 줄로 각 계획이 어떤 기준으로 만들어졌는지 보여준다.
+// 제목 아래 한 줄로 각 계획이 무엇을 보여주는지 자연어 문장으로 설명한다. "월 저축 유지 ·
+// 예상 시점 계산"처럼 알고리즘 절차를 나열하지 않고, 사용자가 이 카드를 눌러야 하는 이유를
+// 문장으로 전달한다.
 export const RECOMMENDATION_STRATEGY_MAP = {
-  PREFERENCE: '희망 조건 중심 · 조건 유연 구성',
-  REALISTIC: '목표 시점 유지 · 주거 조건 조정',
-  HOLD_OUT: '주거 조건 유지 · 준비 기간 연장',
-}
-
-// type마다 loanX.targetDate가 의미하는 바가 달라, 라벨도 다르게 보여준다.
-const TARGET_DATE_LABEL_MAP = {
-  PREFERENCE: '예상 도달 시점',
-  REALISTIC: '목표 시점',
-  HOLD_OUT: '예상 도달 시점',
-}
-
-// 정의되지 않은 type이 오더라도 화면이 깨지지 않도록 기본값을 둔다.
-const DEFAULT_TARGET_DATE_LABEL = '예상 도달 시점'
-
-// 상세 화면 상단 한 줄 설명. REALISTIC/PREFERENCE/HOLD_OUT 모두 문구가 확정돼 있고,
-// 정의되지 않은 type만 API가 내려주는 reason을 대체 문구로 쓴다(화면이 비어 보이지 않도록).
-const RECOMMENDATION_DESCRIPTION_MAP = {
-  PREFERENCE: '희망 조건의 실거래 수준과 필요한 준비 금액을 확인해보세요.',
-  REALISTIC: '목표 시점까지 준비 가능한 금액 안에서 주거 조건을 찾았어요.',
-  HOLD_OUT: '주거 조건을 유지했을 때 필요한 준비 기간을 계산했어요.',
+  PREFERENCE_SAVING_FIXED: '지금처럼 모았을 때 언제 도달하는지 확인해보세요',
+  PREFERENCE_DATE_FIXED: '원하는 시점까지 필요한 저축액을 확인해보세요',
+  REALISTIC: '현재 자금과 저축을 반영한 주거 선택지예요',
+  HOLD_OUT: '조금 더 준비했을 때 고려할 수 있는 주거 선택지예요',
 }
 
 // 비교 카드로 그릴 수 있는(유효한) 추천인지 판별한다. 백엔드는 "현재 저축 계획으로는 원하는
@@ -62,6 +54,16 @@ export function sortRecommendations(recommendations) {
       (TYPE_ORDER[a.type] ?? Number.MAX_SAFE_INTEGER) -
       (TYPE_ORDER[b.type] ?? Number.MAX_SAFE_INTEGER),
   )
+}
+
+// 결과 화면 카드 목록을 "희망 조건을 기준으로"/"다른 선택지도 살펴보세요" 두 그룹으로 나눈다.
+// 정렬·비교 가능 여부 필터링까지 이 함수 하나로 끝내, 화면(템플릿)에는 type 분기가 남지 않게 한다.
+export function groupRecommendationsForResult(recommendations) {
+  const sorted = sortRecommendations(recommendations).filter(isComparableRecommendation)
+  return {
+    preferenceGroup: sorted.filter((item) => PREFERENCE_GROUP_TYPES.has(item.type)),
+    otherGroup: sorted.filter((item) => !PREFERENCE_GROUP_TYPES.has(item.type)),
+  }
 }
 
 // 결과 화면 카드용 "지역 · 유형 · 거래 · 면적" 한 줄 요약. 세 계획을 빠르게 비교하는 게 목적이라
@@ -95,24 +97,82 @@ function toConditionArea(condition) {
   return areaLabel
 }
 
+// 결과 카드 2열 핵심 정보의 label/value 쌍. type마다 사용자가 비교해야 하는 값이 달라
+// 공통 label로 통일하지 않는다. resultSide는 둘 중 어느 쪽이 "계산된 결과값"인지 나타내며
+// (나머지 한쪽은 입력/기준값), RecommendationCard가 그 쪽 font-weight만 한 단계 높인다
+// (font-size나 색상은 바꾸지 않는다).
+// - PREFERENCE_SAVING_FIXED: 월 저축을 고정해두고 계산한 결과라 "월 저축 → 예상 도달 시점"
+//   관계가 핵심이고, 오른쪽(예상 도달 시점)이 결과값이다. targetAmount는 이 카드에서 메인
+//   비교 수치가 아니다.
+// - PREFERENCE_DATE_FIXED: 반대로 목표 시점을 고정해두고 계산한 결과라 "목표 시점 → 필요
+//   월 저축" 관계가 핵심이고, 오른쪽(필요 월 저축)이 결과값이다. monthlySaving은 사용자의
+//   기존 저축액이 아니라 그 시점에 도달하기 위해 새로 계산된 필요 저축액이므로 label을
+//   "필요 월 저축"으로 명확히 한다.
+// - REALISTIC/HOLD_OUT: loanX.targetAmount가 이 계획의 목표 금액 그 자체이자 핵심
+//   결과라("추가 준비 금액"이 아니다 — 이미 모은 돈을 뺀 값이 아니다) 왼쪽(목표 금액)이
+//   결과값이다.
+function toRecommendationMetrics({ type, loanX }) {
+  if (type === 'PREFERENCE_SAVING_FIXED') {
+    return {
+      leftLabel: '월 저축',
+      leftValue: formatGoalAmount(loanX.monthlySaving),
+      rightLabel: '예상 도달 시점',
+      rightValue: formatYearMonth(loanX.targetDate),
+      resultSide: 'right',
+    }
+  }
+
+  if (type === 'PREFERENCE_DATE_FIXED') {
+    return {
+      leftLabel: '목표 시점',
+      leftValue: formatYearMonth(loanX.targetDate),
+      rightLabel: '필요 월 저축',
+      rightValue: formatGoalAmount(loanX.monthlySaving),
+      resultSide: 'right',
+    }
+  }
+
+  return {
+    leftLabel: '목표 금액',
+    leftValue: formatGoalAmount(loanX.targetAmount),
+    rightLabel: '예상 도달 시점',
+    rightValue: formatYearMonth(loanX.targetDate),
+    resultSide: 'left',
+  }
+}
+
 // recommendation 원본 응답을 RecommendationCard가 그대로 그릴 수 있는 표시용 값으로 변환한다.
 export function toRecommendationViewModel(recommendation) {
-  const { type, condition, loanX } = recommendation
+  const { type, condition } = recommendation
 
   return {
     type,
     title: RECOMMENDATION_TITLE_MAP[type] ?? recommendation.title,
     strategy: RECOMMENDATION_STRATEGY_MAP[type] ?? '',
     conditionSummary: toConditionSummary(condition),
-    targetAmountLabel: formatGoalAmount(loanX.targetAmount),
-    targetDateFieldLabel: TARGET_DATE_LABEL_MAP[type] ?? DEFAULT_TARGET_DATE_LABEL,
-    targetDateLabel: formatYearMonth(loanX.targetDate),
+    ...toRecommendationMetrics(recommendation),
   }
 }
 
-// 상세 화면 상단 설명 한 줄
+// 상세 화면 상단 한 줄 설명. REALISTIC/HOLD_OUT은 고정 문구지만, PREFERENCE 두 type은 사용자가
+// 실제로 입력/도달하는 값(월 저축액·목표 시점)을 문장에 그대로 넣어야 해서 동적으로 만든다
+// (mock 숫자를 하드코딩하지 않고 항상 loanX 값을 formatter로 표시한다).
+const RECOMMENDATION_DETAIL_DESCRIPTION_MAP = {
+  REALISTIC: '현재 상황을 고려한 주거 선택지예요.',
+  HOLD_OUT: '조금 더 준비했을 때 고려할 수 있는 선택지예요.',
+}
+
 export function toRecommendationDescription(recommendation) {
-  return RECOMMENDATION_DESCRIPTION_MAP[recommendation.type] ?? recommendation.reason
+  if (!recommendation) return ''
+  const { type, loanX } = recommendation
+
+  if (type === 'PREFERENCE_SAVING_FIXED') {
+    return `월 ${formatGoalAmount(loanX.monthlySaving)}씩 꾸준히 모았을 때의 계획이에요.`
+  }
+  if (type === 'PREFERENCE_DATE_FIXED') {
+    return `${formatYearMonth(loanX.targetDate)}까지 준비하기 위해 필요한 저축액을 계산했어요.`
+  }
+  return RECOMMENDATION_DETAIL_DESCRIPTION_MAP[type] ?? ''
 }
 
 // 상세 화면 "주거 조건" 카드용. 목록 카드(toConditionSummary)와 달리 지역명을 독립된 줄로 강조하고
@@ -137,128 +197,157 @@ export function toHousingViewModel(condition) {
   }
 }
 
-// 상세 화면 "준비 금액은 이렇게 계산했어요" 카드용. 실거래 중앙값·현재 활용 가능 자금 둘 중
-// 하나라도 없으면 계산 근거를 보여줄 수 없으므로 null을 돌려주고, 호출부가 카드 자체를 숨긴다
-// (23번 요구사항 — 없는 값으로 지어낸 계산식을 보여주지 않는다).
-export function toAmountBreakdownViewModel({
-  marketMedianAmount,
-  currentAvailableAmount,
-  additionalAmount,
-}) {
-  if (typeof marketMedianAmount !== 'number' || typeof currentAvailableAmount !== 'number') {
-    return null
-  }
-
-  return {
-    marketMedianAmountLabel: formatGoalAmount(marketMedianAmount),
-    currentAvailableAmountLabel: formatGoalAmount(currentAvailableAmount),
-    additionalAmountLabel: formatGoalAmount(additionalAmount),
-  }
-}
-
-// 상세 화면 "이 계획의 기준" 영역용. type마다 사용자에게 설명해야 하는 논리가 달라
-// title/description/rows/timeline 중 필요한 조합만 채워 돌려준다. 정의되지 않은 type은
-// rows/timeline 없이 API의 reason만 보여준다(문구를 지어내지 않음).
-//
-// - PREFERENCE: null — 상단 설명("희망 조건을 중심으로 주거 계획을 구성했어요")과 바로 아래
-//   주거 조건 카드(실제 조건 + 실거래 중앙값)만으로 이미 충분히 설명되어, 같은 내용을 다시
-//   요약하는 카드를 별도로 두지 않는다(정보 중복 제거). 호출부가 null이면 카드 자체를 숨긴다.
-// - REALISTIC: 목표 시점 · 목표 시점까지 준비 가능한 금액 rows (reachableAmountAtTargetDate는
-//   아직 백엔드 응답에 없을 수 있어 null-safe하게 처리)
-// - HOLD_OUT: 기준 목표 시점 -> 예상 도달 시점 timeline (공통 진단 기준의 targetDate가 있을 때만)
-export function toBasisViewModel(recommendation, commonTargetDate) {
+// 상세 화면 "핵심 카드"(주거 조건 카드 바로 아래)용. REALISTIC은 조건·시세 자체가 이미
+// 핵심 결과라 이 카드를 따로 두지 않는다(null이면 호출부가 카드를 숨긴다). 나머지 세 type은
+// "A → B" 관계를 강조하는 게 목적이라 같은 compare-box 스타일(RecommendationCompareCard)을
+// 재사용하되, type마다 비교하는 값이 다르다.
+export function toCompareCardViewModel(recommendation, recommendations) {
+  if (!recommendation) return null
   const { type, loanX } = recommendation
 
-  if (type === 'PREFERENCE') {
-    return null
+  if (type === 'PREFERENCE_SAVING_FIXED') {
+    return {
+      title: '지금처럼 모으면',
+      rows: [
+        {
+          fromLabel: '월 저축',
+          fromValue: formatGoalAmount(loanX.monthlySaving),
+          toLabel: '예상 도달 시점',
+          toValue: formatYearMonth(loanX.targetDate),
+        },
+      ],
+    }
   }
 
-  if (type === 'REALISTIC') {
-    const rows = [{ label: '목표 시점', value: formatYearMonth(loanX.targetDate) }]
-    if (typeof recommendation.reachableAmountAtTargetDate === 'number') {
-      // 이 recommendation이 만들어진 직접적인 기준값이라 목표 시점보다 한 단계 더 강조한다.
-      rows.push({
-        label: '목표 시점까지 준비 가능한 금액',
-        value: formatGoalAmount(recommendation.reachableAmountAtTargetDate),
-        emphasis: true,
-      })
-    }
-
+  if (type === 'PREFERENCE_DATE_FIXED') {
     return {
-      title: '왜 이 조건이 나왔나요?',
-      description: '이 금액 범위에서 실제 거래가 가능한 주거 조건을 찾았어요.',
-      rows,
-      timeline: null,
+      title: '이때까지 준비하려면',
+      rows: [
+        {
+          fromLabel: '목표 시점',
+          fromValue: formatYearMonth(loanX.targetDate),
+          toLabel: '필요 월 저축',
+          toValue: formatGoalAmount(loanX.monthlySaving),
+        },
+      ],
     }
   }
 
   if (type === 'HOLD_OUT') {
-    const extraMonths = commonTargetDate
-      ? monthsBetweenYm(commonTargetDate, loanX.targetDate)
-      : null
+    const realistic = (recommendations ?? []).find((item) => item.type === 'REALISTIC')
+    return toHoldOutCompareRows(realistic, recommendation)
+  }
 
+  return null
+}
+
+// HOLD_OUT은 REALISTIC과 비교해야 의미가 있어, 같은 응답 안에서 배열 순서가 아니라 항상
+// type으로 REALISTIC을 찾는다(호출부 책임). 지역/유형/거래가 같다는 전제로 면적·실거래
+// 중앙값 두 가지만 비교하며, 둘 중 하나라도 없으면 null을 돌려주고 호출부가 카드를 숨긴다
+// (없는 값으로 비교를 지어내지 않는다).
+function toHoldOutCompareRows(realistic, holdOut) {
+  if (!realistic || !holdOut) return null
+  const realisticMedian = realistic.condition?.marketMedianAmount
+  const holdOutMedian = holdOut.condition?.marketMedianAmount
+  if (typeof realisticMedian !== 'number' || typeof holdOutMedian !== 'number') return null
+
+  return {
+    title: '선택의 폭을 넓히면 이렇게 달라져요',
+    rows: [
+      {
+        fromLabel: '현재 준비 상황 반영',
+        fromValue: toConditionArea(realistic.condition),
+        toLabel: '선택의 폭 확대',
+        toValue: toConditionArea(holdOut.condition),
+      },
+      {
+        fromLabel: '현재 준비 상황 반영',
+        fromValue: formatGoalAmount(realisticMedian),
+        toLabel: '선택의 폭 확대',
+        toValue: formatGoalAmount(holdOutMedian),
+      },
+    ],
+  }
+}
+
+// 월 저축이 0원인 recommendation(REALISTIC 등)은 "월 저축 0원"을 억지로 보여주지 않고
+// 예상 도달 시점만 단독으로 보여준다. 반환된 배열은 그대로 2열(있으면) 그리드에 v-for로
+// 뿌려지므로, 항목이 1개면 자연히 한 칸만 채워진다.
+function toFundingRows({ monthlySaving, targetDate }) {
+  const rows = []
+  if (monthlySaving > 0) {
+    rows.push({ label: '월 저축', value: formatGoalAmount(monthlySaving) })
+  }
+  rows.push({ label: '예상 도달 시점', value: formatYearMonth(targetDate) })
+  return rows
+}
+
+// loanO가 있을 때 "대출을 활용하면" 영역용. PREFERENCE_DATE_FIXED는 목표 시점이 이미
+// 고정돼 있어 대출 효과를 "기간 단축"이 아니라 "월 저축 부담 감소"로 보여준다 — 반대로
+// 나머지 세 type은 월 저축액(또는 목표 자체)이 고정이라 대출 효과가 "도달 시점 단축"이다.
+function toWithLoanViewModel({ loanX, loanO, isDateFixed }) {
+  if (isDateFixed) {
+    const reducedMonthlySaving = Math.max(loanX.monthlySaving - loanO.monthlySaving, 0)
     return {
-      title: '준비 기간은 이렇게 달라져요',
-      description: extraMonths > 0 ? '주거 조건을 유지하면 기준 목표 시점보다' : null,
-      // "N년 M개월 더 필요해요" 부분만 별도로 돌려주면 컴포넌트가 그 부분만 굵게 강조한다
-      // (HOLD_OUT에서 가장 먼저 읽혀야 하는 핵심 결과라 문장 안에서 시각적 우선순위를 높인다).
-      descriptionEmphasis:
-        extraMonths > 0 ? `${formatMonthsToYearsKo(extraMonths)} 더 필요해요.` : null,
-      rows: [],
-      timeline: commonTargetDate
-        ? {
-            fromLabel: '기준 목표 시점',
-            fromValue: formatYearMonth(commonTargetDate),
-            toLabel: '예상 도달 시점',
-            toValue: formatYearMonth(loanX.targetDate),
-          }
-        : null,
+      firstRow: [
+        { label: '예상 대출 금액', value: formatGoalAmount(loanO.loanAmount) },
+        { label: '필요 월 저축', value: formatGoalAmount(loanO.monthlySaving) },
+      ],
+      secondRow: [],
+      highlight:
+        reducedMonthlySaving > 0
+          ? {
+              prefix: '대출을 활용하면 매달',
+              emphasis: formatGoalAmount(reducedMonthlySaving),
+              suffix: '적게 준비해도 돼요.',
+            }
+          : null,
     }
   }
 
   return {
-    title: RECOMMENDATION_TITLE_MAP[type] ?? recommendation.title,
-    description: recommendation.reason,
-    rows: [],
-    timeline: null,
+    firstRow: [
+      { label: '예상 대출 금액', value: formatGoalAmount(loanO.loanAmount) },
+      { label: '대출 반영 목표 금액', value: formatGoalAmount(loanO.targetAmount) },
+    ],
+    secondRow: toFundingRows(loanO),
+    highlight:
+      typeof loanO.shortenedMonths === 'number' && loanO.shortenedMonths > 0
+        ? {
+            prefix: '대출을 활용하면 예상 도달 시점이',
+            emphasis: formatMonthsToYearsKo(loanO.shortenedMonths),
+            suffix: '빨라져요.',
+          }
+        : null,
   }
 }
 
-// 진단 결과 화면 상단 "현재 활용 가능 자금 OOO을 기준으로 계산했어요" 문구용 금액 라벨.
-// 세 계획에 공통으로 적용된 값이라 화면당 한 번만 보여준다. basis 자체가 없거나(구버전 응답 등)
-// currentAvailableAmount가 없으면 null을 돌려주고, 호출부가 문구 자체를 숨긴다(23번 요구사항).
-export function toDiagnosisBasisLabel(basis) {
-  if (!basis || typeof basis.currentAvailableAmount !== 'number') return null
-  return formatGoalAmount(basis.currentAvailableAmount)
-}
-
-// 상세 화면 "이 목표를 준비하려면" 카드용. loanO가 없는 recommendation이 향후 있을 수 있어
-// withLoan을 null로 돌려주면 호출부가 그 section을 통째로 렌더링하지 않는다.
+// 상세 화면 "이 목표를 준비하려면" 카드용. loanO가 없으면 withLoan을 null로 돌려주고,
+// 호출부가 그 section을 통째로 렌더링하지 않는다.
 //
-// "대출 없이" 영역의 날짜는 type마다 의미가 다르다 — REALISTIC은 목표 시점을 그대로 유지한
-// 결과라 "목표 시점"(TARGET_DATE_LABEL_MAP), 나머지는 새로 계산된 예상치라 "예상 도달 시점".
-// 대출 활용 영역의 날짜는 항상 대출을 반영해 앞당겨진 계산 결과이므로 type과 무관하게
-// "예상 도달 시점"으로 고정한다.
-export function toFundingViewModel({ loanX, loanO, type }) {
+// PREFERENCE_DATE_FIXED만 다르게 구성한다 — 나머지 세 type(PREFERENCE_SAVING_FIXED/
+// REALISTIC/HOLD_OUT)은 loanX.targetAmount가 이 계획의 목표 금액 그 자체라 그 값을 크게
+// 보여주지만, DATE_FIXED는 목표 시점이 이미 고정돼 있어(핵심 카드에서 이미 보여줌)
+// targetAmount 대신 "필요 월 저축"을 강조한다.
+export function toFundingViewModel(recommendation) {
+  const { type, loanX, loanO } = recommendation
+  const isDateFixed = type === 'PREFERENCE_DATE_FIXED'
+
+  const withoutLoan = isDateFixed
+    ? {
+        primaryLabel: '필요 월 저축',
+        primaryValueLabel: formatGoalAmount(loanX.monthlySaving),
+        rows: [],
+      }
+    : {
+        primaryLabel: '목표 금액',
+        primaryValueLabel: formatGoalAmount(loanX.targetAmount),
+        rows: toFundingRows(loanX),
+      }
+
   return {
-    withoutLoan: {
-      targetAmountLabel: formatGoalAmount(loanX.targetAmount),
-      targetDateFieldLabel: TARGET_DATE_LABEL_MAP[type] ?? DEFAULT_TARGET_DATE_LABEL,
-      targetDateLabel: formatYearMonth(loanX.targetDate),
-      monthlySavingLabel: formatGoalAmount(loanX.monthlySaving),
-    },
-    withLoan: loanO
-      ? {
-          loanAmountLabel: formatGoalAmount(loanO.loanAmount),
-          targetAmountLabel: formatGoalAmount(loanO.targetAmount),
-          targetDateLabel: formatYearMonth(loanO.targetDate),
-          monthlySavingLabel: formatGoalAmount(loanO.monthlySaving),
-          shortenedLabel:
-            typeof loanO.shortenedMonths === 'number'
-              ? formatMonthsToYearsKo(loanO.shortenedMonths)
-              : null,
-        }
-      : null,
+    withoutLoan,
+    withLoan: loanO ? toWithLoanViewModel({ loanX, loanO, isDateFixed }) : null,
   }
 }
 
