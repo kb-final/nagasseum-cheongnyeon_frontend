@@ -11,6 +11,7 @@ import {
   putGoal,
   fetchMonthlySavingSimulation,
   fetchGoalMarketTrend,
+  fetchGoalSummary,
 } from '@/features/goal/api/goalApi'
 import { toMarketAlertViewModel } from '@/features/goal/utils/marketAlertViewModel'
 
@@ -46,6 +47,12 @@ export const useGoalStore = defineStore('goal', () => {
 
   // 목표 상세 화면 맨 아래 시세 변화 카드용. 목표 상세 조회와 독립적이라 실패해도 나머지 화면엔 영향 없다.
   const marketAlert = ref(null)
+
+  /*
+    목표 요약(달성률). 홈의 등반 카드가 쓰는 GET /goals/summary와 같은 응답이다.
+    마이페이지의 등반 고도도 이 값을 보게 해서, 두 화면이 다른 숫자를 보여주지 않도록 한다.
+  */
+  const goalSummary = ref(null)
 
   const isUpdating = ref(false)
   const updateError = ref(null)
@@ -164,6 +171,18 @@ export const useGoalStore = defineStore('goal', () => {
     }
   }
 
+  /**
+   * 활성 목표가 없으면 이 API는 실패한다. 오류가 아니라 "아직 오를 산이 없음"이라는 상태라
+   * 에러를 따로 담지 않고 null로 비운다 — 호출부는 그때 0%로 표시한다.
+   */
+  async function loadGoalSummary() {
+    try {
+      goalSummary.value = await fetchGoalSummary()
+    } catch {
+      goalSummary.value = null
+    }
+  }
+
   // 실패해도 조용히 카드만 숨기면 되므로 별도 에러 상태 없이 marketAlert를 null로 둔다.
   async function loadMarketAlert() {
     try {
@@ -255,6 +274,8 @@ export const useGoalStore = defineStore('goal', () => {
     detailError,
     loadGoalDetail,
     marketAlert,
+    goalSummary,
+    loadGoalSummary,
     loadMarketAlert,
     isUpdating,
     updateError,

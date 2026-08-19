@@ -1,8 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue'
 
-import runnerImage from '@/features/compare/assets/runner.png'
-
 const props = defineProps({
   label: { type: String, default: '' },
   modelValue: { type: Object, required: true }, // { min, max }
@@ -51,18 +49,18 @@ const fillStyle = computed(() => ({
     <div class="range-slider__track-wrap">
       <div class="range-slider__track" />
       <div class="range-slider__fill" :style="fillStyle" />
-      <img
-        class="range-slider__runner"
-        :class="{ 'range-slider__runner--active': activeThumb === 'min' }"
-        :src="runnerImage"
-        alt=""
+      <!--
+        보이는 손잡이. 실제 조작은 아래 투명한 네이티브 input이 담당하고, 이 두 개는
+        위치만 따라 그린다(pointer-events: none).
+      -->
+      <span
+        class="range-slider__thumb"
+        :class="{ 'range-slider__thumb--active': activeThumb === 'min' }"
         :style="{ left: `${minPercent}%` }"
       />
-      <img
-        class="range-slider__runner range-slider__runner--flipped"
-        :class="{ 'range-slider__runner--active': activeThumb === 'max' }"
-        :src="runnerImage"
-        alt=""
+      <span
+        class="range-slider__thumb"
+        :class="{ 'range-slider__thumb--active': activeThumb === 'max' }"
         :style="{ left: `${maxPercent}%` }"
       />
       <input
@@ -113,7 +111,7 @@ const fillStyle = computed(() => ({
   font-weight: 400;
 }
 
-/* 캐릭터가 트랙 세로 중앙에 걸치므로, 위아래로 캐릭터 절반 높이만큼 여백이 필요하다. */
+/* 손잡이가 트랙 세로 중앙에 걸치므로, 위아래로 손잡이 절반 높이만큼 여백이 필요하다. */
 .range-slider__track-wrap {
   position: relative;
   height: 4px;
@@ -138,29 +136,32 @@ const fillStyle = computed(() => ({
   background: #e3ffe8;
 }
 
-.range-slider__runner {
+/*
+  손잡이. 채움색과 같은 색으로 칠하고 표면색 테두리를 둘러 트랙 위에서 떠 보이게 한다.
+  --base-button-primary-bg는 테마에 따라 뒤집히므로(라이트 진초록 / 다크 밝은 민트)
+  두 테마 모두에서 트랙과 구분된다.
+*/
+.range-slider__thumb {
   position: absolute;
   top: 50%;
-  width: 30px;
-  height: 30px;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--color-surface, #161616);
+  border-radius: 50%;
+  background: var(--base-button-primary-bg, #e3ffe8);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
   transform: translate(-50%, -50%);
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: crisp-edges;
-  image-rendering: pixelated;
   pointer-events: none;
   z-index: 2;
 }
 
-.range-slider__runner--flipped {
-  transform: translate(-50%, -50%) scaleX(-1);
-}
-
-.range-slider__runner--active {
+/* 두 손잡이가 겹쳤을 때 방금 잡은 쪽이 위로 온다 */
+.range-slider__thumb--active {
   z-index: 3;
 }
 
 /* 네이티브 range를 쓰면 키보드·터치 조작이 공짜로 따라온다.
-   손잡이 자체는 투명하게 숨기고, 캐릭터 이미지(.range-slider__runner)로 대신 보여준다. */
+   손잡이 자체는 투명하게 숨기고, 위의 .range-slider__thumb로 대신 보여준다. */
 .range-slider__input {
   position: absolute;
   top: 50%;

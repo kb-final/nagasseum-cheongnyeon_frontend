@@ -1,7 +1,7 @@
 <script setup>
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 
-import climberImage from '@/assets/images/climber.png'
+import BaseClimbingLoader from '@/shared/components/atoms/feedback/ClimbingLoader/BaseClimbingLoader.vue'
 
 // 실제 추천 계산은 4개 알고리즘이 각각 실거래를 훑어서 수 초가 걸릴 수 있다.
 // 한 문장만 띄워두면 멈춘 것처럼 보여서, 지금 무슨 일이 일어나는지 순서대로 바꿔 보여준다.
@@ -29,12 +29,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="goal-recommendation-loading">
-    <div class="goal-recommendation-loading__stage">
-      <img class="goal-recommendation-loading__climber" :src="climberImage" alt="" />
-      <div class="goal-recommendation-loading__track">
-        <span class="goal-recommendation-loading__bar" />
-      </div>
-    </div>
+    <BaseClimbingLoader />
 
     <div class="goal-recommendation-loading__text">
       <h2 class="goal-recommendation-loading__title">조건에 맞는 목표를<br />찾고 있어요</h2>
@@ -59,44 +54,6 @@ onBeforeUnmount(() => {
   text-align: center;
 }
 
-.goal-recommendation-loading__stage {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 14px;
-  width: 100%;
-  max-width: 240px;
-}
-
-.goal-recommendation-loading__climber {
-  width: 56px;
-  height: 56px;
-  /* 픽셀 아트라 확대 시 보간되지 않도록 원본 화질을 유지한다 (BaseDualRangeSlider와 같은 처리) */
-  image-rendering: pixelated;
-  animation: goal-loading-hop 0.9s ease-in-out infinite;
-}
-
-.goal-recommendation-loading__track {
-  position: relative;
-  width: 100%;
-  height: 4px;
-  border-radius: 2px;
-  background: var(--color-progress-inactive, #262626);
-  overflow: hidden;
-}
-
-.goal-recommendation-loading__bar {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 40%;
-  height: 100%;
-  border-radius: 2px;
-  /* 라이트 모드의 밝은 배경에서도 보이도록, 테마별 대비가 잡혀 있는 버튼 색을 쓴다 */
-  background: var(--base-button-primary-bg, #e3ffe8);
-  animation: goal-loading-slide 1.4s ease-in-out infinite;
-}
-
 .goal-recommendation-loading__text {
   display: flex;
   flex-direction: column;
@@ -119,27 +76,6 @@ onBeforeUnmount(() => {
   animation: goal-loading-fade 0.5s ease;
 }
 
-@keyframes goal-loading-hop {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-
-  50% {
-    transform: translateY(-8px);
-  }
-}
-
-@keyframes goal-loading-slide {
-  0% {
-    transform: translateX(-100%);
-  }
-
-  100% {
-    transform: translateX(250%);
-  }
-}
-
 @keyframes goal-loading-fade {
   from {
     opacity: 0;
@@ -152,16 +88,10 @@ onBeforeUnmount(() => {
   }
 }
 
-/* 모션 민감 사용자를 위해 반복 애니메이션은 끄고 진행 표시만 남긴다 */
+/* 모션 민감 사용자를 위해 메시지 페이드는 끈다. 캐릭터/진행바는 BaseClimbingLoader가 처리한다. */
 @media (prefers-reduced-motion: reduce) {
-  .goal-recommendation-loading__climber,
-  .goal-recommendation-loading__bar,
   .goal-recommendation-loading__message {
     animation: none;
-  }
-
-  .goal-recommendation-loading__bar {
-    width: 100%;
   }
 }
 </style>

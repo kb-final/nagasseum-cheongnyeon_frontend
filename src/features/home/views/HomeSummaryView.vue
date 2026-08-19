@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 import BaseSkeleton from '@/shared/components/atoms/feedback/Skeleton/BaseSkeleton.vue'
@@ -12,6 +12,7 @@ import GreetingHeader from '@/features/home/components/GreetingHeader.vue'
 import ClimbProgressCard from '@/features/home/components/ClimbProgressCard.vue'
 import ActiveGoalCard from '@/features/home/components/ActiveGoalCard.vue'
 import TotalAssetCard from '@/features/home/components/TotalAssetCard.vue'
+import SyncingAssetCard from '@/features/home/components/SyncingAssetCard.vue'
 import EmptyAssetCard from '@/features/home/components/EmptyAssetCard.vue'
 
 const homeStore = useHomeStore()
@@ -26,6 +27,21 @@ const member = computed(() => ({
   ...homeStore.member,
   nickname: memberStore.profile?.nickname ?? homeStore.member.nickname,
 }))
+
+// 마이데이터 동기화는 서버에서 잡 기반 비동기로 처리되고, 온보딩 화면은 완료를 기다리지
+// 않고 홈으로 넘어온다. 홈에 머무는 동안 동기화가 끝나면 자산 요약을 다시 불러와서
+// 새로고침해야만 자산이 보이던 문제를 없앤다.
+const isRefreshingAssetSummary = ref(false)
+
+watch(
+  () => assetStore.isSyncing,
+  async (isSyncing, wasSyncing) => {
+    if (!wasSyncing || isSyncing || assetStore.syncError) return
+    isRefreshingAssetSummary.value = true
+    await homeStore.loadSummary()
+    isRefreshingAssetSummary.value = false
+  },
+)
 
 // 홈 화면에 들어올 때마다(목표 저장/자산 연동 등 다른 화면에서 상태가 바뀌고 돌아오는 경우 포함)
 // 항상 최신 데이터를 다시 불러온다. loaded는 최초 스켈레톤 노출 여부 구분용으로만 쓰인다.
@@ -70,7 +86,12 @@ function goToAssetLink() {
         @refresh="homeStore.loadSummary"
         @view-detail="router.push({ name: 'asset-detail' })"
       />
-      <EmptyAssetCard v-else @link-asset="goToAssetLink" />
+      <SyncingAssetCard v-else-if="assetStore.isSyncing || isRefreshingAssetSummary" />
+      <EmptyAssetCard
+        v-else
+        :error-message="assetStore.syncError?.message ?? ''"
+        @link-asset="goToAssetLink"
+      />
     </template>
 
     <div v-else-if="homeStore.isLoading" class="home-summary-view__skeleton">
