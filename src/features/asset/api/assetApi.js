@@ -5,9 +5,6 @@ export { createManualAsset }
 
 export async function getAssetOrganizations() {
   const { data } = await httpClient.get('/api/v1/assets/organizations')
-  data.data.forEach((organization) => {
-    console.log('[assetApi] organizationCode:', organization.organizationCode)
-  })
   return data.data
 }
 
