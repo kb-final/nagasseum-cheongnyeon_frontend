@@ -11,6 +11,7 @@ import GoalRegionStep from '@/features/goal/components/steps/GoalRegionStep.vue'
 import GoalChoiceStep from '@/features/goal/components/steps/GoalChoiceStep.vue'
 import GoalRangeStep from '@/features/goal/components/steps/GoalRangeStep.vue'
 import GoalTargetDateStep from '@/features/goal/components/steps/GoalTargetDateStep.vue'
+import GoalMonthlySavingStep from '@/features/goal/components/steps/GoalMonthlySavingStep.vue'
 import GoalRecommendationLoading from '@/features/goal/components/steps/GoalRecommendationLoading.vue'
 import { useGoalConditionSteps } from '@/features/goal/composables/useGoalConditionSteps'
 import { useGoalStore } from '@/features/goal/store/goalStore'
@@ -123,6 +124,11 @@ function handleSkip() {
               :max="currentStep.max"
               :step="currentStep.step"
               :format-value="currentStep.formatValue"
+            />
+
+            <GoalMonthlySavingStep
+              v-else-if="currentStep.kind === 'amount'"
+              v-model="form.monthlySaving"
             />
 
             <GoalTargetDateStep v-else v-model="form.targetDate" />

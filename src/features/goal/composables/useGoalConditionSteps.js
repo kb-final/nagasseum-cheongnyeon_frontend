@@ -40,6 +40,8 @@ export function useGoalConditionSteps() {
     monthlyRent: { min: 300000, max: 800000 },
     size: { min: 10, max: 20 },
     targetDate: '', // BaseYearMonthSelect가 마운트 시 다음 달로 자동 보정한다
+    // 만원 단위 문자열. 유일하게 기본값 없이 비워두는 입력이며, 지역과 함께 필수다.
+    monthlySaving: '',
   })
 
   /**
@@ -128,6 +130,14 @@ export function useGoalConditionSteps() {
         title: '언제까지\n독립하고 싶으세요?',
         description: '시점을 정해두면 그 안에 갈 수 있는 조건을 찾아드려요.',
       },
+      // 필수 항목이라 마지막에 둔다. 중간에 두면 앞뒤로 오가는 사이 비워둔 채로
+      // 제출까지 도달할 여지가 생긴다.
+      {
+        key: 'monthlySaving',
+        kind: 'amount',
+        title: '매달 얼마씩\n모을 수 있나요?',
+        description: '이 금액으로 목표에 언제 도달할 수 있는지 계산해요.',
+      },
     )
 
     return list
@@ -149,7 +159,7 @@ export function useGoalConditionSteps() {
   const isFirstStep = computed(() => currentIndex.value === 0)
 
   /**
-   * 지역은 유일한 필수 조건이라 고르기 전에는 다음으로 못 넘어간다.
+   * 지역과 월 저축액은 필수라 채우기 전에는 다음으로 넘어갈 수 없다.
    *
    * 선택형(주거유형·거래유형)도 아무것도 고르지 않은 상태에서는 막는다. 고르지 않고 '다음'을
    * 누르면 answered만 true가 되고 값은 null이라, 결국 '이 조건은 건너뛸게요'와 완전히 같은
@@ -162,12 +172,15 @@ export function useGoalConditionSteps() {
   const canGoNext = computed(() => {
     const step = currentStep.value
     if (step.key === 'region') return Boolean(form.regionCode)
+    if (step.key === 'monthlySaving') return Number(form.monthlySaving) > 0
     if (step.kind === 'choice') return Boolean(form[step.key])
     return true
   })
 
-  // 지역은 필수라서, 월세는 백엔드 검증 때문에 건너뛸 수 없다.
-  const canSkip = computed(() => !['region', 'monthlyRent'].includes(currentStep.value.key))
+  // 지역·월 저축액은 필수라서, 월세는 백엔드 검증 때문에 건너뛸 수 없다.
+  const canSkip = computed(
+    () => !['region', 'monthlyRent', 'monthlySaving'].includes(currentStep.value.key),
+  )
 
   function goNext() {
     if (!canGoNext.value) return false
@@ -218,6 +231,9 @@ export function useGoalConditionSteps() {
       monthlyRentMin: isWolse.value ? form.monthlyRent.min : null,
       monthlyRentMax: isWolse.value ? form.monthlyRent.max : null,
       targetDate: answered.targetDate ? form.targetDate : null,
+      // 화면은 만원 단위로 받고 서버에는 원 단위(Long)로 보낸다. 필드 이름과 단위는
+      // GoalSaveRequest·GoalDiagnosisRequest의 monthlySavings에 맞췄다.
+      monthlySavings: Number(form.monthlySaving) * 10000,
     }
   }
 
