@@ -12,7 +12,6 @@ import GreetingHeader from '@/features/home/components/GreetingHeader.vue'
 import ClimbProgressCard from '@/features/home/components/ClimbProgressCard.vue'
 import ActiveGoalCard from '@/features/home/components/ActiveGoalCard.vue'
 import TotalAssetCard from '@/features/home/components/TotalAssetCard.vue'
-import AssetSummaryGrid from '@/features/home/components/AssetSummaryGrid.vue'
 import EmptyAssetCard from '@/features/home/components/EmptyAssetCard.vue'
 
 const homeStore = useHomeStore()
@@ -58,19 +57,19 @@ function goToAssetLink() {
         @create-goal="router.push('/diagnosis')"
       />
 
-      <ActiveGoalCard v-if="homeStore.goal" :goal="homeStore.goal" :climb="homeStore.climb" />
+      <ActiveGoalCard
+        v-if="homeStore.goal"
+        :goal="homeStore.goal"
+        :market-insight="homeStore.marketInsight"
+      />
 
-      <div v-if="homeStore.assetSummary" class="home-summary-view__asset-group">
-        <TotalAssetCard
-          :asset-summary="homeStore.assetSummary"
-          @refresh="homeStore.loadSummary"
-          @view-detail="router.push({ name: 'asset-detail' })"
-        />
-        <AssetSummaryGrid
-          :asset-summary="homeStore.assetSummary"
-          :asset-breakdown="homeStore.assetBreakdown"
-        />
-      </div>
+      <TotalAssetCard
+        v-if="homeStore.assetSummary"
+        :asset-summary="homeStore.assetSummary"
+        :asset-breakdown="homeStore.assetBreakdown"
+        @refresh="homeStore.loadSummary"
+        @view-detail="router.push({ name: 'asset-detail' })"
+      />
       <EmptyAssetCard v-else @link-asset="goToAssetLink" />
     </template>
 
@@ -115,13 +114,5 @@ function goToAssetLink() {
 
 .home-summary-view--animated > *:nth-child(4) {
   animation-delay: 0.18s;
-}
-
-/* 총 자산과 미니 자산 카드는 같은 "자산 요약" 그룹이라 서로 더 붙어 보이도록
-   바깥 섹션 간격(20px)보다 좁게 준다. */
-.home-summary-view__asset-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
 }
 </style>
