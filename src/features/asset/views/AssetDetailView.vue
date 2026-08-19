@@ -269,11 +269,15 @@ async function handleDelete() {
   --text-h: var(--color-text-primary);
 
   /*
-    앱 배경이 아직 테마를 따라가지 않아 이 화면만 직접 칠한다. MobileLayout의
-    여백(16px 16px 96px)을 음수 마진으로 상쇄한 뒤 같은 값을 다시 준다.
+    앱 배경이 아직 테마를 따라가지 않아 이 화면만 직접 칠한다. MobileLayout의 여백을
+    음수 마진으로 상쇄해 배경을 화면 끝까지 깔고, 본문 여백은 다시 준다.
+
+    이 화면은 하단 탭을 숨기므로(MobileLayout의 HIDDEN_NAV_ROUTE_NAMES) 레이아웃이
+    --no-nav 여백(16px)을 쓴다. 예전에는 탭이 있다고 보고 -96px로 상쇄했는데, 탭이
+    사라진 지금 그 값을 그대로 두면 배경이 화면 아래로 80px 더 끌려 내려간다.
   */
-  margin: -16px -16px -96px;
-  padding: 16px 16px 110px;
+  margin: -16px;
+  padding: 16px 16px 32px;
   background: var(--c-bg);
 
   display: flex;
