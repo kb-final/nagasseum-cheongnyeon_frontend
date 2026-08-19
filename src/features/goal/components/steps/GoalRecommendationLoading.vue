@@ -1,7 +1,7 @@
 <script setup>
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 
-import climberImage from '@/assets/images/climber.png'
+import { useAvatar } from '@/shared/composables/useAvatar'
 
 // 실제 추천 계산은 4개 알고리즘이 각각 실거래를 훑어서 수 초가 걸릴 수 있다.
 // 한 문장만 띄워두면 멈춘 것처럼 보여서, 지금 무슨 일이 일어나는지 순서대로 바꿔 보여준다.
@@ -11,6 +11,9 @@ const MESSAGES = [
   '지금 자산으로 갈 수 있는 길을 계산하고 있어요',
   '거의 다 됐어요',
 ]
+
+// 프로필에서 고른 캐릭터가 여기서도 같이 움직인다
+const { avatarSrc } = useAvatar()
 
 const messageIndex = ref(0)
 let timer = null
@@ -30,7 +33,7 @@ onBeforeUnmount(() => {
 <template>
   <div class="goal-recommendation-loading">
     <div class="goal-recommendation-loading__stage">
-      <img class="goal-recommendation-loading__climber" :src="climberImage" alt="" />
+      <img class="goal-recommendation-loading__climber" :src="avatarSrc" alt="" />
       <div class="goal-recommendation-loading__track">
         <span class="goal-recommendation-loading__bar" />
       </div>

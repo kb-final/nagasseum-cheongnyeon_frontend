@@ -7,7 +7,8 @@ import BaseButton from '@/shared/components/atoms/base/button/BaseButton.vue'
 import BaseFieldBadge from '@/shared/components/atoms/base/badge/BaseFieldBadge.vue'
 import BaseInputField from '@/shared/components/molecules/BaseInputField.vue'
 import BaseOptionCardGroup from '@/shared/components/atoms/form/OptionCardGroup/BaseOptionCardGroup.vue'
-import climberImage from '@/assets/images/climber.png'
+import BaseModal from '@/shared/components/atoms/feedback/Modal/BaseModal.vue'
+import { useAvatar, AVATAR_OPTIONS } from '@/shared/composables/useAvatar'
 import { INCOME_BRACKET_OPTIONS } from '@/shared/constants/incomeBracket'
 import { OCCUPATION_OPTIONS } from '@/shared/constants/occupation'
 
@@ -15,6 +16,15 @@ import { useMemberStore } from '@/features/member/store/memberStore'
 
 const router = useRouter()
 const memberStore = useMemberStore()
+const { avatarId, avatarSrc, avatarCrop, setAvatar } = useAvatar()
+
+/*
+  캐릭터 선택 팝업. 고른 즉시 반영하지 않고 pendingAvatarId에 담아뒀다가 '변경'을 눌러야
+  확정한다 — 여러 개를 눌러보며 비교하는 동안 뒤 화면이 계속 바뀌면 산만하고, 취소로
+  되돌릴 방법도 없어진다.
+*/
+const isAvatarPickerOpen = ref(false)
+const pendingAvatarId = ref(null)
 
 const nickname = ref('')
 const incomeBracket = ref(null)
@@ -49,6 +59,16 @@ const monthlyIncome = computed(() =>
   monthlyIncomeManwon.value ? Number(monthlyIncomeManwon.value) * 10000 : null,
 )
 
+function openAvatarPicker() {
+  pendingAvatarId.value = avatarId.value
+  isAvatarPickerOpen.value = true
+}
+
+function confirmAvatar() {
+  setAvatar(pendingAvatarId.value)
+  isAvatarPickerOpen.value = false
+}
+
 // 이미 고른 것을 다시 누르면 해제한다. 필수값이 아니라서 되돌릴 방법이 있어야 한다.
 function selectOccupation(value) {
   occupationType.value = occupationType.value === value ? null : value
@@ -72,29 +92,62 @@ async function handleSave() {
     <AppHeader title="회원정보 수정" @back="router.back()" />
 
     <section class="edit-info-view__avatar-section">
-      <div class="edit-info-view__avatar">
-        <!--
-          마이페이지 프로필과 같은 그림·같은 크롭을 쓴다. 잘라내는 원을 따로 두는 이유는,
-          바깥 .edit-info-view__avatar에 overflow: hidden을 걸면 아래 연필 배지까지
-          잘려나가기 때문이다.
-        -->
-        <span class="edit-info-view__avatar-clip">
-          <img class="edit-info-view__avatar-img" :src="climberImage" alt="" />
+      <!-- 동그라미와 아래 문구가 한 덩어리로 눌린다. 문구만 보고 누르는 사람도 있어서다. -->
+      <button type="button" class="edit-info-view__avatar-button" @click="openAvatarPicker">
+        <span class="edit-info-view__avatar">
+          <!--
+            마이페이지 프로필과 같은 그림·같은 크롭을 쓴다. 잘라내는 원을 따로 두는 이유는,
+            바깥 .edit-info-view__avatar에 overflow: hidden을 걸면 아래 연필 배지까지
+            잘려나가기 때문이다.
+          -->
+          <span class="edit-info-view__avatar-clip">
+            <img class="edit-info-view__avatar-img" :src="avatarSrc" :style="avatarCrop" alt="" />
+          </span>
+          <span class="edit-info-view__avatar-edit">
+            <svg viewBox="0 0 16 16" width="9" height="9">
+              <path
+                d="M11 1L15 5L5 15H1V11L11 1Z"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.4"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </span>
         </span>
-        <span class="edit-info-view__avatar-edit">
-          <svg viewBox="0 0 16 16" width="9" height="9">
-            <path
-              d="M11 1L15 5L5 15H1V11L11 1Z"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.4"
-              stroke-linejoin="round"
-            />
-          </svg>
-        </span>
-      </div>
-      <p class="edit-info-view__avatar-label">프로필 사진 변경</p>
+        <span class="edit-info-view__avatar-label">프로필 사진 변경</span>
+      </button>
     </section>
+
+    <BaseModal
+      v-model="isAvatarPickerOpen"
+      title="캐릭터 선택"
+      class="edit-info-view__avatar-modal"
+    >
+      <ul class="avatar-picker">
+        <li v-for="option in AVATAR_OPTIONS" :key="option.id">
+          <button
+            type="button"
+            class="avatar-picker__item"
+            :class="{ 'avatar-picker__item--selected': option.id === pendingAvatarId }"
+            :aria-pressed="option.id === pendingAvatarId"
+            :aria-label="option.label"
+            @click="pendingAvatarId = option.id"
+          >
+            <span class="avatar-picker__thumb">
+              <img class="avatar-picker__img" :src="option.src" :style="option.crop" alt="" />
+            </span>
+          </button>
+        </li>
+      </ul>
+
+      <template #footer>
+        <BaseButton variant="secondary" size="modal" @click="isAvatarPickerOpen = false">
+          취소
+        </BaseButton>
+        <BaseButton variant="primary" size="modal" @click="confirmAvatar">변경</BaseButton>
+      </template>
+    </BaseModal>
 
     <section class="edit-info-view__section">
       <h2 class="edit-info-view__section-title">기본 정보</h2>
@@ -223,6 +276,18 @@ async function handleSave() {
   gap: 12px;
 }
 
+.edit-info-view__avatar-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+}
+
 .edit-info-view__avatar {
   position: relative;
   display: flex;
@@ -251,11 +316,9 @@ async function handleSave() {
   결과이며, 컨테이너 크기에 대한 비율이라 원 지름이 달라도(84px) 그대로 쓸 수 있다.
   계산식은 MyPageView.vue의 같은 자리 주석을 참고할 것.
 */
+/* 위치·크기(top/left/width)는 캐릭터마다 달라 useAvatar의 crop 값을 :style로 받는다 */
 .edit-info-view__avatar-img {
   position: absolute;
-  top: 4.6%;
-  left: -11.7%;
-  width: 123.4%;
   height: auto;
 }
 
@@ -280,6 +343,53 @@ async function handleSave() {
   margin: 0;
   font-size: 12px;
   color: var(--color-text-secondary);
+}
+
+/*
+  아래 avatar-picker 규칙들은 teleport된 팝업 안에서 쓰인다. 이 화면 루트의 변수는
+  body로 옮겨간 팝업까지 상속되지 않으므로 공용 테마 토큰만 쓴다.
+*/
+.avatar-picker {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.avatar-picker__item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--color-border, #262626);
+  border-radius: 14px;
+  background: var(--color-surface, #161616);
+  font: inherit;
+  cursor: pointer;
+}
+
+/* 고른 항목은 테두리 굵기가 아니라 색과 배경으로 표시한다. 굵기를 바꾸면 칸이 흔들린다. */
+.avatar-picker__item--selected {
+  border-color: var(--color-heading-accent);
+  background: var(--color-primary-soft, #e3ffe8);
+}
+
+/* 전신 그림을 그대로 넣으면 얼굴이 작아 구분이 안 된다. 프로필과 같은 상반신 크롭을 쓴다. */
+.avatar-picker__thumb {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  border-radius: 32px;
+  overflow: hidden;
+  background: var(--color-app-bg, #111111);
+}
+
+.avatar-picker__img {
+  position: absolute;
+  height: auto;
 }
 
 .edit-info-view__section {

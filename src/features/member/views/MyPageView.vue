@@ -10,7 +10,7 @@ import BaseButton from '@/shared/components/atoms/base/button/BaseButton.vue'
 import BaseBadge from '@/shared/components/atoms/base/badge/BaseBadge.vue'
 import BaseChevronIcon from '@/shared/components/atoms/base/icon/BaseChevronIcon.vue'
 
-import climberImage from '@/assets/images/climber.png'
+import { useAvatar } from '@/shared/composables/useAvatar'
 
 import { useMemberStore, AGREEMENT_TYPE } from '@/features/member/store/memberStore'
 // 도메인 간 참조는 index.js를 통해서만 한다(docs/architecture.md의 Dependency Rules).
@@ -21,6 +21,8 @@ const router = useRouter()
 const route = useRoute()
 const memberStore = useMemberStore()
 const goalStore = useGoalStore()
+// 회원정보 수정에서 고른 캐릭터를 그대로 보여준다
+const { avatarSrc, avatarCrop } = useAvatar()
 const { theme, toggleTheme } = useTheme()
 
 const isLogoutModalOpen = ref(false)
@@ -119,7 +121,7 @@ function confirmLogout() {
 
     <section class="my-page-view__profile">
       <div class="my-page-view__avatar">
-        <img class="my-page-view__avatar-img" :src="climberImage" alt="" />
+        <img class="my-page-view__avatar-img" :src="avatarSrc" :style="avatarCrop" alt="" />
       </div>
       <p class="my-page-view__nickname">{{ memberStore.profile?.nickname ?? '회원' }} 님</p>
 
@@ -321,11 +323,9 @@ function confirmLogout() {
   구간을 넓히면 캐릭터가 작아지고(width 감소) 좁히면 커진다. top을 키우면 캐릭터가
   아래로, 줄이면 위로 움직인다. 그림을 바꾸면 이 세 값을 다시 계산해야 한다.
 */
+/* 위치·크기(top/left/width)는 캐릭터마다 달라 useAvatar의 crop 값을 :style로 받는다 */
 .my-page-view__avatar-img {
   position: absolute;
-  top: 4.6%;
-  left: -11.7%;
-  width: 123.4%;
   height: auto;
 }
 
