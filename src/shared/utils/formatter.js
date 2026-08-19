@@ -50,7 +50,7 @@ export function formatEok(amount) {
   return `${eok}억`
 }
 
-// "500,000,000" -> "5억", "210,000,000" -> "2억 1,000만원", "9,000,000" -> "900만원"
+// "500,000,000" -> "5억원", "210,000,000" -> "2억 1,000만원", "9,000,000" -> "900만원"
 // (억 단위와 만원 단위를 함께 써서 큰 금액을 한눈에 읽기 쉽게 표기. 진행 중인 목표 카드처럼
 // 목표/현재/남은 금액을 나란히 보여줄 때 사용)
 export function formatEokManwon(amount, locale = 'ko-KR') {
@@ -58,7 +58,7 @@ export function formatEokManwon(amount, locale = 'ko-KR') {
   const manwon = Math.round((amount % 100000000) / 10000)
 
   if (eok === 0) return formatManwon(amount, locale)
-  if (manwon === 0) return `${eok}억`
+  if (manwon === 0) return `${eok}억원`
   return `${eok}억 ${manwon.toLocaleString(locale)}만원`
 }
 

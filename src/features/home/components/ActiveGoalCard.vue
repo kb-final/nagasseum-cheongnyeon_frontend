@@ -2,11 +2,16 @@
 import { computed } from 'vue'
 
 import BaseCard from '@/shared/components/atoms/base/card/BaseCard.vue'
-import { formatEokManwon } from '@/shared/utils/formatter'
+import BaseDivider from '@/shared/components/atoms/base/divider/BaseDivider.vue'
+import { formatEokManwon, formatYearMonth } from '@/shared/utils/formatter'
 
 const props = defineProps({
   goal: { type: Object, required: true },
-  climb: { type: Object, required: true },
+  // 시세 변화가 목표 도달 시점에 미친 영향을 요약한 한 줄, { prefix, emphasis } 형태.
+  // 문장 전체가 아니라 실제로 바뀌는 값(emphasis)만 강조색으로 보여주기 위해 나눠서 받는다.
+  // 데이터가 없으면(시세 API 실패, 변화 없음 등) null이 오고, 그 경우 이 카드는 조용히
+  // 해당 줄을 숨긴다.
+  marketInsight: { type: Object, default: null },
 })
 
 /**
@@ -33,6 +38,9 @@ const goalTitle = computed(
   () =>
     `${shortRegionName(props.goal.regionName)} ${props.goal.housingType} ${props.goal.dealType}`,
 )
+
+// "2028-03" -> "2028년 3월 도달 예상" (API 응답 형식은 그대로 두고 표시 문구만 붙인다)
+const etaLabel = computed(() => `${formatYearMonth(props.goal.targetDate)} 도달 예상`)
 </script>
 
 <template>
@@ -42,25 +50,19 @@ const goalTitle = computed(
       <RouterLink class="active-goal-card__detail" :to="`/goals/${goal.id}`">자세히 ›</RouterLink>
     </div>
 
-    <p class="active-goal-card__subtitle">
-      <span class="active-goal-card__subtitle-label">목표 금액 </span>
-      <span class="active-goal-card__subtitle-value">{{ formatEokManwon(goal.targetAmount) }}</span>
-    </p>
+    <p class="active-goal-card__eta">{{ etaLabel }}</p>
 
-    <div class="active-goal-card__stats">
-      <div class="active-goal-card__stat">
-        <span class="active-goal-card__stat-label">현재 금액</span>
-        <strong class="active-goal-card__stat-value">{{
-          formatEokManwon(climb.currentAmount)
-        }}</strong>
-      </div>
-      <div class="active-goal-card__stat">
-        <span class="active-goal-card__stat-label">남은 금액</span>
-        <strong class="active-goal-card__stat-value">{{
-          formatEokManwon(climb.remainingAmount)
-        }}</strong>
-      </div>
+    <div class="active-goal-card__row">
+      <span class="active-goal-card__row-label">목표 금액</span>
+      <strong class="active-goal-card__row-value">{{ formatEokManwon(goal.targetAmount) }}</strong>
     </div>
+
+    <BaseDivider class="active-goal-card__divider" />
+
+    <RouterLink v-if="marketInsight" class="active-goal-card__insight" :to="`/goals/${goal.id}`">
+      {{ marketInsight.prefix
+      }}<strong class="active-goal-card__insight-emphasis">{{ marketInsight.emphasis }}</strong>
+    </RouterLink>
   </BaseCard>
 </template>
 
@@ -100,49 +102,52 @@ const goalTitle = computed(
   white-space: nowrap;
 }
 
-.active-goal-card__subtitle {
-  margin: 0 0 4px;
-  font-size: 12px;
-}
-
-.active-goal-card__subtitle-label {
-  font-weight: 700;
-  color: var(--total-asset-label, #12281c);
-}
-
-/* 라벨과 구분되게 한 칸 띄우고, 목표 금액이라는 걸 색으로도 강조한다. */
-.active-goal-card__subtitle-value {
-  margin-left: 4px;
-  font-size: 15px;
-  font-weight: 900;
-  color: var(--color-primary, #1d6b3f);
-}
-
-.active-goal-card__stats {
-  display: flex;
-  gap: 8px;
-}
-
-.active-goal-card__stat {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: 4px;
-  padding: 10px 12px;
-  border-radius: 10px;
-  background: var(--color-app-bg, #f7f8f4);
-}
-
-.active-goal-card__stat-label {
+/* "2028년 3월 도달 예상" — 목표 제목 바로 아래 보조 정보. */
+.active-goal-card__eta {
+  margin: 0;
   font-size: 12px;
   font-weight: 700;
   color: var(--color-text-tertiary, #8f968c);
 }
 
-.active-goal-card__stat-value {
-  font-size: 18px;
+.active-goal-card__divider {
+  margin: 10px 0 6px;
+  background: var(--color-border, #262626);
+}
+
+.active-goal-card__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.active-goal-card__row-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--total-asset-label, #12281c);
+}
+
+.active-goal-card__row-value {
+  font-size: 16px;
   font-weight: 900;
   color: var(--home-text-primary, #10130f);
   font-variant-numeric: tabular-nums;
+}
+
+/* 문장 전체를 초록으로 강조하면 "초록색 긴 문장"처럼 읽혀서, 기본 문장은 secondary 톤으로
+   낮추고 실제로 바뀌는 값(.insight-emphasis)만 primary green으로 강조한다. */
+.active-goal-card__insight {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-tertiary, #8f968c);
+  text-decoration: none;
+}
+
+.active-goal-card__insight-emphasis {
+  font-weight: 700;
+  color: var(--color-primary, #1d6b3f);
 }
 </style>

@@ -3,8 +3,12 @@ import { defineStore } from 'pinia'
 
 import { HOUSING_TYPE_LABEL, DEAL_TYPE_LABEL } from '@/shared/constants/housing'
 
-import { fetchGoalSummary } from '@/features/goal/api/goalApi'
+import { fetchGoalSummary, fetchGoalMarketTrend } from '@/features/goal/api/goalApi'
 import { getAssetSummary } from '@/features/asset/api/assetApi'
+import {
+  toMarketAlertViewModel,
+  toHomeMarketInsightLabel,
+} from '@/features/goal/utils/marketAlertViewModel'
 
 // 레벨/알림 배지는 홈 화면 API 명세(목표 요약 · 자산 요약) 어디에도 없는 항목이라
 // 연동할 API가 아직 없다. 화면 골격을 채우기 위한 임시 표시값.
@@ -39,7 +43,7 @@ function toClimbViewModel(goalSummary) {
   }
 }
 
-// GET /assets/summary 응답 -> AssetSummaryGrid가 쓰는 assetBreakdown 뷰모델
+// GET /assets/summary 응답 -> TotalAssetCard의 예적금/대출 row가 쓰는 assetBreakdown 뷰모델
 // (loans는 assetBreakdown이 아니라 응답 최상단에 있어 별도로 옮겨준다)
 function toAssetBreakdownViewModel(assetSummary) {
   return {
@@ -59,16 +63,21 @@ export const useHomeStore = defineStore('home', () => {
   const climb = ref(null)
   const assetSummary = ref(null)
   const assetBreakdown = ref(null)
+  // 현재 목표 카드의 "최근 OO 시세 상승/하락으로 예상 시점 +N개월" 한 줄. 목표 상세 화면의
+  // 매물 시세 변화 카드와 같은 API(GET /goals/market-trend)를 홈에서도 그대로 재사용한다.
+  const marketInsight = ref(null)
   const isLoading = ref(false)
   const loaded = ref(false)
 
   async function loadSummary() {
     isLoading.value = true
 
-    // 두 API는 서로 독립적이라, 하나가 실패(예: 활성 목표 없음, 자산 미연동)해도 나머지 카드는 그대로 보여준다.
-    const [goalSummaryResult, assetSummaryResult] = await Promise.allSettled([
+    // 세 API는 서로 독립적이라, 하나가 실패(예: 활성 목표 없음, 자산 미연동, 시세 데이터 없음)
+    // 해도 나머지 카드는 그대로 보여준다.
+    const [goalSummaryResult, assetSummaryResult, marketTrendResult] = await Promise.allSettled([
       fetchGoalSummary(),
       getAssetSummary(),
+      fetchGoalMarketTrend(),
     ])
 
     if (goalSummaryResult.status === 'fulfilled') {
@@ -89,6 +98,11 @@ export const useHomeStore = defineStore('home', () => {
       assetBreakdown.value = null
     }
 
+    marketInsight.value =
+      marketTrendResult.status === 'fulfilled'
+        ? toHomeMarketInsightLabel(toMarketAlertViewModel(marketTrendResult.value))
+        : null
+
     isLoading.value = false
     loaded.value = true
   }
@@ -99,6 +113,7 @@ export const useHomeStore = defineStore('home', () => {
     climb,
     assetSummary,
     assetBreakdown,
+    marketInsight,
     isLoading,
     loaded,
     loadSummary,
