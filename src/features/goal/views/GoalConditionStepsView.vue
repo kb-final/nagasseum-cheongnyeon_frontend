@@ -67,6 +67,10 @@ async function submit() {
     return
   }
 
+  // 진단을 마치고 결과 화면으로 "처음" 넘어가는 순간에만 세운다 — 결과 화면이 마운트 시
+  // 이 값을 한 번 읽고 바로 꺼서, 상세 화면을 오가는 재진입에서는 인트로가 다시 재생되지 않는다.
+  goalStore.playResultIntro = true
+
   try {
     await router.push({ name: RESULT_ROUTE_NAME })
   } catch {
