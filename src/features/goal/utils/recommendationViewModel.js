@@ -97,60 +97,80 @@ function toConditionArea(condition) {
   return areaLabel
 }
 
-// 결과 카드 2열 핵심 정보의 label/value 쌍. type마다 사용자가 비교해야 하는 값이 달라
-// 공통 label로 통일하지 않는다. resultSide는 둘 중 어느 쪽이 "계산된 결과값"인지 나타내며
-// (나머지 한쪽은 입력/기준값), RecommendationCard가 그 쪽 font-weight만 한 단계 높인다
-// (font-size나 색상은 바꾸지 않는다).
-// - PREFERENCE_SAVING_FIXED: 월 저축을 고정해두고 계산한 결과라 "월 저축 → 예상 도달 시점"
-//   관계가 핵심이고, 오른쪽(예상 도달 시점)이 결과값이다. targetAmount는 이 카드에서 메인
-//   비교 수치가 아니다.
-// - PREFERENCE_DATE_FIXED: 반대로 목표 시점을 고정해두고 계산한 결과라 "목표 시점 → 필요
-//   월 저축" 관계가 핵심이고, 오른쪽(필요 월 저축)이 결과값이다. monthlySaving은 사용자의
-//   기존 저축액이 아니라 그 시점에 도달하기 위해 새로 계산된 필요 저축액이므로 label을
-//   "필요 월 저축"으로 명확히 한다.
+// 결과 카드 2열 핵심 정보. "왼쪽 = 시점, 오른쪽 = 저축액"으로 두 PREFERENCE 카드의 배치를
+// 통일해, 두 카드를 위아래로 비교할 때 같은 종류의 정보가 같은 자리에 오게 한다(REALISTIC/
+// HOLD_OUT은 시점 대신 금액을 다루므로 이 규칙과 무관하게 기존 "목표 금액 → 예상 도달
+// 시점" 순서를 유지한다). emphasized는 그 recommendation의 "계산된 결과값"이 어느 쪽인지
+// 나타내며(나머지 한쪽은 입력/기준값), RecommendationCard가 그 쪽 font-weight만 한 단계
+// 높인다(font-size·색상은 바꾸지 않는다) — type별 분기는 여기서 끝내고 컴포넌트에는
+// if(type === ...) 형태의 분기를 남기지 않는다.
+// - PREFERENCE_SAVING_FIXED: 월 저축을 고정해두고 계산한 결과라 "월 50만 원을 유지하면 →
+//   2051년 8월에 도달"이 핵심이다. 계산 결과값은 예상 도달 시점(왼쪽)이다. targetAmount는
+//   이 카드에서 메인 비교 수치가 아니다.
+// - PREFERENCE_DATE_FIXED: 반대로 목표 시점을 고정해두고 계산한 결과라 "2031년 8월까지
+//   가려면 → 월 520만 원 필요"가 핵심이다. 계산 결과값은 필요 월 저축(오른쪽)이다.
+//   monthlySaving은 사용자의 기존 저축액이 아니라 그 시점에 도달하기 위해 새로 계산된
+//   필요 저축액이므로 label을 "필요 월 저축"으로 명확히 한다.
 // - REALISTIC/HOLD_OUT: loanX.targetAmount가 이 계획의 목표 금액 그 자체이자 핵심
 //   결과라("추가 준비 금액"이 아니다 — 이미 모은 돈을 뺀 값이 아니다) 왼쪽(목표 금액)이
 //   결과값이다.
 function toRecommendationMetrics({ type, loanX }) {
   if (type === 'PREFERENCE_SAVING_FIXED') {
     return {
-      leftLabel: '월 저축',
-      leftValue: formatGoalAmount(loanX.monthlySaving),
-      rightLabel: '예상 도달 시점',
-      rightValue: formatYearMonth(loanX.targetDate),
-      resultSide: 'right',
+      left: {
+        label: '예상 도달 시점',
+        value: formatYearMonth(loanX.targetDate),
+        emphasized: true,
+      },
+      right: {
+        label: '월 저축',
+        value: formatGoalAmount(loanX.monthlySaving),
+        emphasized: false,
+      },
     }
   }
 
   if (type === 'PREFERENCE_DATE_FIXED') {
     return {
-      leftLabel: '목표 시점',
-      leftValue: formatYearMonth(loanX.targetDate),
-      rightLabel: '필요 월 저축',
-      rightValue: formatGoalAmount(loanX.monthlySaving),
-      resultSide: 'right',
+      left: {
+        label: '목표 시점',
+        value: formatYearMonth(loanX.targetDate),
+        emphasized: false,
+      },
+      right: {
+        label: '필요 월 저축',
+        value: formatGoalAmount(loanX.monthlySaving),
+        emphasized: true,
+      },
     }
   }
 
   return {
-    leftLabel: '목표 금액',
-    leftValue: formatGoalAmount(loanX.targetAmount),
-    rightLabel: '예상 도달 시점',
-    rightValue: formatYearMonth(loanX.targetDate),
-    resultSide: 'left',
+    left: {
+      label: '목표 금액',
+      value: formatGoalAmount(loanX.targetAmount),
+      emphasized: true,
+    },
+    right: {
+      label: '예상 도달 시점',
+      value: formatYearMonth(loanX.targetDate),
+      emphasized: false,
+    },
   }
 }
 
 // recommendation 원본 응답을 RecommendationCard가 그대로 그릴 수 있는 표시용 값으로 변환한다.
 export function toRecommendationViewModel(recommendation) {
   const { type, condition } = recommendation
+  const { left, right } = toRecommendationMetrics(recommendation)
 
   return {
     type,
     title: RECOMMENDATION_TITLE_MAP[type] ?? recommendation.title,
     strategy: RECOMMENDATION_STRATEGY_MAP[type] ?? '',
     conditionSummary: toConditionSummary(condition),
-    ...toRecommendationMetrics(recommendation),
+    left,
+    right,
   }
 }
 
