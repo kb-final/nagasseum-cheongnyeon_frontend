@@ -13,11 +13,14 @@ import BaseChevronIcon from '@/shared/components/atoms/base/icon/BaseChevronIcon
 import climberImage from '@/assets/images/climber.png'
 
 import { useMemberStore, AGREEMENT_TYPE } from '@/features/member/store/memberStore'
+// 도메인 간 참조는 index.js를 통해서만 한다(docs/architecture.md의 Dependency Rules).
+import { useGoalStore } from '@/features/goal'
 import { useTheme } from '@/shared/composables/useTheme'
 
 const router = useRouter()
 const route = useRoute()
 const memberStore = useMemberStore()
+const goalStore = useGoalStore()
 const { theme, toggleTheme } = useTheme()
 
 const isLogoutModalOpen = ref(false)
@@ -40,22 +43,36 @@ const compareDataAgreed = computed({
 })
 
 /**
- * 등반 레벨·고도.
+ * 등반 레벨·칭호.
  *
- * 서버가 아직 레벨을 내려주지 않는다. 산정 기준도 팀에서 정하지 않았다.
- * 기준이 정해지고 API에 필드가 생기면 아래 세 값을 memberStore.profile 에서
- * 읽어오도록 바꾸면 된다. 지금은 화면을 먼저 맞추기 위한 임시값이라 한곳에 모아둔다.
+ * 서버가 아직 레벨을 내려주지 않고, 산정 기준도 팀에서 정하지 않았다. 기준이 정해지고
+ * API에 필드가 생기면 memberStore.profile 에서 읽어오도록 바꾸면 된다.
+ * (아래 고도(altitudePercent)와 달리 이 둘은 아직 임시값이다.)
  */
-const EXP_SEGMENT_COUNT = 10
 const climbLevel = 3
 const climbTitle = '등반가'
-const altitudePercent = 27
+
+const EXP_SEGMENT_COUNT = 10
+
+/**
+ * 등반 고도 = 목표 달성률.
+ *
+ * 홈의 등반 카드와 같은 GET /goals/summary 응답(progress.achievementRate)을 본다.
+ * 예전에는 27로 고정돼 있어 홈과 다른 숫자가 나왔다. 활성 목표가 없으면 0%다.
+ */
+const altitudePercent = computed(() => {
+  const rate = goalStore.goalSummary?.progress?.achievementRate
+  if (typeof rate !== 'number') return 0
+  return Math.min(100, Math.max(0, Math.round(rate)))
+})
 
 /** 진행률을 칸 수로 바꾼다. 홈의 등반 카드와 같은 방식이다. */
-const filledSegments = computed(() => Math.round((altitudePercent / 100) * EXP_SEGMENT_COUNT))
+const filledSegments = computed(() => Math.round((altitudePercent.value / 100) * EXP_SEGMENT_COUNT))
 
 onMounted(async () => {
   if (!memberStore.profile) memberStore.fetchProfile()
+  // 홈을 거치지 않고 마이페이지로 바로 들어와도 고도가 채워지도록 여기서도 불러온다.
+  if (!goalStore.goalSummary) goalStore.loadGoalSummary()
 
   // 비교 화면 잠금 카드에서 "약관 동의하러 가기"로 들어왔을 때, 해당 항목이
   // 화면 세로 가운데에 오도록 스크롤해준다.
