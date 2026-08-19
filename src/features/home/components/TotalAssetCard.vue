@@ -2,41 +2,63 @@
 import { computed } from 'vue'
 
 import BaseCard from '@/shared/components/atoms/base/card/BaseCard.vue'
+import BaseDivider from '@/shared/components/atoms/base/divider/BaseDivider.vue'
 import BaseRefreshIcon from '@/shared/components/atoms/base/icon/BaseRefreshIcon.vue'
-import { formatNumber, formatDateTimeDot } from '@/shared/utils/formatter'
+import { formatWon, formatDateTimeDot, formatEokManwon } from '@/shared/utils/formatter'
 
 import assetIcon from '@/assets/images/assetIcon.png'
 
 const props = defineProps({
   assetSummary: { type: Object, required: true },
+  // 예적금/대출 세부 내역. 이전에는 AssetSummaryGrid가 별도 카드로 나열했지만, 흰 카드가
+  // 반복되는 느낌을 줄이기 위해 이 카드 안에 row로 통합했다.
+  assetBreakdown: { type: Object, required: true },
 })
 
 defineEmits(['refresh'])
 
-/**
- * 금액과 '원'을 따로 그린다.
- *
- * <p>숫자만 크게 두고 단위는 작게 놓아야 금액이 먼저 읽힌다. formatWon은 둘을 한 문자열로
- * 붙여줘서 크기를 나눌 수 없다.
- */
-const amount = computed(() => formatNumber(props.assetSummary.totalAssets))
+// 총자산은 세부 항목과 달리 "몇 원인지" 정확한 금액을 그대로 보여준다(만원 단위로 줄이지 않음).
+const amount = computed(() => formatWon(props.assetSummary.totalAssets))
 const syncedAt = computed(() => formatDateTimeDot(props.assetSummary.syncedAt))
+
+// AssetSummaryGrid가 쓰던 것과 같은 세 항목·같은 sub 문구를 그대로 가져온다
+// (대출 0원/보유 없음, 고정 저축액 "월 기준" — 실제 API가 뒷받침하는 문구만 사용한다).
+// 금액은 억 단위가 넘어갈 수 있는 항목(특히 대출)도 있어 formatManwon 대신
+// formatEokManwon으로 통일한다("1억 1,200만원"처럼 억+만원을 함께 표기).
+const rows = computed(() => [
+  {
+    label: '예적금',
+    amount: props.assetBreakdown.depositSavings.totalAmount,
+    sub: `${props.assetBreakdown.depositSavings.accountCount}개 계좌`,
+  },
+  {
+    label: '대출',
+    amount: props.assetSummary.loanBalance,
+    sub:
+      props.assetBreakdown.loan.accountCount > 0
+        ? `${props.assetBreakdown.loan.accountCount}개 계좌`
+        : '보유 없음',
+  },
+  {
+    label: '고정 저축액',
+    amount: props.assetSummary.monthlySavings,
+    sub: '월 기준',
+  },
+])
 </script>
 
 <template>
   <BaseCard class="total-asset-card">
     <div class="total-asset-card__top">
       <span class="total-asset-card__label">
-        총 자산
+        내 자산
         <img class="total-asset-card__label-icon" :src="assetIcon" alt="" />
       </span>
       <RouterLink class="total-asset-card__detail" to="/assets">자세히 ›</RouterLink>
     </div>
 
     <div class="total-asset-card__main">
-      <p class="total-asset-card__amount">
-        {{ amount }}<span class="total-asset-card__unit">원</span>
-      </p>
+      <p class="total-asset-card__amount">{{ amount }}</p>
     </div>
 
     <div class="total-asset-card__meta">
@@ -49,6 +71,16 @@ const syncedAt = computed(() => formatDateTimeDot(props.assetSummary.syncedAt))
       >
         <BaseRefreshIcon :size="14" bold />
       </button>
+    </div>
+
+    <BaseDivider class="total-asset-card__divider" />
+
+    <div class="total-asset-card__rows">
+      <div v-for="row in rows" :key="row.label" class="total-asset-card__row">
+        <span class="total-asset-card__row-label">{{ row.label }}</span>
+        <strong class="total-asset-card__row-value">{{ formatEokManwon(row.amount) }}</strong>
+        <span class="total-asset-card__row-sub">{{ row.sub }}</span>
+      </div>
     </div>
   </BaseCard>
 </template>
@@ -121,20 +153,12 @@ const syncedAt = computed(() => formatDateTimeDot(props.assetSummary.syncedAt))
   font-variant-numeric: tabular-nums;
 }
 
-/* 단위는 숫자보다 작고 가볍게. 금액이 먼저 읽혀야 한다. */
-.total-asset-card__unit {
-  margin-left: 5px;
-  font-size: 16px;
-  font-weight: 700;
-}
-
-/* 갱신 시각 + 새로고침 아이콘을 금액 아래 한 줄로, 오른쪽 정렬로 붙인다.
+/* 갱신 시각(왼쪽)과 새로고침 아이콘(오른쪽)을 금액 아래 한 줄에 양 끝으로 배치한다.
    금액 줄과 살짝 더 떨어지도록 위쪽에 여백을 조금 더 준다. */
 .total-asset-card__meta {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: 4px;
+  justify-content: space-between;
   margin-top: 4px;
 }
 
@@ -159,5 +183,50 @@ const syncedAt = computed(() => formatDateTimeDot(props.assetSummary.syncedAt))
   background: none;
   color: var(--total-asset-label, #12281c);
   cursor: pointer;
+}
+
+.total-asset-card__divider {
+  margin: 8px 0 10px;
+  background: var(--color-border, #262626);
+}
+
+/*
+  세 row가 같은 열 너비를 공유해야 금액 자릿수가 달라도(2,930만원 vs 1억 1,200만원) 오른쪽
+  보조 정보 위치가 흔들리지 않는다. grid를 rows 컨테이너에 걸고, 각 row는 display:contents로
+  박스를 없애 자신의 3개 자식이 그 grid에 직접 들어가게 한다(라벨/금액/보조정보 3열).
+*/
+.total-asset-card__rows {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: baseline;
+  row-gap: 10px;
+  column-gap: 8px;
+}
+
+.total-asset-card__row {
+  display: contents;
+}
+
+.total-asset-card__row-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--total-asset-label, #12281c);
+}
+
+/* 금액이 이 카드에서 가장 중요한 정보라 보조 정보보다 진하게 두고, 열 안에서 오른쪽 정렬한다. */
+.total-asset-card__row-value {
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--home-ink-text, #12281c);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.total-asset-card__row-sub {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--total-asset-detail, #8a8f63);
+  text-align: right;
+  white-space: nowrap;
 }
 </style>

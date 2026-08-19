@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 
 import BaseCard from '@/shared/components/atoms/base/card/BaseCard.vue'
+import { formatManwon } from '@/shared/utils/formatter'
 
 import climbBackground from '@/assets/images/climb-bg.png'
 import climberImage from '@/assets/images/climber.png'
@@ -113,20 +114,22 @@ const climberPosition = computed(() => {
 /* ------------------------------------------------------------------ */
 
 /**
- * 게이지 10칸의 상태.
+ * 게이지 10칸 각각의 채움 비율(0~100).
  *
- * <p>다 채운 칸은 진한 초록, 채우는 중인 한 칸은 노랑, 나머지는 빈 칸이다.
- * 반올림하지 않는다. 27%에서 세 칸이 다 찬 것처럼 보이면 안 된다.
+ * <p>반올림해서 칸 단위로 채우지 않는다. 27%면 두 칸은 100%, 세 번째 칸은 70%,
+ * 나머지는 0%다 — 세 칸이 다 찬 것처럼 보이면 안 된다. 채워지는 색은 다 찬 칸과
+ * 동일하게 둔다(부분 채움만 다른 색으로 표시하지 않는다).
  */
-const segments = computed(() => {
-  const filled = Math.floor(progress.value / 10)
-  const hasPartial = progress.value % 10 > 0
+const segments = computed(() =>
+  Array.from({ length: 10 }, (_, i) => {
+    const segmentStart = i * 10
+    const segmentEnd = segmentStart + 10
 
-  return Array.from({ length: 10 }, (_, i) => {
-    if (i < filled) return 'filled'
-    return i === filled && hasPartial ? 'current' : 'empty'
-  })
-})
+    if (progress.value >= segmentEnd) return 100
+    if (progress.value <= segmentStart) return 0
+    return ((progress.value - segmentStart) / 10) * 100
+  }),
+)
 </script>
 
 <template>
@@ -158,17 +161,27 @@ const segments = computed(() => {
       </template>
 
       <template v-else>
-        <div class="climb-card__status">
-          <span class="climb-card__status-text">목표 금액의 {{ progress }}% 달성</span>
+        <p class="climb-card__title">집까지 {{ progress }}% 왔어요</p>
+
+        <div class="climb-card__amounts">
+          <span class="climb-card__amount-item">
+            <strong class="climb-card__amount-value">{{
+              formatManwon(climb.currentAmount)
+            }}</strong>
+            <span class="climb-card__amount-label">모음</span>
+          </span>
+          <span class="climb-card__amount-item">
+            <strong class="climb-card__amount-value">{{
+              formatManwon(climb.remainingAmount)
+            }}</strong>
+            <span class="climb-card__amount-label">남음</span>
+          </span>
         </div>
 
         <div class="climb-card__segments">
-          <span
-            v-for="(state, i) in segments"
-            :key="i"
-            class="climb-card__segment"
-            :class="`climb-card__segment--${state}`"
-          />
+          <span v-for="(percent, i) in segments" :key="i" class="climb-card__segment">
+            <span class="climb-card__segment-fill" :style="{ width: `${percent}%` }" />
+          </span>
         </div>
       </template>
     </BaseCard>
@@ -317,8 +330,7 @@ const segments = computed(() => {
 
 /* ── 목표가 있을 때 ──────────────────────────────────────── */
 
-/* 목표 제목/자세히/남은 금액은 진행 중인 목표 카드(ActiveGoalCard)로 옮겼다.
-   여기는 달성률 한 줄 + 게이지만 남는다. */
+/* NEW QUEST 배지 줄(목표 없을 때)에서만 쓰인다. 목표가 있을 때는 title/subtitle로 대체했다. */
 .climb-card__status {
   display: flex;
   align-items: center;
@@ -328,33 +340,65 @@ const segments = computed(() => {
   color: var(--climb-card-ink, #12281c);
 }
 
-/* 왼쪽 정렬을 justify-content 계산에 기대지 않고 확실하게 고정한다. */
-.climb-card__status-text {
-  margin-right: auto;
+/* "서초구 원룸 전세까지 27% 왔어요" — 이 카드에서 가장 먼저 읽혀야 하는 한 줄. */
+.climb-card__title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--climb-card-ink, #12281c);
 }
 
-/* 퍼센트를 게이지 오른쪽 끝에 붙인다. 아래에 따로 두면 줄만 하나 늘어난다. */
+/*
+  "2,000만원 모음"(왼쪽) · "8,000만원 남음"(오른쪽) — progress bar 시작점/끝점과 맞춰
+  좌우로 나눠 배치한다(모은 금액 = 시작 쪽, 남은 금액 = 끝 쪽이라는 의미가 bar와 이어지도록).
+*/
+.climb-card__amounts {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.climb-card__amount-item {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+}
+
+/* 금액이 먼저 읽혀야 해서 "모음"/"남음"보다 진하게 둔다. title(14px/900)보다는 작게. */
+.climb-card__amount-value {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--climb-card-ink, #12281c);
+}
+
+.climb-card__amount-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--climb-card-ink-muted, #6f8b79);
+}
+
 .climb-card__segments {
   display: flex;
   align-items: center;
   gap: 4px;
+  margin-top: 2px;
 }
 
+/* 칸 자체는 미달성 색의 트랙이고, 그 안을 실제 달성 비율(%)만큼 fill이 채운다.
+   반올림해서 칸 단위로 채우지 않기 위해 opacity가 아니라 width로 정확한 비율을 표현한다. */
 .climb-card__segment {
+  position: relative;
   flex: 1;
   height: 11px;
+  overflow: hidden;
   border-radius: 2px;
-}
-
-.climb-card__segment--empty {
   background: var(--climb-card-progress-inactive, #a9c6af);
 }
 
-.climb-card__segment--filled {
+.climb-card__segment-fill {
+  position: absolute;
+  inset: 0;
+  border-radius: 2px;
   background: var(--color-progress-active, #1d6b3f);
-}
-
-.climb-card__segment--current {
-  background: var(--color-accent, #ffd939);
 }
 </style>
