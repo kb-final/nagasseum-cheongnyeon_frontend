@@ -38,7 +38,12 @@ const view = computed(() =>
         <BaseDivider class="recommendation-funding-card__divider" />
       </template>
 
-      <div v-for="row in view.rows" :key="row.label" class="recommendation-funding-card__row">
+      <div
+        v-for="row in view.rows"
+        :key="row.label"
+        class="recommendation-funding-card__row"
+        :class="{ 'recommendation-funding-card__row--muted': row.muted }"
+      >
         <span class="recommendation-funding-card__row-label">{{ row.label }}</span>
         <template v-if="view.hasLoan && row.isSame">
           <span
@@ -48,9 +53,12 @@ const view = computed(() =>
         </template>
         <template v-else>
           <span class="recommendation-funding-card__row-value">{{ row.withoutLoan }}</span>
-          <span v-if="view.hasLoan" class="recommendation-funding-card__row-value">{{
-            row.withLoan
-          }}</span>
+          <span
+            v-if="view.hasLoan"
+            class="recommendation-funding-card__row-value"
+            :class="{ 'recommendation-funding-card__row-value--emphasized': !row.muted }"
+            >{{ row.withLoan }}</span
+          >
         </template>
       </div>
     </div>
@@ -149,10 +157,22 @@ const view = computed(() =>
 }
 
 /* 대출 없이/활용 시 값이 같은 row는 두 값 컬럼을 반복하지 않고 하나로 합쳐, 그 합친
-   영역(두 value 컬럼 폭) 가운데에 값을 한 번만 둔다. row 높이·divider·label 위치는
+   영역(두 값 컬럼 폭) 가운데에 값을 한 번만 둔다. row 높이·divider·label 위치는
    다른 row와 동일하게 유지된다 — value 영역만 병합될 뿐이다. */
 .recommendation-funding-card__row-value--common {
   grid-column: 2 / span 2;
+}
+
+/* 대출을 활용했을 때 실제로 달라지는 결과(오른쪽 값)만 한 단계 더 굵게 — 새 색상 없이
+   font-weight만으로 "이게 핵심 변화다"를 드러낸다. */
+.recommendation-funding-card__row-value--emphasized {
+  font-weight: 800;
+}
+
+/* "예상 대출 금액"은 결과가 아니라 다른 row가 달라지는 원인이 되는 조건이라, 굵기를
+   기본값보다 한 단계 낮춰 다른 row보다 보조적으로 보이게 한다. */
+.recommendation-funding-card__row--muted .recommendation-funding-card__row-value {
+  font-weight: 600;
 }
 
 .recommendation-funding-card__highlight {

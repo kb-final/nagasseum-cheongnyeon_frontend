@@ -262,31 +262,73 @@ export function toCompareCardViewModel(recommendation, recommendations) {
 }
 
 // HOLD_OUT은 REALISTIC과 비교해야 의미가 있어, 같은 응답 안에서 배열 순서가 아니라 항상
-// type으로 REALISTIC을 찾는다(호출부 책임). 지역/유형/거래가 같다는 전제로 면적·실거래
-// 중앙값 두 가지만 비교하며, 둘 중 하나라도 없으면 null을 돌려주고 호출부가 카드를 숨긴다
-// (없는 값으로 비교를 지어내지 않는다).
+// type으로 REALISTIC을 찾는다(호출부 책임). "현재 준비 상황 반영"/"선택의 폭 확대"처럼
+// 카드 제목과 같은 말을 항목마다 반복하지 않고, 실제로 값이 달라진 조건만 골라 그
+// 항목명(지역/주택 유형/거래 유형/면적/실거래 중앙값)을 직접 보여준다. 우선순위는 이
+// 순서 그대로이며, 동일한 값은 항목 자체를 만들지 않는다 — 이미 "이런 집이에요" 카드에서
+// 볼 수 있는 정보를 여기서 다시 반복하지 않기 위함이다. 실제로 달라진 항목이 하나도
+// 없으면(이론상 두 condition이 완전히 같으면) null을 돌려주고 호출부가 카드를 숨긴다.
 function toHoldOutCompareRows(realistic, holdOut) {
   if (!realistic || !holdOut) return null
-  const realisticMedian = realistic.condition?.marketMedianAmount
-  const holdOutMedian = holdOut.condition?.marketMedianAmount
-  if (typeof realisticMedian !== 'number' || typeof holdOutMedian !== 'number') return null
+  const before = realistic.condition
+  const after = holdOut.condition
+  if (!before || !after) return null
+
+  const items = []
+
+  if (before.regionCode !== after.regionCode) {
+    items.push({
+      key: 'region',
+      label: '지역',
+      fromValue: before.regionName,
+      toValue: after.regionName,
+    })
+  }
+
+  if (before.housingType !== after.housingType) {
+    items.push({
+      key: 'housingType',
+      label: '주택 유형',
+      fromValue: HOUSING_TYPE_LABEL[before.housingType] ?? before.housingType,
+      toValue: HOUSING_TYPE_LABEL[after.housingType] ?? after.housingType,
+    })
+  }
+
+  if (before.dealType !== after.dealType) {
+    items.push({
+      key: 'dealType',
+      label: '거래 유형',
+      fromValue: DEAL_TYPE_LABEL[before.dealType] ?? before.dealType,
+      toValue: DEAL_TYPE_LABEL[after.dealType] ?? after.dealType,
+    })
+  }
+
+  // areaMin/areaMax를 각각 따로 비교하지 않고 "4~9평" 같은 완성된 range 문자열로 합쳐서
+  // 비교한다 — 둘 중 하나만 달라도 면적이라는 하나의 항목으로 묶인다.
+  const beforeArea = formatAreaRange(before.areaMin, before.areaMax)
+  const afterArea = formatAreaRange(after.areaMin, after.areaMax)
+  if (beforeArea !== afterArea) {
+    items.push({ key: 'area', label: '면적', fromValue: beforeArea, toValue: afterArea })
+  }
+
+  if (
+    typeof before.marketMedianAmount === 'number' &&
+    typeof after.marketMedianAmount === 'number' &&
+    before.marketMedianAmount !== after.marketMedianAmount
+  ) {
+    items.push({
+      key: 'marketMedianAmount',
+      label: '실거래 중앙값',
+      fromValue: formatGoalAmount(before.marketMedianAmount),
+      toValue: formatGoalAmount(after.marketMedianAmount),
+    })
+  }
+
+  if (items.length === 0) return null
 
   return {
     title: '선택의 폭을 넓히면 이렇게 달라져요',
-    rows: [
-      {
-        fromLabel: '현재 준비 상황 반영',
-        fromValue: toConditionArea(realistic.condition),
-        toLabel: '선택의 폭 확대',
-        toValue: toConditionArea(holdOut.condition),
-      },
-      {
-        fromLabel: '현재 준비 상황 반영',
-        fromValue: formatGoalAmount(realisticMedian),
-        toLabel: '선택의 폭 확대',
-        toValue: formatGoalAmount(holdOutMedian),
-      },
-    ],
+    rows: items,
   }
 }
 
@@ -321,12 +363,17 @@ function toFundingHighlight({ type, loanX, loanO }) {
 // 합친다 — 실제로 달라지는 값만 비교해야 눈에 잘 띈다. 포맷팅 전 raw 값으로 먼저 같은지
 // 판단해야, 표시 문자열이 우연히 같아 보이는 경우와 실제로 같은 값인 경우를 확실히
 // 구분할 수 있다.
-function createFundingRow({ label, rawWithoutLoan, rawWithLoan, format }) {
+//
+// muted:true(예상 대출 금액)가 아닌 한, 값이 다르면 "대출 활용 시" 쪽(오른쪽)이 대출을
+// 썼을 때 실제로 달라지는 결과이므로 그 쪽만 emphasis를 준다 — type마다 어느 row가
+// 핵심인지 미리 정하지 않고, 실제로 달라진 값이면 어떤 row든 같은 규칙으로 강조된다.
+function createFundingRow({ label, rawWithoutLoan, rawWithLoan, format, muted = false }) {
   const isSame = rawWithoutLoan === rawWithLoan
 
   return {
     label,
     isSame,
+    muted,
     withoutLoan: format(rawWithoutLoan),
     withLoan: format(rawWithLoan),
     common: isSame ? format(rawWithoutLoan) : null,
@@ -334,12 +381,15 @@ function createFundingRow({ label, rawWithoutLoan, rawWithLoan, format }) {
 }
 
 // 상세 화면 "이 목표를 준비하려면" 카드용. PREFERENCE_SAVING_FIXED/PREFERENCE_DATE_FIXED/
-// REALISTIC/HOLD_OUT 네 type 모두 완전히 같은 4행("직접 준비할 금액"/"예상 대출 금액"/
-// "월 저축"/"예상 도달 시점") · 좌우 2열("대출 없이"/"대출 활용 시") 비교 구조를 쓴다 —
-// type마다 표를 다시 해석하지 않도록 순서·컬럼을 고정한다. 어떤 type이 어떤 row를
-// 공통값으로 합칠지 미리 정해두지 않고, 매번 실제 loanX/loanO 값을 비교해 결정한다
-// (예: SAVING_FIXED는 보통 월 저축이 같아 합쳐지고, DATE_FIXED는 보통 목표 시점이 같아
-// 합쳐지지만, 이는 데이터에 따라 달라질 수 있는 결과일 뿐 type별로 고정된 규칙이 아니다).
+// REALISTIC/HOLD_OUT 네 type 모두 완전히 같은 4행 · 좌우 2열("대출 없이"/"대출 활용 시")
+// 비교 구조를 쓴다 — type마다 표를 다시 해석하지 않도록 순서·컬럼을 고정한다.
+//
+// row 순서는 "직접 준비할 금액 → 예상 대출 금액 → 월 저축 → 예상 도달 시점" 고정이다.
+// 어떤 type이 어떤 row를 공통값으로 합칠지도 미리 정해두지 않고, 매번 실제 loanX/loanO
+// 값을 비교해 결정한다(예: SAVING_FIXED는 보통 월 저축이 같아 합쳐지고, DATE_FIXED는
+// 보통 예상 도달 시점이 같아 합쳐지지만, 이는 데이터에 따라 달라질 수 있는 결과일 뿐
+// type별로 고정된 규칙이 아니다). "예상 대출 금액"은 결과가 아니라 다른 row가 달라지는
+// 원인이 되는 조건이라 muted로 한 단계 낮춘다.
 //
 // "대출 반영 목표 금액"처럼 계산 과정을 설명하는 용어 대신, loanO.targetAmount(전체
 // 금액에서 대출금을 뺀 나머지)를 "직접 준비할 금액"으로 통일해 실제로 준비해야 하는
@@ -354,10 +404,12 @@ export function toFundingViewModel({ type, loanX, loanO }) {
       format: formatGoalAmount,
     }),
     // 대출 없이는 "예상 대출 금액" 자체가 존재하지 않는 개념이라(0원이 아니라 해당 없음)
-    // 두 값이 같아지는 경우가 있을 수 없다 — 항상 좌우 비교형으로 고정한다.
+    // 두 값이 같아지는 경우가 있을 수 없다 — 항상 좌우 비교형으로 고정한다. 이 값은
+    // 결과가 아니라 다른 row들이 달라지는 원인이 되는 조건이라 muted로 한 단계 낮춘다.
     {
       label: '예상 대출 금액',
       isSame: false,
+      muted: true,
       withoutLoan: NO_LOAN_AMOUNT_PLACEHOLDER,
       withLoan: loanO ? formatGoalAmount(loanO.loanAmount) : null,
       common: null,
