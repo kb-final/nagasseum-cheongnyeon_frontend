@@ -7,9 +7,11 @@ import { toFundingViewModel } from '@/features/goal/utils/recommendationViewMode
 
 const props = defineProps({
   loanX: { type: Object, required: true },
-  // 대출 활용 플랜이 없는 recommendation도 있을 수 있어 필수값이 아니다.
+  // 대출 활용 플랜이 없는 recommendation도 있을 수 있어 필수값이 아니다. 이때는 "대출 활용
+  // 시" 컬럼과 하단 강조 문구 없이 왼쪽(대출 없이) 값만 보여준다.
   loanO: { type: Object, default: null },
-  // "대출 없이" 영역의 구성이 PREFERENCE_DATE_FIXED만 달라 필요하다.
+  // 대출 효과 문구가 PREFERENCE_DATE_FIXED만 다르게 계산돼(기간 단축이 아니라 월 저축
+  // 감소) 필요하다.
   type: { type: String, default: null },
 })
 
@@ -22,68 +24,48 @@ const view = computed(() =>
   <BaseCard class="recommendation-funding-card">
     <p class="recommendation-funding-card__label">이 목표를 준비하려면</p>
 
-    <section class="recommendation-funding-card__section">
-      <h3 class="recommendation-funding-card__section-title">대출 없이</h3>
-
-      <p class="recommendation-funding-card__row-label">{{ view.withoutLoan.primaryLabel }}</p>
-      <p class="recommendation-funding-card__amount">{{ view.withoutLoan.primaryValueLabel }}</p>
-
-      <div v-if="view.withoutLoan.rows.length > 0" class="recommendation-funding-card__stats">
-        <div
-          v-for="row in view.withoutLoan.rows"
-          :key="row.label"
-          class="recommendation-funding-card__stat"
-        >
-          <span class="recommendation-funding-card__row-label">{{ row.label }}</span>
-          <strong class="recommendation-funding-card__stat-value">{{ row.value }}</strong>
+    <div
+      class="recommendation-funding-card__table"
+      :class="{ 'recommendation-funding-card__table--with-loan': view.hasLoan }"
+    >
+      <template v-if="view.hasLoan">
+        <div class="recommendation-funding-card__row recommendation-funding-card__row--header">
+          <span class="recommendation-funding-card__header-cell" />
+          <span class="recommendation-funding-card__header-cell">대출 없이</span>
+          <span class="recommendation-funding-card__header-cell">대출 활용 시</span>
         </div>
+
+        <BaseDivider class="recommendation-funding-card__divider" />
+      </template>
+
+      <div v-for="row in view.rows" :key="row.label" class="recommendation-funding-card__row">
+        <span class="recommendation-funding-card__row-label">{{ row.label }}</span>
+        <template v-if="view.hasLoan && row.isSame">
+          <span
+            class="recommendation-funding-card__row-value recommendation-funding-card__row-value--common"
+            >{{ row.common }}</span
+          >
+        </template>
+        <template v-else>
+          <span class="recommendation-funding-card__row-value">{{ row.withoutLoan }}</span>
+          <span v-if="view.hasLoan" class="recommendation-funding-card__row-value">{{
+            row.withLoan
+          }}</span>
+        </template>
       </div>
-    </section>
+    </div>
 
-    <template v-if="view.withLoan">
-      <BaseDivider class="recommendation-funding-card__divider" />
+    <p v-if="view.highlight" class="recommendation-funding-card__highlight">
+      {{ view.highlight.prefix }}
+      <strong class="recommendation-funding-card__highlight-emphasis">{{
+        view.highlight.emphasis
+      }}</strong>
+      {{ view.highlight.suffix }}
+    </p>
 
-      <section class="recommendation-funding-card__section">
-        <h3 class="recommendation-funding-card__section-title">대출을 활용하면</h3>
-
-        <div class="recommendation-funding-card__stats">
-          <div
-            v-for="row in view.withLoan.firstRow"
-            :key="row.label"
-            class="recommendation-funding-card__stat"
-          >
-            <span class="recommendation-funding-card__row-label">{{ row.label }}</span>
-            <strong class="recommendation-funding-card__stat-value">{{ row.value }}</strong>
-          </div>
-        </div>
-
-        <div
-          v-if="view.withLoan.secondRow.length > 0"
-          class="recommendation-funding-card__stats recommendation-funding-card__stats--gap"
-        >
-          <div
-            v-for="row in view.withLoan.secondRow"
-            :key="row.label"
-            class="recommendation-funding-card__stat"
-          >
-            <span class="recommendation-funding-card__row-label">{{ row.label }}</span>
-            <strong class="recommendation-funding-card__stat-value">{{ row.value }}</strong>
-          </div>
-        </div>
-
-        <p v-if="view.withLoan.highlight" class="recommendation-funding-card__highlight">
-          {{ view.withLoan.highlight.prefix }}
-          <strong class="recommendation-funding-card__highlight-emphasis">{{
-            view.withLoan.highlight.emphasis
-          }}</strong>
-          {{ view.withLoan.highlight.suffix }}
-        </p>
-
-        <p class="recommendation-funding-card__note">
-          실제 대출 가능 금액은 금융기관 심사 결과에 따라 달라질 수 있어요.
-        </p>
-      </section>
-    </template>
+    <p class="recommendation-funding-card__note">
+      실제 대출 가능 금액은 금융기관 심사 결과에 따라 달라질 수 있어요.
+    </p>
   </BaseCard>
 </template>
 
@@ -100,69 +82,77 @@ const view = computed(() =>
   color: var(--color-text-secondary, #9aa09a);
 }
 
-.recommendation-funding-card__section {
+.recommendation-funding-card__table {
   display: flex;
   flex-direction: column;
 }
 
-.recommendation-funding-card__section-title {
-  margin: 0 0 10px;
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--color-text-primary, #ffffff);
+/*
+  PREFERENCE/REALISTIC/HOLD_OUT 상세 화면 모두 같은 좌우 비교 구조를 쓴다 — 행(직접 준비할
+  금액/예상 대출 금액/월 저축/예상 도달 시점) 순서와 컬럼 위치를 고정해, recommendation
+  종류가 달라져도 표를 새로 해석할 필요가 없게 한다. loanO가 없으면(hasLoan=false) 오른쪽
+  "대출 활용 시" 컬럼 자체가 없어 2열로 줄어든다.
+*/
+.recommendation-funding-card__row {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  align-items: baseline;
+  gap: 8px;
+  padding: 9px 0;
 }
 
-.recommendation-funding-card__row-label {
-  /* "대출 없이" 영역에서는 이 라벨이 <p>라 브라우저 기본 문단 여백이 붙어, 같은 라벨이
-     <span>으로 쓰이는 "대출을 활용하면" 영역보다 섹션 제목과 더 떨어져 보였다.
-     margin을 0으로 고정해 두 영역의 간격을 section-title의 margin-bottom(12px)로 통일한다. */
-  margin: 0;
+.recommendation-funding-card__table--with-loan .recommendation-funding-card__row {
+  grid-template-columns: 90px 1fr 1fr;
+}
+
+/* row끼리의 인접 형제로만 판단해 행 사이 경계에만 선이 그어지게 한다 — 헤더 아래 이미
+   BaseDivider가 있어 첫 데이터 행 위에는 겹쳐 그려지지 않는다. */
+.recommendation-funding-card__row + .recommendation-funding-card__row {
+  border-top: 1px solid var(--color-border, #262626);
+}
+
+.recommendation-funding-card__row--header {
+  padding-bottom: 2px;
+}
+
+/* 값 두 컬럼 위에 붙는 작은 컬럼 제목. row-label과 같은 톤이되, "표 헤더"로 읽히도록
+   가운데 정렬해 그 아래 값들과 시각적으로 묶는다. */
+.recommendation-funding-card__header-cell {
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--color-text-secondary, #9aa09a);
-}
-
-/* 상세 화면 전체 "핵심 값" 공통 크기(17px)에 weight만 700으로 맞춰, 이 카드 안에서도
-   예상 도달 시점·월 저축(stat-value)과 같은 위계로 보이게 한다. */
-.recommendation-funding-card__amount {
-  margin: 4px 0 14px;
-  font-size: 17px;
-  font-weight: 700;
-  color: var(--color-text-primary, #ffffff);
-}
-
-.recommendation-funding-card__stats {
-  display: flex;
-  gap: 12px;
-}
-
-.recommendation-funding-card__stats--gap {
-  margin-top: 10px;
-}
-
-.recommendation-funding-card__stat {
-  display: flex;
-  flex: 1 1 0;
-  flex-direction: column;
-  gap: 3px;
-  min-width: 0;
-}
-
-.recommendation-funding-card__stat-value {
-  margin-top: 2px;
-  overflow: hidden;
-  font-size: 17px;
-  font-weight: 700;
-  color: var(--color-text-primary, #ffffff);
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  text-align: center;
 }
 
 /* BaseDivider 기본값은 테마를 안 타는 legacy 변수(--border)라 라이트 모드에서 너무 짙게
    보인다. 마이페이지(.my-page-view__row)와 같은 테마별 톤(--color-border)으로 맞춘다. */
 .recommendation-funding-card__divider {
-  margin: 17px 0;
+  margin: 2px 0 0;
   background: var(--color-border, #262626);
+}
+
+/* 좌우 비교가 핵심이라 라벨은 연하게 두고 값만 진하게 대비를 준다. */
+.recommendation-funding-card__row-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary, #9aa09a);
+}
+
+.recommendation-funding-card__row-value {
+  overflow: hidden;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text-primary, #ffffff);
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 대출 없이/활용 시 값이 같은 row는 두 값 컬럼을 반복하지 않고 하나로 합쳐, 그 합친
+   영역(두 value 컬럼 폭) 가운데에 값을 한 번만 둔다. row 높이·divider·label 위치는
+   다른 row와 동일하게 유지된다 — value 영역만 병합될 뿐이다. */
+.recommendation-funding-card__row-value--common {
+  grid-column: 2 / span 2;
 }
 
 .recommendation-funding-card__highlight {

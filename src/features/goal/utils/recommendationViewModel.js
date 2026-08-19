@@ -290,84 +290,96 @@ function toHoldOutCompareRows(realistic, holdOut) {
   }
 }
 
-// 월 저축이 0원인 recommendation(REALISTIC 등)은 "월 저축 0원"을 억지로 보여주지 않고
-// 예상 도달 시점만 단독으로 보여준다. 반환된 배열은 그대로 2열(있으면) 그리드에 v-for로
-// 뿌려지므로, 항목이 1개면 자연히 한 칸만 채워진다.
-function toFundingRows({ monthlySaving, targetDate }) {
-  const rows = []
-  if (monthlySaving > 0) {
-    rows.push({ label: '월 저축', value: formatGoalAmount(monthlySaving) })
-  }
-  rows.push({ label: '예상 도달 시점', value: formatYearMonth(targetDate) })
-  return rows
-}
+// "대출 없이" 컬럼에는 예상 대출 금액이라는 개념 자체가 없다 — 0원이 아니라 "해당 없음"이므로
+// 억지로 숫자를 만들지 않고 이 자리표시자로 비워둔다.
+const NO_LOAN_AMOUNT_PLACEHOLDER = '-'
 
-// loanO가 있을 때 "대출을 활용하면" 영역용. PREFERENCE_DATE_FIXED는 목표 시점이 이미
-// 고정돼 있어 대출 효과를 "기간 단축"이 아니라 "월 저축 부담 감소"로 보여준다 — 반대로
-// 나머지 세 type은 월 저축액(또는 목표 자체)이 고정이라 대출 효과가 "도달 시점 단축"이다.
-function toWithLoanViewModel({ loanX, loanO, isDateFixed }) {
-  if (isDateFixed) {
+// loanO가 있을 때 하단 강조 문구용. PREFERENCE_DATE_FIXED는 목표 시점이 이미 고정돼 있어
+// 대출 효과를 "기간 단축"이 아니라 "월 저축 부담 감소"로 보여준다 — 반대로 나머지 세
+// type은 월 저축액(또는 목표 자체)이 고정이라 대출 효과가 "도달 시점 단축"이다. 두 경우
+// 모두 실제로 줄어드는 값이 없으면(0 이하) null을 돌려줘 문구 자체를 지어내지 않는다.
+function toFundingHighlight({ type, loanX, loanO }) {
+  if (type === 'PREFERENCE_DATE_FIXED') {
     const reducedMonthlySaving = Math.max(loanX.monthlySaving - loanO.monthlySaving, 0)
+    if (reducedMonthlySaving <= 0) return null
     return {
-      firstRow: [
-        { label: '예상 대출 금액', value: formatGoalAmount(loanO.loanAmount) },
-        { label: '필요 월 저축', value: formatGoalAmount(loanO.monthlySaving) },
-      ],
-      secondRow: [],
-      highlight:
-        reducedMonthlySaving > 0
-          ? {
-              prefix: '대출을 활용하면 매달',
-              emphasis: formatGoalAmount(reducedMonthlySaving),
-              suffix: '적게 준비해도 돼요.',
-            }
-          : null,
+      prefix: '대출을 활용하면 필요한 월 저축액이',
+      emphasis: formatGoalAmount(reducedMonthlySaving),
+      suffix: '줄어들어요.',
     }
   }
 
+  if (typeof loanO.shortenedMonths !== 'number' || loanO.shortenedMonths <= 0) return null
   return {
-    firstRow: [
-      { label: '예상 대출 금액', value: formatGoalAmount(loanO.loanAmount) },
-      { label: '대출 반영 목표 금액', value: formatGoalAmount(loanO.targetAmount) },
-    ],
-    secondRow: toFundingRows(loanO),
-    highlight:
-      typeof loanO.shortenedMonths === 'number' && loanO.shortenedMonths > 0
-        ? {
-            prefix: '대출을 활용하면 예상 도달 시점이',
-            emphasis: formatMonthsToYearsKo(loanO.shortenedMonths),
-            suffix: '빨라져요.',
-          }
-        : null,
+    prefix: '대출을 활용하면 도달 시점이',
+    emphasis: formatMonthsToYearsKo(loanO.shortenedMonths),
+    suffix: '앞당겨져요.',
   }
 }
 
-// 상세 화면 "이 목표를 준비하려면" 카드용. loanO가 없으면 withLoan을 null로 돌려주고,
-// 호출부가 그 section을 통째로 렌더링하지 않는다.
-//
-// PREFERENCE_DATE_FIXED만 다르게 구성한다 — 나머지 세 type(PREFERENCE_SAVING_FIXED/
-// REALISTIC/HOLD_OUT)은 loanX.targetAmount가 이 계획의 목표 금액 그 자체라 그 값을 크게
-// 보여주지만, DATE_FIXED는 목표 시점이 이미 고정돼 있어(핵심 카드에서 이미 보여줌)
-// targetAmount 대신 "필요 월 저축"을 강조한다.
-export function toFundingViewModel(recommendation) {
-  const { type, loanX, loanO } = recommendation
-  const isDateFixed = type === 'PREFERENCE_DATE_FIXED'
-
-  const withoutLoan = isDateFixed
-    ? {
-        primaryLabel: '필요 월 저축',
-        primaryValueLabel: formatGoalAmount(loanX.monthlySaving),
-        rows: [],
-      }
-    : {
-        primaryLabel: '목표 금액',
-        primaryValueLabel: formatGoalAmount(loanX.targetAmount),
-        rows: toFundingRows(loanX),
-      }
+// 대출 없이/활용 시 값이 같은 row는 좌우로 반복해서 보여주지 않고 공통값 한 번으로
+// 합친다 — 실제로 달라지는 값만 비교해야 눈에 잘 띈다. 포맷팅 전 raw 값으로 먼저 같은지
+// 판단해야, 표시 문자열이 우연히 같아 보이는 경우와 실제로 같은 값인 경우를 확실히
+// 구분할 수 있다.
+function createFundingRow({ label, rawWithoutLoan, rawWithLoan, format }) {
+  const isSame = rawWithoutLoan === rawWithLoan
 
   return {
-    withoutLoan,
-    withLoan: loanO ? toWithLoanViewModel({ loanX, loanO, isDateFixed }) : null,
+    label,
+    isSame,
+    withoutLoan: format(rawWithoutLoan),
+    withLoan: format(rawWithLoan),
+    common: isSame ? format(rawWithoutLoan) : null,
+  }
+}
+
+// 상세 화면 "이 목표를 준비하려면" 카드용. PREFERENCE_SAVING_FIXED/PREFERENCE_DATE_FIXED/
+// REALISTIC/HOLD_OUT 네 type 모두 완전히 같은 4행("직접 준비할 금액"/"예상 대출 금액"/
+// "월 저축"/"예상 도달 시점") · 좌우 2열("대출 없이"/"대출 활용 시") 비교 구조를 쓴다 —
+// type마다 표를 다시 해석하지 않도록 순서·컬럼을 고정한다. 어떤 type이 어떤 row를
+// 공통값으로 합칠지 미리 정해두지 않고, 매번 실제 loanX/loanO 값을 비교해 결정한다
+// (예: SAVING_FIXED는 보통 월 저축이 같아 합쳐지고, DATE_FIXED는 보통 목표 시점이 같아
+// 합쳐지지만, 이는 데이터에 따라 달라질 수 있는 결과일 뿐 type별로 고정된 규칙이 아니다).
+//
+// "대출 반영 목표 금액"처럼 계산 과정을 설명하는 용어 대신, loanO.targetAmount(전체
+// 금액에서 대출금을 뺀 나머지)를 "직접 준비할 금액"으로 통일해 실제로 준비해야 하는
+// 돈이 얼마인지 바로 읽히게 한다. loanO가 없으면 오른쪽(대출 활용 시) 컬럼과 하단
+// 강조 문구를 통째로 비워, 호출부가 왼쪽 컬럼만 그리도록 한다.
+export function toFundingViewModel({ type, loanX, loanO }) {
+  const rows = [
+    createFundingRow({
+      label: '직접 준비할 금액',
+      rawWithoutLoan: loanX.targetAmount,
+      rawWithLoan: loanO?.targetAmount,
+      format: formatGoalAmount,
+    }),
+    // 대출 없이는 "예상 대출 금액" 자체가 존재하지 않는 개념이라(0원이 아니라 해당 없음)
+    // 두 값이 같아지는 경우가 있을 수 없다 — 항상 좌우 비교형으로 고정한다.
+    {
+      label: '예상 대출 금액',
+      isSame: false,
+      withoutLoan: NO_LOAN_AMOUNT_PLACEHOLDER,
+      withLoan: loanO ? formatGoalAmount(loanO.loanAmount) : null,
+      common: null,
+    },
+    createFundingRow({
+      label: '월 저축',
+      rawWithoutLoan: loanX.monthlySaving,
+      rawWithLoan: loanO?.monthlySaving,
+      format: formatGoalAmount,
+    }),
+    createFundingRow({
+      label: '예상 도달 시점',
+      rawWithoutLoan: loanX.targetDate,
+      rawWithLoan: loanO?.targetDate,
+      format: formatYearMonth,
+    }),
+  ]
+
+  return {
+    hasLoan: loanO != null,
+    rows,
+    highlight: loanO ? toFundingHighlight({ type, loanX, loanO }) : null,
   }
 }
 
