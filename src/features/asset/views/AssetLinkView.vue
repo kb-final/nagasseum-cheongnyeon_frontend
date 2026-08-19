@@ -33,8 +33,6 @@ const institutions = computed(() =>
     })),
 )
 
-// 은행 > 증권 > 카드 순으로 섹션을 나눠 보여준다. 기관 수가 카테고리당 많지 않아
-// 아코디언 없이 전부 펼친 채로 둬도 스크롤 부담이 크지 않다.
 const BUSINESS_TYPE_ORDER = ['BK', 'ST', 'CD']
 
 const groupedInstitutions = computed(() => {
@@ -75,8 +73,8 @@ function handleNext() {
 }
 
 onMounted(() =>
-  loadInstitutions(() => assetStore.fetchOrganizations(), {
-    skipSkeleton: assetStore.isLoaded,
+  loadInstitutions(() => assetStore.fetchOrganizations({ force: !isOnboarding.value }), {
+    skipSkeleton: isOnboarding.value && assetStore.isLoaded,
     errorMessage: '연동 가능한 기관을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.',
   }),
 )
@@ -95,7 +93,7 @@ onMounted(() =>
     <div class="asset-link-view__body">
       <div class="asset-link-view__intro">
         <h2 class="asset-link-view__title">연동할 기관을 선택하세요</h2>
-        <p class="asset-link-view__subtitle">CODEF를 통해 안전하게 현재 고도(자산)를 측정해요</p>
+        <p class="asset-link-view__subtitle">CODEF 인증 한 번으로 내 자산을 안전하게 측정해요</p>
       </div>
 
       <p v-if="errorMessage" class="asset-link-view__error">{{ errorMessage }}</p>

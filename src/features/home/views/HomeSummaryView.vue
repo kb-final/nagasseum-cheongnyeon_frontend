@@ -7,7 +7,6 @@ import BaseSkeleton from '@/shared/components/atoms/feedback/Skeleton/BaseSkelet
 import { useHomeStore } from '@/features/home/store/homeStore'
 import { useMemberStore } from '@/features/member/store/memberStore'
 import { useAssetStore, FLOW_CONTEXT } from '@/features/asset'
-import { useHomeEntranceAnimation } from '@/features/home/composables/useHomeEntranceAnimation'
 import GreetingHeader from '@/features/home/components/GreetingHeader.vue'
 import ClimbProgressCard from '@/features/home/components/ClimbProgressCard.vue'
 import ActiveGoalCard from '@/features/home/components/ActiveGoalCard.vue'
@@ -19,9 +18,6 @@ const homeStore = useHomeStore()
 const memberStore = useMemberStore()
 const assetStore = useAssetStore()
 const router = useRouter()
-
-// 이번 세션에서 홈에 처음 들어왔을 때만 카드가 순서대로 떠오르는 진입 모션을 재생한다.
-const shouldAnimate = useHomeEntranceAnimation()
 
 const member = computed(() => ({
   ...homeStore.member,
@@ -58,7 +54,7 @@ function goToAssetLink() {
 </script>
 
 <template>
-  <div class="home-summary-view" :class="{ 'home-summary-view--animated': shouldAnimate }">
+  <div class="home-summary-view home-summary-view--animated">
     <template v-if="homeStore.loaded">
       <GreetingHeader :member="member" />
 
@@ -117,7 +113,7 @@ function goToAssetLink() {
 }
 
 /*
-  세션 최초 진입 때만 카드가 위에서부터 순서대로 살짝 떠오르며 나타나게 한다.
+  카드가 위에서부터 순서대로 살짝 떠오르며 나타나게 한다.
   card-rise는 main.css에 공용으로 정의된 페이드+rise 모션(비교 화면 카드들도 같이 쓴다).
   자식 컴포넌트 루트가 부모(this) scope 속성을 같이 갖기 때문에 :deep() 없이도 닿는다.
 */

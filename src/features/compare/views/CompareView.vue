@@ -1,9 +1,11 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 
 import { formatEokManwon, formatManwon } from '@/shared/utils/formatter'
 import AppHeader from '@/shared/components/molecules/AppHeader.vue'
 
+import { FLOW_CONTEXT, useAssetStore } from '@/features/asset'
 import { useMemberStore } from '@/features/member/store/memberStore'
 
 import { useAssetComparison } from '@/features/compare/composables/useAssetComparison'
@@ -26,8 +28,15 @@ import PopularRegionsCard from '@/features/compare/components/PopularRegionsCard
 import SavingRangeCard from '@/features/compare/components/SavingRangeCard.vue'
 import StateNoticeCard from '@/features/compare/components/StateNoticeCard.vue'
 
+const router = useRouter()
 const memberStore = useMemberStore()
+const assetStore = useAssetStore()
 const hasCompareConsent = computed(() => memberStore.profile?.compareDataAgreed ?? false)
+
+function goToAdditionalAssetLink() {
+  assetStore.setFlowContext(FLOW_CONTEXT.ADDITIONAL)
+  router.push({ name: 'asset-link' })
+}
 
 const hasIncomeInfo = computed(() => memberStore.profile?.monthlyIncome != null)
 const hasOccupationInfo = computed(() => memberStore.profile?.occupationType != null)
@@ -214,7 +223,9 @@ onMounted(async () => {
             또래 비교는 순자산이 비슷한 사람끼리 묶어서 보여드려요.<br />
             자산을 연동하면 바로 결과를 볼 수 있어요.
             <template #action>
-              <RouterLink class="state-card__cta" to="/asset-link">자산 연동하러 가기</RouterLink>
+              <button type="button" class="state-card__cta" @click="goToAdditionalAssetLink">
+                자산 연동하러 가기
+              </button>
             </template>
           </StateNoticeCard>
 
@@ -669,11 +680,14 @@ onMounted(async () => {
   display: inline-flex;
   align-items: center;
   padding: 8px 15px;
+  border: none;
   border-radius: 999px;
   background: var(--c-accent);
   color: var(--c-on-accent);
+  font-family: inherit;
   font-size: 12px;
   font-weight: 700;
   text-decoration: none;
+  cursor: pointer;
 }
 </style>
