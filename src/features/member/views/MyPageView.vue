@@ -273,21 +273,43 @@ function confirmLogout() {
 }
 
 .my-page-view__avatar {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 76px;
   height: 76px;
   border-radius: 38px;
+  /* 아래 avatar-img를 원보다 크게 키워 잘라내므로, 원 밖으로 넘치는 부분을 잘라낸다 */
+  overflow: hidden;
   /* BaseCard와 같은 배경·그림자 */
   background: var(--color-surface, #161616);
   box-shadow: 0 2px 6px rgba(90, 143, 77, 0.06);
 }
 
+/*
+  climber.png는 1086x1448 전신 그림이다. 76px 원 안에 전신을 다 넣으면 얼굴이 몇 px밖에
+  안 되어 누구인지 알아볼 수 없다. 프로필 사진이니 사람 얼굴처럼 상반신만 보이도록
+  원본을 확대해 잘라 쓴다.
+
+  보여줄 구간은 원본 좌표로 x 103~983, y -40~840 (880x880 정사각)이고,
+  아래 값은 전부 그 구간에서 나온 계산 결과다.
+    배율   = 76 / 880
+    width  = 1086 x 배율 / 76 = 123.4%
+    left   = -103 x 배율 / 76 = -11.7%
+    top    = 40   x 배율 / 76 = 4.6%
+  y가 음수인 것은 그림 위쪽 바깥까지 구간에 넣었다는 뜻이다. 모자 위에 여백이 생겨
+  얼굴이 원 중앙에 가깝게 놓인다. 그 여백은 원의 배경색이 그대로 보인다.
+
+  구간을 넓히면 캐릭터가 작아지고(width 감소) 좁히면 커진다. top을 키우면 캐릭터가
+  아래로, 줄이면 위로 움직인다. 그림을 바꾸면 이 세 값을 다시 계산해야 한다.
+*/
 .my-page-view__avatar-img {
-  width: 70%;
-  height: 70%;
-  object-fit: contain;
+  position: absolute;
+  top: 4.6%;
+  left: -11.7%;
+  width: 123.4%;
+  height: auto;
 }
 
 .my-page-view__nickname {
