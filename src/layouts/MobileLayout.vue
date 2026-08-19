@@ -30,6 +30,7 @@ const HIDDEN_NAV_ROUTE_NAMES = [
   'goal-recommendation-detail',
   'edit-info',
   'asset-link-additional',
+  'asset-detail',
 ]
 
 const activeIndex = computed(() =>

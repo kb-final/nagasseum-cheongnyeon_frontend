@@ -13,6 +13,12 @@ const props = defineProps({
 })
 
 /**
+ * edit — 직접 등록한 자산 타일을 눌렀을 때. 인자로 그 자산의 뷰모델을 그대로 올려보낸다.
+ * add  — 직접 등록한 자산이 하나도 없을 때 뜨는 등록 버튼을 눌렀을 때.
+ */
+defineEmits(['edit', 'add'])
+
+/**
  * 카테고리 표시명.
  */
 const CATEGORY_LABELS = {
@@ -80,6 +86,8 @@ const groups = computed(() => {
       institution: '',
       name: asset.name,
       amount: asset.amount ?? 0,
+      // 이 값이 있는 항목만 눌러서 고칠 수 있다. 연동 계좌 항목에는 없으므로 자연히 정적으로 남는다.
+      manualAsset: asset,
     })
   }
 
@@ -117,6 +125,8 @@ const itemCount = computed(() =>
           :institution="item.institution"
           :name="item.name"
           :amount="item.amount"
+          :editable="Boolean(item.manualAsset)"
+          @edit="$emit('edit', item.manualAsset)"
         />
       </div>
     </div>
@@ -125,6 +135,21 @@ const itemCount = computed(() =>
       아직 연동된 계좌가 없어요.<br />
       금융기관을 연동하면 여기에 모입니다.
     </p>
+
+    <!--
+      전월세 보증금은 CODEF로 못 가져와서 회원이 직접 넣어야 하는데, 지금까지는 가입할 때
+      딱 한 번만 넣을 수 있었다. 그때 건너뛴 사람이나 나중에 이사한 사람이 등록할 자리가
+      여기다. 이미 등록한 자산이 있으면 숨긴다 — 백엔드에 중복 검사가 없어서 버튼을 계속
+      띄워두면 "현재 거주 보증금"이 두 개 생긴다.
+    -->
+    <button
+      v-if="manualAssets.length === 0"
+      type="button"
+      class="inventory__add"
+      @click="$emit('add')"
+    >
+      + 현재 거주 보증금 등록하기
+    </button>
   </section>
 </template>
 
@@ -133,6 +158,26 @@ const itemCount = computed(() =>
   display: flex;
   flex-direction: column;
   gap: 14px;
+}
+
+/* 실제 보유 항목이 아니라 "여기에 채워 넣으세요"라는 자리라서, 타일과 같은 채운 카드가
+   아니라 점선 테두리로 비어 있음을 드러낸다. */
+.inventory__add {
+  width: 100%;
+  padding: 11px;
+  border: 1px dashed var(--c-line);
+  border-radius: 10px;
+  background: none;
+  color: var(--c-ink-muted);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.inventory__add:hover,
+.inventory__add:focus-visible {
+  border-color: var(--c-accent-mid);
+  color: var(--c-ink);
 }
 
 .inventory__head {

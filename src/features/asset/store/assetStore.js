@@ -116,6 +116,11 @@ function buildLoanAccountViewModel(loan, institutionName) {
 function buildManualAssetViewModel(asset) {
   return {
     id: `manual-${asset.id}`,
+    // 위 id는 연동 계좌 key와 섞이지 않게 접두어를 붙인 화면용 문자열이라, 수정·삭제
+    // API(PUT/DELETE /api/v1/assets/manual/{id})에 그대로 넘길 수 없다. 원본 숫자 id와
+    // assetType(수정 요청 본문에 함께 실어야 한다)을 따로 남긴다.
+    manualId: asset.id,
+    assetType: asset.assetType,
     name: MANUAL_ASSET_TYPE_LABELS[asset.assetType] ?? asset.assetType,
     subLabel: '직접 등록',
     amount: asset.amount,

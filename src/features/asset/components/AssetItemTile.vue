@@ -15,7 +15,14 @@ const props = defineProps({
   institution: { type: String, default: '' },
   name: { type: String, required: true },
   amount: { type: Number, default: 0 },
+  /**
+   * 눌러서 고칠 수 있는 항목인지. 직접 등록한 자산(보증금 등)만 true다.
+   * 연동 계좌는 CODEF가 채우는 값이라 여기서 손댈 수 없다.
+   */
+  editable: { type: Boolean, default: false },
 })
+
+defineEmits(['edit'])
 
 /**
  * 종류별 아이콘.
@@ -52,7 +59,17 @@ const label = computed(() => TYPE_LABELS[props.type] || props.type || '기타')
 </script>
 
 <template>
-  <div class="item-tile">
+  <!--
+    고칠 수 있는 항목만 button으로 바꾼다. 항상 button으로 두면 연동 계좌까지 눌리는 것처럼
+    보이고, 키보드 탭 이동에서도 눌러봐야 아무 일도 없는 항목이 잔뜩 잡힌다.
+  -->
+  <component
+    :is="editable ? 'button' : 'div'"
+    :type="editable ? 'button' : undefined"
+    class="item-tile"
+    :class="{ 'item-tile--editable': editable }"
+    @click="editable && $emit('edit')"
+  >
     <span class="item-tile__slot">
       <img class="item-tile__icon" :src="icon" alt="" />
     </span>
@@ -66,7 +83,20 @@ const label = computed(() => TYPE_LABELS[props.type] || props.type || '기타')
     </div>
 
     <span class="item-tile__amount">{{ formatWon(amount) }}</span>
-  </div>
+
+    <!-- 누를 수 있다는 신호. 금액 오른쪽에 두어 "이 숫자를 고칠 수 있다"로 읽히게 한다. -->
+    <span v-if="editable" class="item-tile__edit-hint" aria-hidden="true">
+      <svg viewBox="0 0 16 16" width="11" height="11">
+        <path
+          d="M11 1L15 5L5 15H1V11L11 1Z"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.6"
+          stroke-linejoin="round"
+        />
+      </svg>
+    </span>
+  </component>
 </template>
 
 <style scoped>
@@ -74,12 +104,35 @@ const label = computed(() => TYPE_LABELS[props.type] || props.type || '기타')
   display: flex;
   align-items: center;
   gap: 10px;
+  /* button으로 렌더될 때 브라우저 기본 폭(auto)과 정렬을 div일 때와 똑같이 맞춘다 */
+  width: 100%;
   padding: 9px 11px;
   border: 1px solid var(--c-line);
   border-radius: 10px;
   background: var(--c-card);
+  font: inherit;
+  text-align: left;
   /* 루트의 145%가 26.1px 고정으로 상속된다. 글자가 작아 그대로 두면 너무 벌어진다. */
   line-height: 1.3;
+}
+
+.item-tile--editable {
+  cursor: pointer;
+}
+
+/* 누를 수 있는 항목이라는 것을 hover/focus에서 한 번 더 알린다. 테두리 색만 바꿔
+   레이아웃이 흔들리지 않게 한다. */
+.item-tile--editable:hover,
+.item-tile--editable:focus-visible {
+  border-color: var(--c-accent-mid);
+}
+
+.item-tile__edit-hint {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--c-ink-faint);
 }
 
 /*
