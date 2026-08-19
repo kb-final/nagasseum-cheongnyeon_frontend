@@ -37,16 +37,20 @@ function handleSelect() {
 
     <div class="recommendation-card__stats">
       <div class="recommendation-card__stat">
-        <span class="recommendation-card__stat-label">추가 준비 금액</span>
-        <strong class="recommendation-card__stat-value recommendation-card__stat-value--amount">{{
-          view.targetAmountLabel
-        }}</strong>
+        <span class="recommendation-card__stat-label">{{ view.left.label }}</span>
+        <strong
+          class="recommendation-card__stat-value"
+          :class="{ 'recommendation-card__stat-value--emphasized': view.left.emphasized }"
+          >{{ view.left.value }}</strong
+        >
       </div>
       <div class="recommendation-card__stat">
-        <span class="recommendation-card__stat-label">{{ view.targetDateFieldLabel }}</span>
-        <strong class="recommendation-card__stat-value recommendation-card__stat-value--date">{{
-          view.targetDateLabel
-        }}</strong>
+        <span class="recommendation-card__stat-label">{{ view.right.label }}</span>
+        <strong
+          class="recommendation-card__stat-value"
+          :class="{ 'recommendation-card__stat-value--emphasized': view.right.emphasized }"
+          >{{ view.right.value }}</strong
+        >
       </div>
     </div>
 
@@ -81,10 +85,12 @@ function handleSelect() {
   color: var(--color-text-primary, #ffffff);
 }
 
+/* 초록색 자체는 유지하되, 카드 제목 다음으로 지나치게 먼저 눈에 띄지 않도록 계산
+   결과값(--emphasized, 800)보다 한참 낮은 weight로 낮춘다. */
 .recommendation-card__strategy {
   margin: 0 0 6px;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--color-primary, #1d6b3f);
 }
 
@@ -117,28 +123,27 @@ function handleSelect() {
   min-width: 0;
 }
 
+/* metric label은 값을 설명하는 역할만 하도록 위계를 가장 약하게 둔다. */
 .recommendation-card__stat-label {
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 500;
   color: var(--color-text-secondary, #9aa09a);
 }
 
 .recommendation-card__stat-value {
   overflow: hidden;
   font-size: 17px;
+  font-weight: 700;
   color: var(--color-text-primary, #ffffff);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* 세 계획을 비교할 때 "추가 준비 금액"을 먼저 읽도록, 크기는 그대로 두고 두 값의
-   font-weight 단계만 벌린다 (금액을 더 굵게 / 시점을 한 단계 낮춤). 새 색상·배경은 쓰지 않는다. */
-.recommendation-card__stat-value--amount {
+/* 두 값 중 실제 "계산된 결과값"(view.left/right.emphasized) 쪽만 font-weight를 한 단계
+   높인다 — 크기·색상은 그대로 두고 무게감만 벌린다. type마다 결과값이 왼쪽/오른쪽 어디에
+   오는지는 recommendationViewModel.js가 결정하고, 여기서는 emphasized 여부만 반영한다. */
+.recommendation-card__stat-value--emphasized {
   font-weight: 800;
-}
-
-.recommendation-card__stat-value--date {
-  font-weight: 600;
 }
 
 .recommendation-card__more {
@@ -146,7 +151,7 @@ function handleSelect() {
   align-items: center;
   justify-content: flex-end;
   gap: 2px;
-  margin-top: 10px;
+  margin-top: 15px;
   font-size: 13px;
   font-weight: 700;
   color: var(--color-primary, #1d6b3f);

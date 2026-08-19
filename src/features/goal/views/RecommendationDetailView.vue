@@ -8,15 +8,13 @@ import BaseSkeleton from '@/shared/components/atoms/feedback/Skeleton/BaseSkelet
 import BaseEmptyState from '@/shared/components/atoms/feedback/EmptyState/BaseEmptyState.vue'
 
 import RecommendationHousingCard from '@/features/goal/components/RecommendationHousingCard.vue'
-import RecommendationBasisCard from '@/features/goal/components/RecommendationBasisCard.vue'
-import RecommendationAmountBreakdownCard from '@/features/goal/components/RecommendationAmountBreakdownCard.vue'
+import RecommendationCompareCard from '@/features/goal/components/RecommendationCompareCard.vue'
 import RecommendationFundingCard from '@/features/goal/components/RecommendationFundingCard.vue'
 import { useGoalStore } from '@/features/goal/store/goalStore'
 import {
   RECOMMENDATION_TITLE_MAP,
   toRecommendationDescription,
-  toBasisViewModel,
-  toAmountBreakdownViewModel,
+  toCompareCardViewModel,
   toGoalCreationPayload,
 } from '@/features/goal/utils/recommendationViewModel'
 
@@ -37,21 +35,13 @@ const recommendation = computed(
 
 const title = computed(() => RECOMMENDATION_TITLE_MAP[props.type] ?? recommendation.value?.title)
 const description = computed(() => toRecommendationDescription(recommendation.value))
-const basisView = computed(() =>
-  recommendation.value
-    ? toBasisViewModel(recommendation.value, goalStore.recommendationBasis?.targetDate)
-    : null,
+
+// PREFERENCE_SAVING_FIXED/PREFERENCE_DATE_FIXED/HOLD_OUT만 "핵심 카드"가 있다. REALISTIC은
+// 추천된 주거 조건 자체가 핵심 결과라 이 카드를 따로 두지 않는다(null이면 화면에서 자동으로
+// 빠진다). HOLD_OUT은 같은 응답 안의 REALISTIC과 비교해야 해서 전체 목록도 함께 넘긴다.
+const compareView = computed(() =>
+  toCompareCardViewModel(recommendation.value, goalStore.recommendations),
 )
-// 실거래 중앙값·현재 활용 가능 자금 중 하나라도 아직 응답에 없으면 null이 되고, 그 경우
-// 카드 자체를 숨긴다(23번 요구사항 — 없는 값으로 계산식을 지어내지 않는다).
-const amountBreakdownView = computed(() => {
-  if (!recommendation.value) return null
-  return toAmountBreakdownViewModel({
-    marketMedianAmount: recommendation.value.condition.marketMedianAmount,
-    currentAvailableAmount: goalStore.recommendationBasis?.currentAvailableAmount,
-    additionalAmount: recommendation.value.loanX.targetAmount,
-  })
-})
 
 onMounted(() => {
   if (!recommendation.value) goalStore.loadRecommendationResult()
@@ -100,15 +90,11 @@ function goToRecommendations() {
 
       <div class="recommendation-detail-view__cards">
         <RecommendationHousingCard :condition="recommendation.condition" />
-        <RecommendationBasisCard
-          v-if="basisView"
-          :title="basisView.title"
-          :description="basisView.description"
-          :description-emphasis="basisView.descriptionEmphasis"
-          :rows="basisView.rows"
-          :timeline="basisView.timeline"
+        <RecommendationCompareCard
+          v-if="compareView"
+          :title="compareView.title"
+          :rows="compareView.rows"
         />
-        <RecommendationAmountBreakdownCard v-if="amountBreakdownView" :view="amountBreakdownView" />
         <RecommendationFundingCard
           :loan-x="recommendation.loanX"
           :loan-o="recommendation.loanO"
