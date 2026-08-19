@@ -148,8 +148,23 @@ export function useGoalConditionSteps() {
   const isLastStep = computed(() => currentIndex.value === totalSteps.value - 1)
   const isFirstStep = computed(() => currentIndex.value === 0)
 
-  // 지역은 유일한 필수 조건이라 고르기 전에는 다음으로 못 넘어간다.
-  const canGoNext = computed(() => currentStep.value.key !== 'region' || Boolean(form.regionCode))
+  /**
+   * 지역은 유일한 필수 조건이라 고르기 전에는 다음으로 못 넘어간다.
+   *
+   * 선택형(주거유형·거래유형)도 아무것도 고르지 않은 상태에서는 막는다. 고르지 않고 '다음'을
+   * 누르면 answered만 true가 되고 값은 null이라, 결국 '이 조건은 건너뛸게요'와 완전히 같은
+   * payload가 나간다 — 버튼 두 개가 같은 일을 하게 되어 사용자가 둘의 차이를 오해한다.
+   * 정하지 않았다면 '건너뛸게요'로 가도록 유도한다.
+   *
+   * 범위형·목표 시점은 막지 않는다. 슬라이더와 연월 선택은 항상 어떤 값을 들고 있어서
+   * "화면에 보이는 이 값으로 하겠다"는 확정이 성립하기 때문이다.
+   */
+  const canGoNext = computed(() => {
+    const step = currentStep.value
+    if (step.key === 'region') return Boolean(form.regionCode)
+    if (step.kind === 'choice') return Boolean(form[step.key])
+    return true
+  })
 
   // 지역은 필수라서, 월세는 백엔드 검증 때문에 건너뛸 수 없다.
   const canSkip = computed(() => !['region', 'monthlyRent'].includes(currentStep.value.key))
