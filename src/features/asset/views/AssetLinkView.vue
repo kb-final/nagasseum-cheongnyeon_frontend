@@ -74,9 +74,11 @@ function handleNext() {
   router.push({ name: 'asset-auth' })
 }
 
+// 마이페이지 추가 연동 흐름은 세션 중 다른 경로로 연동 상태가 바뀌었을 수 있어
+// 캐시된 organizations를 믿지 않고 매번 최신 연동 상태를 다시 조회한다.
 onMounted(() =>
-  loadInstitutions(() => assetStore.fetchOrganizations(), {
-    skipSkeleton: assetStore.isLoaded,
+  loadInstitutions(() => assetStore.fetchOrganizations({ force: !isOnboarding.value }), {
+    skipSkeleton: isOnboarding.value && assetStore.isLoaded,
     errorMessage: '연동 가능한 기관을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.',
   }),
 )
