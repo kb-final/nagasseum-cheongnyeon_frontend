@@ -150,13 +150,8 @@ async function onSubmit() {
 }
 
 .diagnosis-form__suffix {
-  position: absolute;
-  top: 50%;
-  right: 16px;
-  transform: translateY(-50%);
   color: var(--text, #9aa09a);
   font-size: 14px;
-  pointer-events: none;
 }
 
 /* BaseButton의 공용 primary 색상(다른 화면과 공유)과 별개로 이 화면의 제출 버튼만 색을 지정한다 */
