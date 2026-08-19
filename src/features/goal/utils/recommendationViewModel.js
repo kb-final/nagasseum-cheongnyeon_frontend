@@ -47,6 +47,14 @@ const RECOMMENDATION_DESCRIPTION_MAP = {
   HOLD_OUT: '주거 조건을 유지했을 때 필요한 준비 기간을 계산했어요.',
 }
 
+// 비교 카드로 그릴 수 있는(유효한) 추천인지 판별한다. 백엔드는 "현재 저축 계획으로는 원하는
+// 조건 달성이 어려운" HOLD_OUT 케이스를 condition/loanX 전부 null(안내용 title·reason만 채운)로
+// 내려준다 — 이 카드는 지역·유형·금액·시점을 비교해 보여주는 게 목적이라 그 값들이 없으면 그릴 수
+// 없으므로 목록에서 제외한다(배포 동작과 동일). 비교 대상이 아닌 안내 문구는 카드로 만들지 않는다.
+export function isComparableRecommendation(recommendation) {
+  return recommendation?.condition != null && recommendation?.loanX != null
+}
+
 // API 배열을 화면에 표시할 순서로 정렬한다. 정의된 type 우선순위 뒤로는 원래 순서를 유지한다.
 export function sortRecommendations(recommendations) {
   return [...(recommendations ?? [])].sort(

@@ -10,6 +10,7 @@ import BaseEmptyState from '@/shared/components/atoms/feedback/EmptyState/BaseEm
 import RecommendationCard from '@/features/goal/components/RecommendationCard.vue'
 import { useGoalStore } from '@/features/goal/store/goalStore'
 import {
+  isComparableRecommendation,
   sortRecommendations,
   toDiagnosisBasisLabel,
 } from '@/features/goal/utils/recommendationViewModel'
@@ -24,7 +25,11 @@ const DETAIL_ROUTE_NAME = 'goal-recommendation-detail'
 const router = useRouter()
 const goalStore = useGoalStore()
 
-const sortedRecommendations = computed(() => sortRecommendations(goalStore.recommendations))
+// condition/loanX가 없는 안내용 추천(달성 어려움 HOLD_OUT 등)은 비교 카드로 그릴 수 없어
+// 제외한다. 이 필터가 없으면 RecommendationCard가 null을 참조하다 렌더 중 크래시한다.
+const sortedRecommendations = computed(() =>
+  sortRecommendations(goalStore.recommendations).filter(isComparableRecommendation),
+)
 const currentAvailableAmountLabel = computed(() =>
   toDiagnosisBasisLabel(goalStore.recommendationBasis),
 )
