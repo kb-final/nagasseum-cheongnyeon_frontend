@@ -2,19 +2,26 @@
 import BaseCard from '@/shared/components/atoms/base/card/BaseCard.vue'
 import BaseButton from '@/shared/components/atoms/base/button/BaseButton.vue'
 
+defineProps({
+  errorMessage: { type: String, default: '' },
+})
 defineEmits(['link-asset'])
 </script>
 
 <template>
   <BaseCard class="empty-asset-card">
-    <p class="empty-asset-card__heading">연동된 자산이 없어요</p>
-    <p class="empty-asset-card__desc">금융기관을 연동하면 자산 현황을 한눈에 볼 수 있어요</p>
+    <p class="empty-asset-card__heading">
+      {{ errorMessage ? '자산 동기화에 실패했어요' : '연동된 자산이 없어요' }}
+    </p>
+    <p class="empty-asset-card__desc">
+      {{ errorMessage || '금융기관을 연동하면 자산 현황을 한눈에 볼 수 있어요' }}
+    </p>
     <BaseButton
       class="empty-asset-card__cta"
       variant="primary"
       size="lg"
       @click="$emit('link-asset')"
-      >자산 연동하기</BaseButton
+      >{{ errorMessage ? '다시 연동하기' : '자산 연동하기' }}</BaseButton
     >
   </BaseCard>
 </template>
