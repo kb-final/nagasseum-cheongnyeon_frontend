@@ -404,12 +404,14 @@ function close() {
   margin-top: 10px;
 }
 
+/* 폭이 좁은 인라인 유틸 버튼이라 md(15px)보다도 작게 두되, 임의의 12px 대신
+   프로젝트 버튼 타이포 기준의 최소 단위인 text 액션 크기(13px)에 맞춘다 */
 .saving-edit-sheet__simulate-button {
   width: auto;
   height: 34px;
   padding: 0 16px;
   border-radius: 10px;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .saving-edit-sheet__hint {
