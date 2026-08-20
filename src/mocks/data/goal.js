@@ -354,6 +354,11 @@ function buildRecommendationCondition(payload, overrides = {}) {
       dealType === 'WOLSE'
         ? roundTo(((payload.monthlyRentMin ?? 0) + (payload.monthlyRentMax ?? 800000)) / 2, 10000)
         : 0,
+    // 목표 저장 요청이 이 세 값을 그대로 실어 보낸다(모두 백엔드에서 @NotNull이다).
+    // GET /goals/recommendation 응답에는 들어 있으므로, 조건 기반 응답에도 같이 둔다.
+    depositMin: overrides.depositMin ?? payload.depositMin ?? 0,
+    depositMax: overrides.depositMax ?? payload.depositMax ?? 100000000000,
+    marketMedianAmount: overrides.marketMedianAmount ?? null,
     sampleCount: overrides.sampleCount ?? 142,
   }
 }

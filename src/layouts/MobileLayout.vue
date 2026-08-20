@@ -26,6 +26,9 @@ const navItems = [
 
 const HIDDEN_NAV_ROUTE_NAMES = [
   'diagnosis',
+  // 목표 수정도 진단과 같은 한 흐름(조건 입력 → 진단 결과 → 저장)이라, 중간에 탭으로
+  // 빠져나갈 수 있으면 입력하던 내용이 그대로 사라진다. 생성 쪽과 같이 탭을 숨긴다.
+  'goal-edit',
   'goal-recommendations',
   'goal-recommendation-detail',
   'edit-info',
