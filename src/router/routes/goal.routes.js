@@ -2,7 +2,6 @@ import {
   GoalConditionStepsView,
   GoalRecommendationsView,
   RecommendationDetailView,
-  DiagnosisView,
   GoalDetailView,
   GoalEmptyView,
 } from '@/features/goal'
@@ -28,12 +27,11 @@ export const goalRoutes = [
     props: true,
   },
   { path: 'goals', name: 'goal-empty', component: GoalEmptyView },
-  // 목표 수정은 진단 폼(UC-12)을 그대로 재사용하되, goalId가 있으면 생성(POST)이 아니라
-  // 수정(PUT)으로 저장한다. 쿼리가 아니라 경로로 둬야 goalId가 빠진 주소가 아예 성립하지 않아,
-  // 수정하려던 요청이 조용히 생성으로 새어나가지 않는다.
+  // 목표 수정도 생성과 완전히 같은 흐름을 탄다: 단계별 조건 입력 → 추천 목록 → 추천 상세 →
+  // 저장. 그래서 화면도 생성과 같은 GoalConditionStepsView이고, goalId만 더 받는다.
   //
-  // 수정은 진단 API 호출 → 결과 팝업 → PUT 저장까지 한 흐름으로 묶여 있어, 생성 쪽만
-  // 단계별 플로우로 바꾸고 여기는 기존 한 페이지 폼(DiagnosisView)을 그대로 쓴다.
-  { path: 'goals/:goalId/edit', name: 'goal-edit', component: DiagnosisView, props: true },
+  // goalId를 쿼리가 아니라 경로로 둬야 goalId가 빠진 주소가 아예 성립하지 않아, 수정하려던
+  // 요청이 조용히 생성으로 새어나가지 않는다.
+  { path: 'goals/:goalId/edit', name: 'goal-edit', component: GoalConditionStepsView, props: true },
   { path: 'goals/:goalId', name: 'goal-detail', component: GoalDetailView, props: true },
 ]

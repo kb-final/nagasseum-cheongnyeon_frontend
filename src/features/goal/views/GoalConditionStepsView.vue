@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 import AppHeader from '@/shared/components/molecules/AppHeader.vue'
@@ -16,8 +16,22 @@ import GoalRecommendationLoading from '@/features/goal/components/steps/GoalReco
 import { useGoalConditionSteps } from '@/features/goal/composables/useGoalConditionSteps'
 import { useGoalStore } from '@/features/goal/store/goalStore'
 
+/*
+  이 화면은 목표 생성과 수정의 공통 진입점이다.
+  - 생성: `/diagnosis` (goalId 없음) → 저장은 POST
+  - 수정: `/goals/:goalId/edit` → 기존 목표 값을 각 단계에 채우고, 저장은 PUT
+
+  두 경우 모두 조건 입력 → 추천 목록 → 추천 상세 → 저장으로 같은 길을 간다. 실제 저장은
+  추천 상세 화면이 하므로, 어느 쪽인지는 store의 editingGoalId로 그 화면까지 전달한다.
+*/
+const props = defineProps({
+  goalId: { type: [String, Number], default: null },
+})
+
 const router = useRouter()
 const goalStore = useGoalStore()
+
+const isEditMode = computed(() => props.goalId !== null)
 
 const {
   form,
@@ -31,8 +45,31 @@ const {
   goNext,
   goPrev,
   skip,
+  applyInitialValue,
   buildPayload,
 } = useGoalConditionSteps()
+
+// 생성으로 들어왔을 때 null로 되돌리는 것이 중요하다. 수정을 하다 중간에 나간 뒤 새 목표를
+// 만들면, 남아 있던 값 때문에 생성이 조용히 수정으로 새어나간다.
+goalStore.editingGoalId = props.goalId ?? null
+
+// 'loading' 기존 목표 불러오는 중 → 'ready' 입력 가능 → 'error' 불러오기 실패.
+// 생성 진입은 불러올 것이 없으므로 바로 'ready'다.
+const editLoadState = ref(isEditMode.value ? 'loading' : 'ready')
+
+onMounted(async () => {
+  if (!isEditMode.value) return
+
+  // 기존 값을 못 채운 채로 입력을 시작하면, 사용자가 손대지 않은 조건이 기본값으로 저장된다.
+  const loaded = await goalStore.loadGoal(props.goalId)
+  if (!loaded) {
+    editLoadState.value = 'error'
+    return
+  }
+
+  applyInitialValue(goalStore.goalForEdit)
+  editLoadState.value = 'ready'
+})
 
 // 추천 결과 화면의 라우트 이름. 그 화면은 별도로 작업 중이라 아직 라우터에 등록되어 있지 않다.
 // 등록되는 순간 이 화면은 고칠 것 없이 그대로 이어진다 — 추천 목록은 goalStore.recommendations에 있다.
@@ -104,9 +141,27 @@ function handleSkip() {
       결과 화면으로 끌고 가버린다. 버튼을 아예 없애 그 상황 자체를 만들지 않는다.
       에러 화면에서는 빠져나갈 길이 필요하므로 그대로 둔다.
     -->
-    <AppHeader title="목표 설정" :show-back="phase !== 'loading'" @back="handleBack" />
+    <AppHeader
+      :title="isEditMode ? '목표 수정' : '목표 설정'"
+      :show-back="phase !== 'loading'"
+      @back="handleBack"
+    />
 
-    <template v-if="phase === 'steps'">
+    <p v-if="editLoadState === 'loading'" class="goal-steps-view__status">
+      목표를 불러오는 중이에요…
+    </p>
+
+    <div v-else-if="editLoadState === 'error'" class="goal-steps-view__result">
+      <h2 class="goal-steps-view__result-title">목표를 불러오지 못했어요</h2>
+      <p class="goal-steps-view__result-description">
+        {{ goalStore.goalLoadError?.message ?? '잠시 후 다시 시도해 주세요.' }}
+      </p>
+      <div class="goal-steps-view__footer">
+        <BaseButton size="lg" @click="router.back()">돌아가기</BaseButton>
+      </div>
+    </div>
+
+    <template v-else-if="phase === 'steps'">
       <GoalStepProgress
         class="goal-steps-view__progress"
         :current="currentIndex + 1"
@@ -257,6 +312,12 @@ function handleSkip() {
 .goal-steps-view__skip-placeholder {
   display: block;
   height: 41px;
+}
+
+.goal-steps-view__status {
+  padding-top: 48px;
+  color: var(--color-text-secondary, #9aa09a);
+  text-align: center;
 }
 
 .goal-steps-view__result {

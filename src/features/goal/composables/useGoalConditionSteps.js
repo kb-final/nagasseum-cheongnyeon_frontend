@@ -21,6 +21,14 @@ function formatPyeong(value) {
   return `${value}평`
 }
 
+// BaseYearMonthSelect가 고를 수 있는 최소 목표 시점(다음 달)과 같은 규칙.
+function getNextMonth() {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = now.getMonth() + 1 // 1~12
+  return month === 12 ? `${year + 1}-01` : `${year}-${String(month + 1).padStart(2, '0')}`
+}
+
 /**
  * 목표 조건을 한 화면에 하나씩 물어보는 플로우의 상태를 담는다.
  *
@@ -216,6 +224,51 @@ export function useGoalConditionSteps() {
     return false
   }
 
+  /*
+    목표 수정으로 들어왔을 때 기존 목표(GET /goals/{goalId} 응답)를 각 단계에 채운다.
+
+    값만 넣는 것으로는 부족하고 answered까지 세워야 한다. answered가 false면 buildPayload가
+    그 조건을 null로 보내버려서, 사용자가 손대지 않은 조건이 "지정하지 않음"으로 바뀐다.
+    이미 목표에 들어 있던 조건은 사용자가 한 번 답한 조건이므로 답한 것으로 취급한다.
+  */
+  function applyInitialValue(goal) {
+    if (!goal) return
+
+    form.regionCode = goal.regionCode ?? null
+
+    if (goal.propertyType) {
+      form.propertyType = goal.propertyType
+      answered.propertyType = true
+    }
+    if (goal.tradeType) {
+      form.tradeType = goal.tradeType
+      answered.tradeType = true
+    }
+    if (goal.depositMin != null && goal.depositMax != null) {
+      form.deposit = { min: goal.depositMin, max: goal.depositMax }
+      answered.deposit = true
+    }
+    // 전세 목표는 서버가 월세를 0으로 정규화해 저장한다. 그대로 채우면 슬라이더가 0~0이 되어
+    // 거래 유형을 월세로 바꿨을 때 범위를 처음부터 다시 잡아야 하므로 기본값을 남긴다.
+    if (goal.tradeType === 'WOLSE' && goal.monthlyRentMax) {
+      form.monthlyRent = { min: goal.monthlyRentMin ?? 0, max: goal.monthlyRentMax }
+    }
+    if (goal.sizeMin != null && goal.sizeMax != null) {
+      form.size = { min: goal.sizeMin, max: goal.sizeMax }
+      answered.size = true
+    }
+    // 목표 시점이 이미 지났으면 연/월 드롭다운의 선택지에 없다. 채우지 않고 컴포넌트가
+    // 보정해둔 다음 달을 그대로 둔다(답한 것으로도 치지 않는다).
+    if (goal.targetDate && goal.targetDate >= getNextMonth()) {
+      form.targetDate = goal.targetDate
+      answered.targetDate = true
+    }
+    // 저장된 값은 원 단위, 이 화면의 입력은 만원 단위다.
+    if (goal.monthlySavings != null) {
+      form.monthlySaving = String(Math.round(goal.monthlySavings / 10000))
+    }
+  }
+
   /** 백엔드 GoalRecommendationRequest와 1:1로 맞춘 요청 본문. 답하지 않은 조건은 null이다. */
   function buildPayload() {
     return {
@@ -252,6 +305,7 @@ export function useGoalConditionSteps() {
     goNext,
     goPrev,
     skip,
+    applyInitialValue,
     buildPayload,
   }
 }
