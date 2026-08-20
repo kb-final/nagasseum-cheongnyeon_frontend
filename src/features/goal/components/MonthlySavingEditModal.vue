@@ -1,7 +1,6 @@
 <script setup>
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 
-import BaseModal from '@/shared/components/atoms/feedback/Modal/BaseModal.vue'
 import BaseButton from '@/shared/components/atoms/base/button/BaseButton.vue'
 import BaseChipGroup from '@/shared/components/atoms/form/ChipGroup/BaseChipGroup.vue'
 import BaseInput from '@/shared/components/atoms/base/input/BaseInput.vue'
@@ -116,245 +115,346 @@ function close() {
 </script>
 
 <template>
-  <BaseModal :model-value="modelValue" @update:model-value="emit('update:modelValue', $event)">
-    <div class="saving-edit">
-      <h2 class="saving-edit__title">월 저축 계획 수정</h2>
+  <Transition name="saving-edit-sheet">
+    <div v-if="modelValue" class="saving-edit-sheet-layer">
+      <div class="saving-edit-sheet-layer__backdrop" @click="close"></div>
 
-      <div class="saving-edit__current">
-        <span class="saving-edit__current-label">현재 월 저축 계획</span>
-        <strong class="saving-edit__current-value">
-          {{ formatManwon(detail.savingStatus.fixedSaving) }}
-        </strong>
-      </div>
+      <section
+        class="saving-edit-sheet"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="saving-edit-title"
+      >
+        <div class="saving-edit-sheet__handle" aria-hidden="true"></div>
 
-      <p class="saving-edit__section-label">추천 금액</p>
-      <BaseChipGroup v-model="selected" class="saving-edit__chips" :options="options" size="sm" />
+        <div class="saving-edit-sheet__scroll">
+          <h2 id="saving-edit-title" class="saving-edit-sheet__title">월 저축 계획 수정</h2>
 
-      <div v-if="selected === CUSTOM" class="saving-edit__custom">
-        <BaseInput
-          class="saving-edit__custom-input"
-          :model-value="customInput"
-          type="text"
-          inputmode="numeric"
-          placeholder="금액을 입력하세요"
-          @update:model-value="onCustomInput"
-        />
-        <span class="saving-edit__custom-unit">원</span>
-      </div>
+          <div class="saving-edit-sheet__field">
+            <span class="saving-edit-sheet__field-label">현재 월 저축 계획</span>
+            <strong class="saving-edit-sheet__field-value">
+              {{ formatManwon(detail.savingStatus.fixedSaving) }}
+            </strong>
+          </div>
 
-      <div v-if="preview || isCustom" class="saving-edit__preview">
-        <template v-if="preview">
-          <p class="saving-edit__preview-line">
-            월 {{ formatManwon(preview.amount) }}으로 변경하면
-          </p>
-          <template v-if="preview.expectedDate">
-            <p class="saving-edit__preview-line">예상 달성일이 {{ preview.currentDate }}에서</p>
-            <p class="saving-edit__preview-line saving-edit__preview-line--accent">
-              <template v-if="preview.monthsDiff > 0">
-                {{ preview.expectedDate }}로 {{ preview.monthsDiff }}개월 앞당겨져요.
+          <p class="saving-edit-sheet__section-label">추천 금액</p>
+          <BaseChipGroup
+            v-model="selected"
+            class="saving-edit-sheet__chips"
+            :options="options"
+            size="sm"
+          />
+
+          <div v-if="selected === CUSTOM" class="saving-edit-sheet__custom">
+            <BaseInput
+              class="saving-edit-sheet__custom-input"
+              :model-value="customInput"
+              type="text"
+              inputmode="numeric"
+              placeholder="금액을 입력하세요"
+              @update:model-value="onCustomInput"
+            />
+            <span class="saving-edit-sheet__custom-unit">원</span>
+          </div>
+
+          <div v-if="preview || isCustom" class="saving-edit-sheet__preview">
+            <p class="saving-edit-sheet__preview-title">변경하면 이렇게 달라져요</p>
+
+            <template v-if="preview">
+              <p class="saving-edit-sheet__preview-line">
+                월 <strong>{{ formatManwon(preview.amount) }}</strong
+                >으로 변경하면
+              </p>
+              <template v-if="preview.expectedDate">
+                <p class="saving-edit-sheet__preview-transition">
+                  {{ preview.currentDate }} → {{ preview.expectedDate }}
+                </p>
+                <p class="saving-edit-sheet__preview-result">
+                  <template v-if="preview.monthsDiff > 0">
+                    {{ preview.monthsDiff }}개월 앞당겨져요
+                  </template>
+                  <template v-else-if="preview.monthsDiff < 0">
+                    {{ -preview.monthsDiff }}개월 늦어져요
+                  </template>
+                  <template v-else-if="preview.monthsDiff === 0"> 그대로예요 </template>
+                  <template v-else> 달성할 것으로 예상돼요 </template>
+                </p>
               </template>
-              <template v-else-if="preview.monthsDiff < 0">
-                {{ preview.expectedDate }}로 {{ -preview.monthsDiff }}개월 늦어져요.
-              </template>
-              <template v-else-if="preview.monthsDiff === 0">
-                {{ preview.expectedDate }}로 그대로예요.
-              </template>
-              <template v-else> {{ preview.expectedDate }}에 달성할 것으로 예상돼요. </template>
+              <p v-else class="saving-edit-sheet__preview-result">이미 목표 금액을 모았어요.</p>
+            </template>
+
+            <p v-else-if="goalStore.simulationError" class="saving-edit-sheet__preview-placeholder">
+              예상 달성일을 계산하지 못했어요.
             </p>
-          </template>
-          <p v-else class="saving-edit__preview-line saving-edit__preview-line--accent">
-            이미 목표 금액을 모았어요.
+            <p v-else class="saving-edit-sheet__preview-placeholder">
+              금액을 입력하고 예상 달성일을 확인해보세요.
+            </p>
+
+            <!-- 직접 입력한 금액은 이 버튼을 눌렀을 때만 서버에 계산을 요청한다.
+                 결과가 나오면 버튼은 감추고, 금액을 바꾸면 결과가 지워지면서 다시 나타난다 -->
+            <div v-if="isCustom && !preview" class="saving-edit-sheet__simulate">
+              <BaseButton
+                class="saving-edit-sheet__simulate-button"
+                variant="primary"
+                size="md"
+                :disabled="!amount || goalStore.isSimulating"
+                @click="runSimulation"
+              >
+                {{ goalStore.isSimulating ? '계산 중...' : '시뮬레이션 돌리기' }}
+              </BaseButton>
+            </div>
+          </div>
+
+          <p class="saving-edit-sheet__hint">
+            목표 달성 계산에 반영되는 계획 금액이며,<br />실제 자동이체 금액은 변경되지 않아요.
           </p>
-        </template>
+        </div>
 
-        <p v-else-if="goalStore.simulationError" class="saving-edit__preview-placeholder">
-          예상 달성일을 계산하지 못했어요.
-        </p>
-        <p v-else class="saving-edit__preview-placeholder">
-          금액을 입력하고 예상 달성일을 확인해보세요.
-        </p>
-
-        <!-- 직접 입력한 금액은 이 버튼을 눌렀을 때만 서버에 계산을 요청한다.
-             결과가 나오면 버튼은 감추고, 금액을 바꾸면 결과가 지워지면서 다시 나타난다 -->
-        <div v-if="isCustom && !preview" class="saving-edit__simulate">
-          <BaseButton
-            class="saving-edit__simulate-button"
-            variant="primary"
-            size="md"
-            :disabled="!amount || goalStore.isSimulating"
-            @click="runSimulation"
-          >
-            {{ goalStore.isSimulating ? '계산 중...' : '시뮬레이션 돌리기' }}
+        <div class="saving-edit-sheet__actions">
+          <BaseButton variant="secondary" @click="close">취소</BaseButton>
+          <BaseButton variant="primary" :disabled="!canSubmit" @click="emit('submit', amount)">
+            적용하기
           </BaseButton>
         </div>
-      </div>
-
-      <p class="saving-edit__note">
-        목표 달성 계산에 반영되는 계획 금액이며,<br />실제 자동이체 금액은 변경되지 않아요.
-      </p>
+      </section>
     </div>
-
-    <template #footer>
-      <BaseButton class="saving-edit__cancel-button" variant="secondary" @click="close"
-        >취소</BaseButton
-      >
-      <BaseButton
-        class="saving-edit__submit-button"
-        variant="primary"
-        :disabled="!canSubmit"
-        @click="emit('submit', amount)"
-      >
-        수정 완료
-      </BaseButton>
-    </template>
-  </BaseModal>
+  </Transition>
 </template>
 
 <style scoped>
-.saving-edit {
+/*
+  `비교 기준 수정`(CohortEditSheet)의 Bottom Sheet 구조/수치를 그대로 재사용한다.
+  두 수정 화면이 같은 패턴으로 보이도록 레이어·시트·핸들·타이틀·Footer 값을 맞췄다.
+*/
+.saving-edit-sheet-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.saving-edit-sheet-layer__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.saving-edit-sheet-enter-active,
+.saving-edit-sheet-leave-active {
+  transition: opacity 0.22s ease;
+}
+
+.saving-edit-sheet-enter-active .saving-edit-sheet,
+.saving-edit-sheet-leave-active .saving-edit-sheet {
+  transition: transform 0.22s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.saving-edit-sheet-enter-from,
+.saving-edit-sheet-leave-to {
+  opacity: 0;
+}
+
+.saving-edit-sheet-enter-from .saving-edit-sheet,
+.saving-edit-sheet-leave-to .saving-edit-sheet {
+  transform: translateY(100%);
+}
+
+.saving-edit-sheet {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  font-weight: 600;
+  width: 100%;
+  max-width: 400px;
+  max-height: min(85dvh, 640px);
+  padding: 10px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+  border-radius: 24px 24px 0 0;
+  background: var(--color-surface, #ffffff);
+  color: var(--color-text-primary, #10130f);
+  line-height: 1.45;
+  box-shadow: 0 -12px 32px rgba(16, 19, 15, 0.12);
 }
 
-.saving-edit__title {
-  margin: 0 0 2px;
-  color: var(--color-text-primary, #0b3b24);
-  font-size: 17px;
+.saving-edit-sheet__handle {
+  flex: none;
+  width: 36px;
+  height: 4px;
+  margin: 0 auto 14px;
+  border-radius: 999px;
+  background: var(--color-border, #e3e7e0);
+}
+
+.saving-edit-sheet__scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.saving-edit-sheet__title {
+  margin: 0 0 16px;
+  font-size: 16px;
   font-weight: 700;
-  text-align: center;
+  color: var(--color-text-primary, #10130f);
+  text-align: left;
 }
 
-.saving-edit__current {
+.saving-edit-sheet__field {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: 12px 14px;
-  border-radius: 12px;
-  background: var(--color-surface, #f7f8f4);
+  padding: 14px;
+  border-radius: 14px;
+  background: var(--color-app-bg, #f7f8f4);
 }
 
-.saving-edit__current-label {
-  color: var(--color-text-tertiary, #888888);
+.saving-edit-sheet__field-label {
+  color: var(--color-text-tertiary, #8f968c);
   font-size: 11px;
 }
 
-.saving-edit__current-value {
+.saving-edit-sheet__field-value {
   color: var(--color-primary, #1d6b3f);
   font-size: 16px;
   font-weight: 700;
 }
 
-.saving-edit__section-label {
-  margin: 2px 0 0;
-  color: var(--color-text-tertiary, #404040);
-  font-size: 12px;
+.saving-edit-sheet__section-label {
+  margin: 14px 0 8px;
+  color: var(--color-text-tertiary, #8f968c);
+  font-size: 13px;
 }
 
-.saving-edit__custom {
+.saving-edit-sheet__custom {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 0 14px;
-  border-radius: 12px;
-  background: var(--color-surface, #f7f8f4);
+  margin-top: 10px;
+  border-radius: 14px;
+  background: var(--color-app-bg, #f7f8f4);
 }
 
-/* BaseModal이 Teleport로 body에 렌더링돼 조상 기반 :deep()이 안 먹으므로
-   자식 컴포넌트 루트에 클래스를 직접 붙여 오버라이드한다 (DiagnosisResultModal과 같은 방식) */
-.saving-edit__custom-input {
+/* 시트가 body로 Teleport되지 않는 일반 자식 구조라 :deep()이 바로 닿는다 */
+.saving-edit-sheet :deep(.saving-edit-sheet__custom-input) {
   border: none;
   background: transparent;
-  color: var(--color-text-primary, #0b3b24);
+  color: var(--color-text-primary, #10130f);
   font-size: 14px;
   padding: 14px 0;
 }
 
-.saving-edit__custom-input:focus {
+.saving-edit-sheet :deep(.saving-edit-sheet__custom-input):focus {
   outline: none;
 }
 
-.saving-edit__custom-unit {
+.saving-edit-sheet__custom-unit {
   flex-shrink: 0;
-  color: var(--color-text-tertiary, #888888);
+  color: var(--color-text-tertiary, #8f968c);
   font-size: 13px;
 }
 
-.saving-edit__preview {
+.saving-edit-sheet__preview {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 12px 14px;
-  border-radius: 12px;
-  background: var(--color-surface, #f7f8f4);
+  gap: 4px;
+  padding: 14px;
+  margin-top: 12px;
+  border-radius: 14px;
+  background: var(--color-app-bg, #f7f8f4);
 }
 
-.saving-edit__preview-line {
+.saving-edit-sheet__preview-title {
+  margin: 0 0 4px;
+  color: var(--color-text-tertiary, #8f968c);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.saving-edit-sheet__preview-line {
   margin: 0;
-  color: var(--color-text-primary, #dddddd);
+  color: var(--color-text-primary, #10130f);
   font-size: 13px;
 }
 
-.saving-edit__preview-line--accent {
-  color: var(--color-primary, #7fe3a0);
+.saving-edit-sheet__preview-transition {
+  margin: 2px 0 0;
+  color: var(--color-text-secondary, #5b6358);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
 }
 
-.saving-edit__preview-placeholder {
+.saving-edit-sheet__preview-result {
+  margin: 2px 0 0;
+  color: var(--color-primary, #1d6b3f);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.saving-edit-sheet__preview-placeholder {
   margin: 0;
-  color: var(--color-text-tertiary, #888888);
+  color: var(--color-text-tertiary, #8f968c);
   font-size: 12px;
 }
 
-.saving-edit__simulate {
+.saving-edit-sheet__simulate {
   display: flex;
   justify-content: center;
   margin-top: 10px;
 }
 
-.saving-edit__simulate-button {
+.saving-edit-sheet__simulate-button {
   width: auto;
   height: 34px;
   padding: 0 16px;
   border-radius: 10px;
   font-size: 12px;
-  font-weight: 700;
-  background: var(--color-primary-soft, #e8f4ea);
-  color: #353934;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 }
 
-/* 팝업 버튼 색을 CTA(고정 저축액 변경하기)와 같은 톤으로 통일한다.
-   footer 슬롯 버튼은 .saving-edit의 DOM 형제라 :deep()이 안 먹으므로,
-   버튼 루트에 직접 붙인 클래스를 일반 선택자로 바로 오버라이드한다.
-   취소 버튼은 색은 secondary variant 기본값 그대로 두고 그림자만 준다. */
-.saving-edit__cancel-button {
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
-}
-
-.saving-edit__submit-button {
-  background: var(--color-primary-soft, #e8f4ea);
-  color: #353934;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
-}
-
-/* 칩(핀)에도 같은 약한 그림자를 준다. BaseChipGroup은 일반 자식이라 :deep()으로 닿는다.
-   선택 안 된 칩의 테두리도 여기서 없앤다. */
-.saving-edit :deep(.saving-edit__chips) .chip-group__item {
-  border: none;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
-}
-
-/* 선택된 칩(핀) 색도 버튼과 같은 톤으로. */
-.saving-edit :deep(.saving-edit__chips) .chip-group__item--active {
-  background: var(--color-primary-soft, #e8f4ea);
-  color: #353934;
-}
-
-.saving-edit__note {
-  margin: 0;
-  color: var(--color-text-tertiary, #404040);
+.saving-edit-sheet__hint {
+  margin: 16px 0 0;
+  text-align: center;
   font-size: 11px;
-  line-height: 1.4;
+  line-height: 1.5;
+  color: var(--color-text-tertiary, #8f968c);
+}
+
+.saving-edit-sheet__actions {
+  flex: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--color-border, #e3e7e0);
+}
+
+/*
+  `비교 기준 수정`의 Footer 버튼 색과 동일하게 맞춘다. BaseButton은 공용 컴포넌트라
+  손대지 않고 이 시트 안에서만 덮어쓴다 — 적용하기는 진한 primary green(--color-primary),
+  취소는 옅은 배경의 secondary 그대로 둔다.
+*/
+.saving-edit-sheet__actions :deep(.base-button--secondary) {
+  border: 1px solid var(--color-border, #e3e7e0);
+  background: var(--color-app-bg, #f7f8f4);
+  color: var(--color-text-primary, #10130f);
+}
+
+.saving-edit-sheet__actions :deep(.base-button--primary) {
+  background: var(--color-primary, #1d6b3f);
+  color: #ffffff;
+}
+
+/* 칩(핀)에도 시트 톤에 맞춰 테두리를 없앤다. 선택 안 된 칩은 field 배경과 구분되게 흰 배경 유지 */
+.saving-edit-sheet :deep(.saving-edit-sheet__chips) .chip-group__item {
+  border: none;
+  background: var(--color-surface, #ffffff);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.saving-edit-sheet :deep(.saving-edit-sheet__chips) .chip-group__item--active {
+  background: var(--color-primary, #1d6b3f);
+  color: #ffffff;
 }
 </style>
