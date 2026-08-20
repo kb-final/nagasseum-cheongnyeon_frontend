@@ -61,6 +61,7 @@ defineEmits(['back'])
 }
 
 .app-header__back {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -72,6 +73,13 @@ defineEmits(['back'])
   background: none;
   color: var(--color-text-primary, #ffffff);
   cursor: pointer;
+}
+
+/* 헤더 높이/그리드는 그대로 두고, 보이지 않는 히트 영역만 40px까지 넓힌다 */
+.app-header__back::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
 }
 
 .app-header__title {

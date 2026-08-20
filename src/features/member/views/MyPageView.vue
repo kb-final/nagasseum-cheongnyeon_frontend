@@ -232,10 +232,8 @@ function confirmLogout() {
     <BaseModal v-model="isLogoutModalOpen" title="로그아웃 하시겠어요?">
       <p class="my-page-view__logout-desc">로그아웃하면 다시 로그인해야 앱을 이용할 수 있어요</p>
       <template #footer>
-        <BaseButton variant="secondary" size="modal" @click="isLogoutModalOpen = false">
-          취소
-        </BaseButton>
-        <BaseButton variant="primary" size="modal" @click="confirmLogout">로그아웃</BaseButton>
+        <BaseButton variant="secondary" @click="isLogoutModalOpen = false"> 취소 </BaseButton>
+        <BaseButton variant="primary" @click="confirmLogout">로그아웃</BaseButton>
       </template>
     </BaseModal>
   </div>

@@ -13,8 +13,8 @@ defineEmits(['update:modelValue'])
       v-if="modelValue >= 0"
       class="bottom-nav__indicator"
       :style="{
-        width: `calc((100% - 12px) / ${items.length})`,
-        transform: `translateX(${modelValue * 100}%)`,
+        width: `calc((100% - 12px) / ${items.length} - 12px)`,
+        left: `calc(5px + (100% - 12px) / ${items.length} * ${modelValue} + 6px)`,
       }"
     />
     <button
@@ -39,26 +39,34 @@ defineEmits(['update:modelValue'])
   display: flex;
   align-items: center;
   width: 100%;
-  padding: 6px;
-  border-radius: 30px;
+  /* 전체 버튼 시스템이 슬림해진 만큼 네비도 같이 낮춘다(기존 대비 세로 높이 약 12% 감소).
+     touch 영역이 부족해지지 않도록 item 쪽 padding까지 함께 줄이되 아이콘/라벨 사이
+     간격은 답답하지 않게 최소치를 남겨둔다. */
+  padding: 5px;
+  border-radius: 26px;
   background: var(--color-nav-bg, #a6c7b7);
-  /* 콘텐츠 위에 떠 있는 네비라 배경과 구분되게 옅은 그림자를 준다. */
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  /* 콘텐츠 카드(0 2px 6px / 0.06)보다 아주 살짝 더 뚜렷하게 줘서 카드가 아니라
+     그 위에 떠 있는 별도 조작 레이어처럼 보이게 한다. 위쪽 방향 그림자를 함께 줘서
+     뒤로 지나가는 콘텐츠와 경계가 느껴지게 한다 — 여전히 과하지 않은 수준으로. */
+  box-shadow:
+    0 -2px 8px rgba(0, 0, 0, 0.05),
+    0 3px 10px rgba(0, 0, 0, 0.09);
   box-sizing: border-box;
 }
 
 /*
   탭마다 따로 배경을 켜고 끄는 대신, 알약 배경 하나를 활성 탭 위치로 슬라이드시킨다.
-  translateX(%)는 자기 자신의 너비 기준이라 인덱스만큼 곱하면 정확히 그 탭 자리로 간다.
+  배경을 각 탭 슬롯보다 좌우로 살짝 좁게 만들기 위해 width/left를 모두 인라인에서
+  계산한다 — 슬롯 폭(=아이템 클릭 영역)과 배경 폭을 분리하면 더 이상 자기 자신의
+  너비 기준인 translateX(%)로는 정확한 위치가 나오지 않아, left를 직접 이동시킨다.
 */
 .bottom-nav__indicator {
   position: absolute;
   top: 6px;
   bottom: 6px;
-  left: 6px;
-  border-radius: 22px;
+  border-radius: 20px;
   background: var(--color-nav-active-bg, #e3ffe8);
-  transition: transform 0.25s cubic-bezier(0.32, 0.72, 0, 1);
+  transition: left 0.25s cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 .bottom-nav__item {
@@ -69,10 +77,11 @@ defineEmits(['update:modelValue'])
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  padding: 8px 8px;
+  gap: 3px;
+  /* 세로 패딩만 줄인다 — 좌우까지 좁히면 4개 항목이 붙어 보여 탭 실수 위험이 커진다. */
+  padding: 6px 8px;
   border: none;
-  border-radius: 22px;
+  border-radius: 20px;
   background: transparent;
   color: var(--color-nav-inactive, #3e5a49);
   cursor: pointer;
@@ -87,8 +96,8 @@ defineEmits(['update:modelValue'])
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 17px;
-  height: 17px;
+  width: 16px;
+  height: 16px;
 }
 
 /* 탭이 활성화되는 순간에만 아이콘이 살짝 튀는 정도로 가볍게 준다. */
@@ -115,7 +124,7 @@ defineEmits(['update:modelValue'])
 
 .bottom-nav__label {
   font-family: var(--sans-normal);
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 700;
   white-space: nowrap;
 }

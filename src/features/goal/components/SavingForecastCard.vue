@@ -283,8 +283,17 @@ function forecastNote(forecast) {
 .saving-forecast-card :deep(.saving-forecast-card__cta) {
   height: 46px;
   background: var(--color-primary-soft, #e8f4ea);
-  color: #353934;
-  font-size: 17px;
-  font-weight: 700;
+  /* "다시 진단하기"(GoalRecommendationsView)와 같은 크기(16px, BaseButton lg 기본값)·
+     색(--color-primary, 진한 초록)으로 맞춘다 */
+  color: var(--color-primary, #1d6b3f);
+  transition: background-color 0.15s ease;
+}
+
+/* "다시 진단하기"와 같은 hover 톤을 쓴다. 터치 기기에서 hover가 눌어붙지 않도록
+   실제 hover 가능한 입력에서만 적용한다. */
+@media (hover: hover) and (pointer: fine) {
+  .saving-forecast-card :deep(.saving-forecast-card__cta):hover {
+    background: var(--color-primary-soft-hover, #c2dec7);
+  }
 }
 </style>

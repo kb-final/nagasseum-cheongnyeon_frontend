@@ -260,6 +260,16 @@ onMounted(() => {
   background: none;
   color: var(--color-text-secondary);
   cursor: pointer;
+  /* suffix 래퍼(.base-input-field__suffix)가 pointer-events: none이라 그대로 두면
+     이 버튼도 상속받아 클릭이 막힌다 — 버튼만 다시 켜준다. */
+  pointer-events: auto;
+}
+
+/* 보이는 아이콘 크기(18px)는 유지하고 터치 영역만 40px까지 넓힌다 */
+.asset-auth-view__password-toggle::before {
+  content: '';
+  position: absolute;
+  inset: -11px;
 }
 
 .asset-auth-view__notice {

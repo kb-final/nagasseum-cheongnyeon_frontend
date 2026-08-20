@@ -1,7 +1,11 @@
 <script setup>
 defineProps({
   type: { type: String, default: 'button' },
+  // primary/secondary/highlight/dark: 기존 색상 그대로. quest: 게이미피케이션 CTA(홈 등반
+  // 카드의 "+ 목표 설정하러 가기")용 pill. text: 배경 없는 이동/보조 액션("자세히 ›" 등)용.
   variant: { type: String, default: 'primary' },
+  // lg(Default, 50~52px/16~18px radius): 화면 하단 Primary/Secondary CTA.
+  // md(Compact, 44~48px): Quest CTA, 카드 내부 action.
   size: { type: String, default: 'lg' },
   disabled: { type: Boolean, default: false },
 })
@@ -23,39 +27,37 @@ defineEmits(['click'])
 
 <style scoped>
 .base-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border: 1px solid transparent;
+  font-family: inherit;
   cursor: pointer;
 }
 
-.base-button--md {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 50%;
-  height: 53px;
-  padding: 0 8px;
-  border-radius: 15px;
-}
-
+/*
+  버튼 높이는 두 단계로만 둔다(Default/Compact). 화면마다 46px/49px/53px/56px처럼
+  애매하게 다른 값을 새로 만들지 않는다. 예전엔 lg(53px/15px radius)와 modal(50px/14px
+  radius)이 사실상 같은 용도(화면 하단 CTA)로 미세하게만 달랐어서 하나로 합쳤다 —
+  modal 전용 사이즈였던 곳들은 이제 기본값(lg)을 그대로 쓴다.
+*/
 .base-button--lg {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   width: 100%;
-  height: 53px;
-  padding: 0 16px;
-  border-radius: 15px;
+  height: 51px;
+  padding: 0 20px;
+  border-radius: 17px;
+  font-size: 16px;
   font-weight: 700;
 }
 
-.base-button--modal {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 50px;
+/* Compact. Quest CTA와 카드 내부 action이 공유한다 — pill 여부는 variant(quest)가 정하고,
+   여기서는 높이/여백/기본 radius(둥근 사각형)만 정한다. */
+.base-button--md {
+  width: auto;
+  height: 46px;
   padding: 0 16px;
   border-radius: 14px;
+  font-size: 15px;
   font-weight: 700;
 }
 
@@ -77,6 +79,34 @@ defineEmits(['click'])
 .base-button--dark {
   background: var(--color-mint-deep, #16281c);
   color: var(--color-card-highlight, #f7ffd1);
+}
+
+/*
+  게이미피케이션 성격이 뚜렷한 CTA 전용(예: 홈 등반 카드의 "+ 목표 설정하러 가기").
+  일반 서비스 CTA(lg/md 기본 radius)와 구분되도록 이 variant만 pill로 강제한다 —
+  size 규칙(위 --lg/--md)보다 뒤에 있어야 radius가 확실히 이긴다.
+*/
+.base-button--quest {
+  border-radius: 999px;
+  background: var(--climb-card-cta-bg, #12281c);
+  color: var(--climb-card-cta-text, #ffd939);
+  font-weight: 700;
+}
+
+/*
+  배경 없는 이동/보조 액션("자세히 ›", "다른 계획 비교하기" 등). 카드 CTA와 혼동되지
+  않도록 lg/md의 고정 폭·높이·radius를 모두 지우고 내용 크기만큼만 차지하게 한다.
+*/
+.base-button--text {
+  width: auto;
+  height: auto;
+  padding: 4px;
+  border-radius: 0;
+  background: none;
+  color: var(--color-text-tertiary, #8f968c);
+  font-size: 13px;
+  font-weight: 700;
+  gap: 2px;
 }
 
 .base-button:disabled {

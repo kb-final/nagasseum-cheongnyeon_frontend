@@ -70,6 +70,8 @@ html {
   --color-point: #c1442e;
   --color-mint-strong: #c1e8c8;
   --color-mint-pale: #cdedd3;
+  /* 연한 초록(--color-primary-soft) 배경 버튼의 hover 전용 톤. 라이트/다크 공통 고정값. */
+  --color-primary-soft-hover: #c2dec7;
   --color-mint-deep: #16281c;
   --color-card-highlight: #f7ffd1;
   --color-card-sub: #effab8;
