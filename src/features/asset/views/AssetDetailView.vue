@@ -204,24 +204,19 @@ async function handleDelete() {
 
       <template #footer>
         <template v-if="isConfirmingDelete">
-          <BaseButton
-            variant="secondary"
-            size="modal"
-            :disabled="isSaving"
-            @click="isConfirmingDelete = false"
-          >
+          <BaseButton variant="secondary" :disabled="isSaving" @click="isConfirmingDelete = false">
             취소
           </BaseButton>
-          <BaseButton variant="primary" size="modal" :disabled="isSaving" @click="handleDelete">
+          <BaseButton variant="primary" :disabled="isSaving" @click="handleDelete">
             {{ isSaving ? '삭제 중...' : '삭제' }}
           </BaseButton>
         </template>
 
         <template v-else>
-          <BaseButton variant="secondary" size="modal" :disabled="isSaving" @click="closeEditor">
+          <BaseButton variant="secondary" :disabled="isSaving" @click="closeEditor">
             취소
           </BaseButton>
-          <BaseButton variant="primary" size="modal" :disabled="!canSave" @click="handleSave">
+          <BaseButton variant="primary" :disabled="!canSave" @click="handleSave">
             <template v-if="isSaving">{{ editingAsset ? '저장 중...' : '등록 중...' }}</template>
             <template v-else>{{ editingAsset ? '저장' : '등록' }}</template>
           </BaseButton>

@@ -91,8 +91,11 @@ function handleTabChange(index) {
   z-index: 10;
   bottom: 12px;
   left: 50%;
-  width: calc(100% - 32px);
-  max-width: 368px;
+  /* 콘텐츠 카드(좌우 16px 패딩)보다 좌우 각 8px씩 더 넓혀, 카드와 같은 폭으로 보이지
+     않고 화면을 조작하는 별도 레이어처럼 보이게 한다. 화면 끝까지는 붙지 않도록
+     8px의 최소 side margin은 남긴다. */
+  width: calc(100% - 16px);
+  max-width: 384px;
   transform: translateX(-50%);
 }
 </style>

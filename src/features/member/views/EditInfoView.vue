@@ -142,10 +142,8 @@ async function handleSave() {
       </ul>
 
       <template #footer>
-        <BaseButton variant="secondary" size="modal" @click="isAvatarPickerOpen = false">
-          취소
-        </BaseButton>
-        <BaseButton variant="primary" size="modal" @click="confirmAvatar">변경</BaseButton>
+        <BaseButton variant="secondary" @click="isAvatarPickerOpen = false"> 취소 </BaseButton>
+        <BaseButton variant="primary" @click="confirmAvatar">변경</BaseButton>
       </template>
     </BaseModal>
 

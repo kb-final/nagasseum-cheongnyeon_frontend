@@ -174,8 +174,8 @@ function apply() {
       </div>
 
       <div class="sheet__actions">
-        <BaseButton variant="secondary" size="modal" @click="emit('close')">취소</BaseButton>
-        <BaseButton variant="primary" size="modal" @click="apply">적용하기</BaseButton>
+        <BaseButton variant="secondary" @click="emit('close')">취소</BaseButton>
+        <BaseButton variant="primary" @click="apply">적용하기</BaseButton>
       </div>
     </section>
   </div>

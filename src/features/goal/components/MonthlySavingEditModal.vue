@@ -195,13 +195,12 @@ function close() {
     </div>
 
     <template #footer>
-      <BaseButton class="saving-edit__cancel-button" variant="secondary" size="modal" @click="close"
+      <BaseButton class="saving-edit__cancel-button" variant="secondary" @click="close"
         >취소</BaseButton
       >
       <BaseButton
         class="saving-edit__submit-button"
         variant="primary"
-        size="modal"
         :disabled="!canSubmit"
         @click="emit('submit', amount)"
       >

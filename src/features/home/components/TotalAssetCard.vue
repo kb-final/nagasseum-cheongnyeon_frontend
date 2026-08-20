@@ -185,9 +185,10 @@ const rows = computed(() => [
   color: var(--total-asset-detail, #8a8f63);
 }
 
-/* 검정 pill 버튼 대신 아이콘만 노출한다. 클릭 영역은 캡션 줄에 맞춰 28px로 줄이되
-   아이콘(14px)보다 넉넉하게 잡아 탭하기 편하게 둔다. */
+/* 검정 pill 버튼 대신 아이콘만 노출한다. 보이는 크기는 캡션 줄에 맞춰 28px로 유지하고,
+   실제 터치 영역만 ::before로 40px까지 넓혀 레이아웃에 영향 없이 탭하기 편하게 한다. */
 .total-asset-card__refresh-btn {
+  position: relative;
   display: flex;
   flex: none;
   align-items: center;
@@ -196,11 +197,17 @@ const rows = computed(() => [
   height: 28px;
   padding: 0;
   border: none;
-  border-radius: 999px;
+  border-radius: 12px;
   background: none;
   color: var(--total-asset-label, #12281c);
   cursor: pointer;
   transition: background-color 0.15s ease;
+}
+
+.total-asset-card__refresh-btn::before {
+  content: '';
+  position: absolute;
+  inset: -6px;
 }
 
 /* 카드 전체가 클릭 가능해졌으니, 이 버튼 위에 있을 때는 카드가 아니라 새로고침
