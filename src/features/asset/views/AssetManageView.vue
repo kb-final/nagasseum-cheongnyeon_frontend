@@ -117,15 +117,10 @@ onMounted(() =>
       </p>
       <BaseAlert v-if="deleteErrorMessage" variant="error">{{ deleteErrorMessage }}</BaseAlert>
       <template #footer>
-        <BaseButton
-          variant="secondary"
-          size="modal"
-          :disabled="isDeleting"
-          @click="closeDeleteModal"
-        >
+        <BaseButton variant="secondary" :disabled="isDeleting" @click="closeDeleteModal">
           취소
         </BaseButton>
-        <BaseButton variant="primary" size="modal" :disabled="isDeleting" @click="confirmDelete">
+        <BaseButton variant="primary" :disabled="isDeleting" @click="confirmDelete">
           {{ isDeleting ? '해제 중...' : '연동 해제' }}
         </BaseButton>
       </template>
