@@ -89,7 +89,10 @@ function goToRecommendations() {
       </div>
 
       <div class="recommendation-detail-view__cards">
-        <RecommendationHousingCard :condition="recommendation.condition" />
+        <RecommendationHousingCard
+          :condition="recommendation.condition"
+          :target-date="recommendation.loanX.targetDate"
+        />
         <RecommendationCompareCard
           v-if="compareView"
           :title="compareView.title"

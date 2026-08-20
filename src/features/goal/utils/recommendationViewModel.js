@@ -99,7 +99,7 @@ function toConditionArea(condition) {
 
 // 결과 카드 2열 핵심 정보. "왼쪽 = 시점, 오른쪽 = 저축액"으로 두 PREFERENCE 카드의 배치를
 // 통일해, 두 카드를 위아래로 비교할 때 같은 종류의 정보가 같은 자리에 오게 한다(REALISTIC/
-// HOLD_OUT은 시점 대신 금액을 다루므로 이 규칙과 무관하게 기존 "목표 금액 → 예상 도달
+// HOLD_OUT은 시점 대신 금액을 다루므로 이 규칙과 무관하게 기존 "준비 가능 예산 → 예상 도달
 // 시점" 순서를 유지한다). emphasized는 그 recommendation의 "계산된 결과값"이 어느 쪽인지
 // 나타내며(나머지 한쪽은 입력/기준값), RecommendationCard가 그 쪽 font-weight만 한 단계
 // 높인다(font-size·색상은 바꾸지 않는다) — type별 분기는 여기서 끝내고 컴포넌트에는
@@ -111,9 +111,11 @@ function toConditionArea(condition) {
 //   가려면 → 월 520만 원 필요"가 핵심이다. 계산 결과값은 필요 월 저축(오른쪽)이다.
 //   monthlySaving은 사용자의 기존 저축액이 아니라 그 시점에 도달하기 위해 새로 계산된
 //   필요 저축액이므로 label을 "필요 월 저축"으로 명확히 한다.
-// - REALISTIC/HOLD_OUT: loanX.targetAmount가 이 계획의 목표 금액 그 자체이자 핵심
-//   결과라("추가 준비 금액"이 아니다 — 이미 모은 돈을 뺀 값이 아니다) 왼쪽(목표 금액)이
-//   결과값이다.
+// - REALISTIC/HOLD_OUT: loanX.targetAmount는 집값(condition.marketMedianAmount)이 아니라
+//   사용자가 이 시점까지 대출 없이 준비할 수 있는 예산이다. 추천 자체가
+//   "marketMedianAmount(목표 시점 예상 시세) < loanX.targetAmount(준비 가능 예산)"일 때만
+//   성립하는 구조라("이 예산이면 이 조건을 살 수 있다"), 왼쪽(준비 가능 예산)이 이 계획의
+//   핵심 결과값이다.
 function toRecommendationMetrics({ type, loanX }) {
   if (type === 'PREFERENCE_SAVING_FIXED') {
     return {
@@ -147,7 +149,10 @@ function toRecommendationMetrics({ type, loanX }) {
 
   return {
     left: {
-      label: '목표 금액',
+      // loanX.targetAmount는 집값(marketMedianAmount)이 아니라 사용자가 이 시점까지
+      // 대출 없이 준비할 수 있는 예산이다 — "목표 금액"이라고 하면 집값처럼 읽혀서
+      // "준비 가능 예산"으로 명확히 한다.
+      label: '준비 가능 예산',
       value: formatGoalAmount(loanX.targetAmount),
       emphasized: true,
     },
@@ -198,7 +203,14 @@ export function toRecommendationDescription(recommendation) {
 // 상세 화면 "주거 조건" 카드용. 목록 카드(toConditionSummary)와 달리 지역명을 독립된 줄로 강조하고
 // 유형·거래는 별도 줄로 낮춰 보여줘야 해서 별도로 조합한다. marketMedianAmount는 아직 백엔드
 // 응답에 없을 수 있어(23번 요구사항) null-safe하게 처리하고, 없으면 호출부가 그 줄을 숨긴다.
-export function toHousingViewModel(condition) {
+//
+// marketMedianAmount는 "현재" 실거래 중앙값이 아니라, targetDate(이 recommendation의 목표
+// 시점) 기준으로 예측한 미래 시세다 — 그래서 반드시 targetDate와 함께 표시해야 하고, 날짜
+// 없이 금액만 보여주면 지금 시세처럼 오해할 수 있다. targetDate가 없으면(이론상 없을 수
+// 없지만 방어적으로) 날짜 없는 라벨은 만들지 않는다.
+export function toHousingViewModel(condition, targetDate) {
+  const hasMarketMedian = typeof condition.marketMedianAmount === 'number'
+
   return {
     regionName: condition.regionName,
     typeLine: [
@@ -206,13 +218,16 @@ export function toHousingViewModel(condition) {
       DEAL_TYPE_LABEL[condition.dealType] ?? condition.dealType,
     ].join(' · '),
     areaLine: toConditionArea(condition),
-    marketMedianAmountLabel:
-      typeof condition.marketMedianAmount === 'number'
-        ? formatGoalAmount(condition.marketMedianAmount)
-        : null,
+    marketMedianAmountLabel: hasMarketMedian
+      ? formatGoalAmount(condition.marketMedianAmount)
+      : null,
+    // "실거래 중앙값"이라고만 하면 지금 시세처럼 읽혀서, "OOOO년 O월 예상 시세"처럼 예측
+    // 시점을 라벨 자체에 포함한다.
+    marketMedianDateLabel:
+      hasMarketMedian && targetDate ? `${formatYearMonth(targetDate)} 예상 시세` : '예상 시세',
     sampleCountLabel:
       condition.sampleCount > 0
-        ? `같은 조건의 실거래 ${condition.sampleCount.toLocaleString('ko-KR')}건 기준`
+        ? `같은 조건의 실거래 ${condition.sampleCount.toLocaleString('ko-KR')}건을 바탕으로 예측했어요.`
         : null,
   }
 }
@@ -264,10 +279,15 @@ export function toCompareCardViewModel(recommendation, recommendations) {
 // HOLD_OUT은 REALISTIC과 비교해야 의미가 있어, 같은 응답 안에서 배열 순서가 아니라 항상
 // type으로 REALISTIC을 찾는다(호출부 책임). "현재 준비 상황 반영"/"선택의 폭 확대"처럼
 // 카드 제목과 같은 말을 항목마다 반복하지 않고, 실제로 값이 달라진 조건만 골라 그
-// 항목명(지역/주택 유형/거래 유형/면적/실거래 중앙값)을 직접 보여준다. 우선순위는 이
-// 순서 그대로이며, 동일한 값은 항목 자체를 만들지 않는다 — 이미 "이런 집이에요" 카드에서
-// 볼 수 있는 정보를 여기서 다시 반복하지 않기 위함이다. 실제로 달라진 항목이 하나도
-// 없으면(이론상 두 condition이 완전히 같으면) null을 돌려주고 호출부가 카드를 숨긴다.
+// 항목명(지역/주택 유형/거래 유형/면적)을 직접 보여준다. 우선순위는 이 순서 그대로이며,
+// 동일한 값은 항목 자체를 만들지 않는다 — 이미 "이런 집이에요" 카드에서 볼 수 있는 정보를
+// 여기서 다시 반복하지 않기 위함이다. 실제로 달라진 항목이 하나도 없으면(이론상 두
+// condition이 완전히 같으면) null을 돌려주고 호출부가 카드를 숨긴다.
+//
+// marketMedianAmount(예상 시세)는 여기서 다루지 않는다 — REALISTIC과 HOLD_OUT은
+// loanX.targetDate(목표 시점)가 서로 달라 두 시세를 나란히 비교하면 같은 시점 가격
+// 비교처럼 오해할 수 있다. 각 recommendation의 예상 시세는 시점과 함께 "이런 집이에요"
+// 상세 카드에서 확인하도록 한다.
 function toHoldOutCompareRows(realistic, holdOut) {
   if (!realistic || !holdOut) return null
   const before = realistic.condition
@@ -309,19 +329,6 @@ function toHoldOutCompareRows(realistic, holdOut) {
   const afterArea = formatAreaRange(after.areaMin, after.areaMax)
   if (beforeArea !== afterArea) {
     items.push({ key: 'area', label: '면적', fromValue: beforeArea, toValue: afterArea })
-  }
-
-  if (
-    typeof before.marketMedianAmount === 'number' &&
-    typeof after.marketMedianAmount === 'number' &&
-    before.marketMedianAmount !== after.marketMedianAmount
-  ) {
-    items.push({
-      key: 'marketMedianAmount',
-      label: '실거래 중앙값',
-      fromValue: formatGoalAmount(before.marketMedianAmount),
-      toValue: formatGoalAmount(after.marketMedianAmount),
-    })
   }
 
   if (items.length === 0) return null
@@ -398,7 +405,7 @@ function createFundingRow({ label, rawWithoutLoan, rawWithLoan, format, muted = 
 export function toFundingViewModel({ type, loanX, loanO }) {
   const rows = [
     createFundingRow({
-      label: '직접 준비할 금액',
+      label: '준비 금액',
       rawWithoutLoan: loanX.targetAmount,
       rawWithLoan: loanO?.targetAmount,
       format: formatGoalAmount,

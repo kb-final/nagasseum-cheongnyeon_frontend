@@ -7,9 +7,12 @@ import { toHousingViewModel } from '@/features/goal/utils/recommendationViewMode
 
 const props = defineProps({
   condition: { type: Object, required: true },
+  // marketMedianAmount는 "현재" 시세가 아니라 이 시점 기준 예측값이라, 라벨에 반드시
+  // 같이 표시해야 한다(recommendationViewModel.toHousingViewModel 참고).
+  targetDate: { type: String, default: null },
 })
 
-const view = computed(() => toHousingViewModel(props.condition))
+const view = computed(() => toHousingViewModel(props.condition, props.targetDate))
 </script>
 
 <template>
@@ -21,7 +24,7 @@ const view = computed(() => toHousingViewModel(props.condition))
 
     <template v-if="view.marketMedianAmountLabel">
       <BaseDivider class="recommendation-housing-card__divider" />
-      <p class="recommendation-housing-card__row-label">실거래 중앙값</p>
+      <p class="recommendation-housing-card__row-label">{{ view.marketMedianDateLabel }}</p>
       <p class="recommendation-housing-card__median">{{ view.marketMedianAmountLabel }}</p>
       <p v-if="view.sampleCountLabel" class="recommendation-housing-card__sample">
         {{ view.sampleCountLabel }}
