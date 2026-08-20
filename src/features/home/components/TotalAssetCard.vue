@@ -21,8 +21,11 @@ defineEmits(['refresh', 'view-detail'])
 const amount = computed(() => formatWon(props.assetSummary.totalAssets))
 const syncedAt = computed(() => formatDateTimeDot(props.assetSummary.syncedAt))
 
-// AssetSummaryGrid가 쓰던 것과 같은 세 항목·같은 sub 문구를 그대로 가져온다
-// (대출 0원/보유 없음, 고정 저축액 "월 기준" — 실제 API가 뒷받침하는 문구만 사용한다).
+// AssetSummaryGrid가 쓰던 것과 같은 두 항목·같은 sub 문구를 그대로 가져온다
+// (대출 0원/보유 없음 — 실제 API가 뒷받침하는 문구만 사용한다). 고정 저축액은 자산
+// 현황이라기보다 "목표를 위해 매달 얼마씩 모으는지"를 보여주는 목표 계획 정보에 가까워
+// ActiveGoalCard의 "월 저축액" row로 옮겼다(같은 assetSummary.monthlySavings 값을 그쪽
+// 컴포넌트에서 그대로 받아 쓴다).
 // 금액은 억 단위가 넘어갈 수 있는 항목(특히 대출)도 있어 formatManwon 대신
 // formatEokManwon으로 통일한다("1억 1,200만원"처럼 억+만원을 함께 표기).
 const rows = computed(() => [
@@ -38,11 +41,6 @@ const rows = computed(() => [
       props.assetBreakdown.loan.accountCount > 0
         ? `${props.assetBreakdown.loan.accountCount}개 계좌`
         : '보유 없음',
-  },
-  {
-    label: '고정 저축액',
-    amount: props.assetSummary.monthlySavings,
-    sub: '월 기준',
   },
 ])
 </script>
@@ -217,7 +215,7 @@ const rows = computed(() => [
 }
 
 /*
-  세 row가 같은 열 너비를 공유해야 금액 자릿수가 달라도(2,930만원 vs 1억 1,200만원) 오른쪽
+  row끼리 같은 열 너비를 공유해야 금액 자릿수가 달라도(2,930만원 vs 1억 1,200만원) 오른쪽
   보조 정보 위치가 흔들리지 않는다. grid를 rows 컨테이너에 걸고, 각 row는 display:contents로
   박스를 없애 자신의 3개 자식이 그 grid에 직접 들어가게 한다(라벨/금액/보조정보 3열).
 */

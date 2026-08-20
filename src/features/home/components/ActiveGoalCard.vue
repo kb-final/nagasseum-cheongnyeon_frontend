@@ -7,6 +7,11 @@ import { formatEokManwon, formatYearMonth } from '@/shared/utils/formatter'
 
 const props = defineProps({
   goal: { type: Object, required: true },
+  // "목표를 위해 매달 얼마씩 모으는지"는 보유 자산 현황보다 목표 계획 정보에 가까워
+  // TotalAssetCard가 "고정 저축액"으로 보여주던 assetSummary.monthlySavings를 이 카드로
+  // 옮겨받는다 — 새 데이터를 만들지 않고 같은 값을 그대로 받아 쓴다. 자산 요약이 아직 없을
+  // 수 있어(동기화 전 등) optional로 두고, 없으면 이 row를 숨긴다(값을 지어내지 않는다).
+  monthlySaving: { type: Number, default: null },
   // 시세 변화가 목표 도달 시점에 미친 영향을 요약한 한 줄, { prefix, emphasis } 형태.
   // 문장 전체가 아니라 실제로 바뀌는 값(emphasis)만 강조색으로 보여주기 위해 나눠서 받는다.
   // 데이터가 없으면(시세 API 실패, 변화 없음 등) null이 오고, 그 경우 이 카드는 조용히
@@ -63,6 +68,11 @@ const etaLabel = computed(() => `${formatYearMonth(props.goal.targetDate)} 도�
         }}</strong>
       </div>
 
+      <div v-if="typeof monthlySaving === 'number'" class="active-goal-card__row">
+        <span class="active-goal-card__row-label">월 저축액</span>
+        <strong class="active-goal-card__row-value">{{ formatEokManwon(monthlySaving) }}</strong>
+      </div>
+
       <BaseDivider class="active-goal-card__divider" />
 
       <p v-if="marketInsight" class="active-goal-card__insight">
@@ -86,6 +96,9 @@ const etaLabel = computed(() => `${formatYearMonth(props.goal.targetDate)} 도�
   display: flex;
   flex-direction: column;
   gap: 6px;
+  /* BaseCard--lg 기본 20px 패딩 중 아래쪽만 줄인다 — 마지막 줄(시세 insight)과 카드
+     하단 사이 여백이 다른 줄 간격보다 유독 넓어 보였다. TotalAssetCard와 같은 값. */
+  padding-bottom: 12px;
   font-family: var(--sans-normal);
 }
 
