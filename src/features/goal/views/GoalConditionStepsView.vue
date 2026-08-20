@@ -47,7 +47,8 @@ const transitionName = ref('goal-step-forward')
 
 function handleBack() {
   if (phase.value !== 'steps') {
-    // 로딩/에러 상태에서 뒤로 가면 마지막 입력 화면으로 돌아온다
+    // 에러 상태에서 뒤로 가면 마지막 입력 화면으로 돌아온다.
+    // (로딩 중에는 헤더의 뒤로가기 버튼 자체를 감춰서 이 경로로 들어오지 않는다)
     phase.value = 'steps'
     return
   }
@@ -97,7 +98,13 @@ function handleSkip() {
 
 <template>
   <div class="goal-steps-view">
-    <AppHeader title="목표 설정" @back="handleBack" />
+    <!--
+      추천 계산이 이미 돌아가는 중(phase === 'loading')에는 뒤로가기 버튼을 감춘다.
+      돌아가도 요청은 취소되지 않아서, 계산이 끝나는 순간 입력 화면에 있던 사용자를
+      결과 화면으로 끌고 가버린다. 버튼을 아예 없애 그 상황 자체를 만들지 않는다.
+      에러 화면에서는 빠져나갈 길이 필요하므로 그대로 둔다.
+    -->
+    <AppHeader title="목표 설정" :show-back="phase !== 'loading'" @back="handleBack" />
 
     <template v-if="phase === 'steps'">
       <GoalStepProgress
