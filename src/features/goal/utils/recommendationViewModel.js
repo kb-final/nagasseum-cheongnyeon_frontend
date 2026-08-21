@@ -443,18 +443,15 @@ export function toFundingViewModel({ type, loanX, loanO }) {
 }
 
 // "이 계획으로 목표 설정하기" 저장 payload(goalApi.postGoal 기대 형태)로 매핑한다.
-// recommendation 응답과 저장 요청 스키마가 완전히 같지 않아 아래는 최선 추정 근사치다
-// (백엔드 계약이 확정되면 이 함수만 고치면 된다):
-// - sizeMin/sizeMax: condition.areaMin/Max가 이제 평 단위로 내려오므로 변환 없이 그대로 사용
-//   (목표 저장 API의 GoalHousing.areaMin/areaMax도 평 단위 — CLAUDE.md 3번 참고)
-// - depositMin/depositMax: recommendation에 없는 값이라 "조건 미지정" 컨벤션대로 null
+// - sizeMin/sizeMax: condition.areaMin/Max를 그대로 사용
+// - depositMin/depositMax: condition에 포함된 값을 그대로 전달 (백엔드 @NotNull)
 // - monthlyRentMin/monthlyRentMax: 범위가 아니라 단일값(monthlyRent)이라 WOLSE면 그 값을
 //   min=max로 두는 점(point) 근사, JEONSE면 null
 // - targetDate/targetAmount/monthlySavings: plan(목표 설정 확인 팝업에서 최종 선택한
 //   loanX 또는 loanO)에서 가져온다 — 대출 여부는 POST /goals 요청 스키마에 별도 필드가
 //   없어(CLAUDE.md 2번 API 목록 기준) 저장하지 않고, 선택한 plan의 금액/시점/저축액만
 //   반영한다. 인자를 생략하면 기존처럼 loanX(대출 없이) 기준으로 동작한다.
-// - targetRentMiddleAmount: recommendation에 시세 중앙값 필드 자체가 없어 지어내지 않고 null
+// - targetRentMiddleAmount: condition.marketMedianAmount (백엔드 @NotNull)
 export function toGoalCreationPayload(recommendation, plan = recommendation.loanX) {
   const { condition } = recommendation
   const isWolse = condition.dealType === 'WOLSE' && condition.monthlyRent > 0
@@ -465,13 +462,13 @@ export function toGoalCreationPayload(recommendation, plan = recommendation.loan
     tradeType: condition.dealType,
     sizeMin: condition.areaMin,
     sizeMax: condition.areaMax,
-    depositMin: null,
-    depositMax: null,
+    depositMin: condition.depositMin,
+    depositMax: condition.depositMax,
     monthlyRentMin: isWolse ? condition.monthlyRent : null,
     monthlyRentMax: isWolse ? condition.monthlyRent : null,
     targetDate: plan.targetDate,
     targetAmount: plan.targetAmount,
-    targetRentMiddleAmount: null,
+    targetRentMiddleAmount: condition.marketMedianAmount,
     monthlySavings: plan.monthlySaving,
   }
 }
