@@ -34,7 +34,7 @@ const differenceLabel = computed(() => {
       </div>
 
       <button type="button" class="monthly-saving-card__cta" @click="emit('open')">
-        이번 달 저축액 입력하기 <span aria-hidden="true">›</span>
+        이번 달 저축액 입력하기 <span aria-hidden="true"></span>
       </button>
     </template>
 

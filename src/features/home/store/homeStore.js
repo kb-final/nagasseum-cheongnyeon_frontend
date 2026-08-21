@@ -12,7 +12,7 @@ import {
 import { getAssetSummary } from '@/features/asset/api/assetApi'
 import {
   toMarketAlertViewModel,
-  toHomeMarketInsightLabel,
+  toHomeMarketPriceChangeLabel,
 } from '@/features/goal/utils/marketAlertViewModel'
 
 // 레벨/알림 배지는 홈 화면 API 명세(목표 요약 · 자산 요약) 어디에도 없는 항목이라
@@ -122,7 +122,7 @@ export const useHomeStore = defineStore('home', () => {
 
     marketInsight.value =
       marketTrendResult.status === 'fulfilled'
-        ? toHomeMarketInsightLabel(toMarketAlertViewModel(marketTrendResult.value))
+        ? toHomeMarketPriceChangeLabel(toMarketAlertViewModel(marketTrendResult.value))
         : null
 
     currentSavingRecord.value =
