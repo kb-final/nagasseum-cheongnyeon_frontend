@@ -1,8 +1,6 @@
 <script setup>
 import { computed } from 'vue'
 
-import flagImage from '@/features/compare/assets/flag.png'
-
 /** 가장 높은 막대의 칸 수. 나머지 막대는 이 값에 비례해 칸 수를 정한다. */
 const MAX_SEGMENTS = 8
 /** .hist의 실제 CSS gap과 같아야 한다. 위치 계산이 이 값을 그대로 재사용한다. */
@@ -54,16 +52,21 @@ function positionStyle(rate) {
   }
 }
 
-const myMarkerStyle = computed(() => positionStyle(props.myRate))
 const avgLineStyle = computed(() => positionStyle(props.cohortAverageRate))
+
+/** 또래 평균 대비 내 달성률 차이(%p). 양수면 내가 높고, 음수면 내가 낮다. */
+const rateDiff = computed(() => Math.round((props.myRate - props.cohortAverageRate) * 10) / 10)
+const rateDiffAbs = computed(() => Math.abs(rateDiff.value))
 </script>
 
 <template>
   <div class="card">
     <p class="card__title">달성률 분포</p>
-    <p class="card__desc">
-      비슷한 자산의 사용자들은 <b>평균 {{ cohortAverageRate }}%</b> 달성 중입니다. <br />(나:
-      <b>{{ myRate }}%</b>)
+    <p v-if="rateDiff === 0" class="card__desc">또래 평균과 비슷한 달성률이에요.</p>
+    <p v-else class="card__desc">
+      비슷한 자산의 또래보다<br />
+      목표 달성률이 <b>{{ rateDiffAbs }}%p {{ rateDiff > 0 ? '높아요' : '낮아요' }}</b
+      >.
     </p>
 
     <div class="hist-wrap">
@@ -74,11 +77,14 @@ const avgLineStyle = computed(() => positionStyle(props.cohortAverageRate))
           class="hist__col"
           :style="{ flexGrow: bucketGrow(bucket) }"
         >
-          <div class="hist__bar" :style="{ '--count': segmentCount(bucket) }"></div>
+          <div
+            class="hist__bar"
+            :class="{ 'hist__bar--mine': bucket.isMine }"
+            :style="{ '--count': segmentCount(bucket) }"
+          ></div>
         </div>
       </div>
       <span class="hist__avg-line" :style="avgLineStyle" aria-hidden="true"></span>
-      <img class="hist__marker" :src="flagImage" :style="myMarkerStyle" alt="내 달성률 위치" />
     </div>
 
     <!--
@@ -98,7 +104,8 @@ const avgLineStyle = computed(() => positionStyle(props.cohortAverageRate))
     <p class="hist__unit">단위: 달성률 %</p>
 
     <p class="hist__legend">
-      <span class="hist__legend-dot"></span>나 {{ myRate }}% · 또래 평균 {{ cohortAverageRate }}%
+      <span class="hist__legend-dot"></span><b>나 {{ myRate }}%</b> · 또래 평균
+      {{ cohortAverageRate }}%
     </p>
   </div>
 </template>
@@ -113,6 +120,8 @@ const avgLineStyle = computed(() => positionStyle(props.cohortAverageRate))
   /* 막대는 칸이 쌓인 모양이다. 칸 사이 선을 카드 배경색으로 둬야 칸이 나뉘어 보인다. */
   --bar-body: var(--c-box);
   --bar-line: var(--c-card);
+  --bar-body-mine: var(--c-accent);
+  --bar-line-mine: var(--c-accent-mid);
 
   border: 1px solid var(--c-line);
   border-radius: 14px;
@@ -145,7 +154,8 @@ const avgLineStyle = computed(() => positionStyle(props.cohortAverageRate))
 
 .hist-wrap {
   position: relative;
-  margin-top: 48px;
+  /* 예전엔 이 위에 깃발이 떠 있어서 48px을 비워뒀다. 깃발을 없앤 지금은 그만큼 빈 여백이라 줄인다. */
+  margin-top: 16px;
 }
 
 .hist {
@@ -177,17 +187,12 @@ const avgLineStyle = computed(() => positionStyle(props.cohortAverageRate))
   );
 }
 
-/*
-  positionStyle()이 flex-grow·gap을 그대로 계산해 넘겨준 left를 그대로 쓴다.
-  원본이 8×8 도트라 8의 배수(16px)로 그려야 픽셀이 고르게 나온다.
-*/
-.hist__marker {
-  position: absolute;
-  bottom: calc(100% + 4px);
-  width: 16px;
-  height: 16px;
-  transform: translateX(-50%);
-  image-rendering: pixelated;
+.hist__bar--mine {
+  background: repeating-linear-gradient(
+    to top,
+    var(--bar-body-mine) 0 var(--segment),
+    var(--bar-line-mine) var(--segment) calc(var(--segment) + var(--segment-gap))
+  );
 }
 
 /*
@@ -242,5 +247,10 @@ const avgLineStyle = computed(() => positionStyle(props.cohortAverageRate))
   width: 8px;
   height: 8px;
   background: var(--forest);
+}
+
+.hist__legend b {
+  font-weight: 700;
+  color: var(--ink);
 }
 </style>
