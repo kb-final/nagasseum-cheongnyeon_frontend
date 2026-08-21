@@ -1,3 +1,5 @@
+import { PERSONA } from '@/mocks/data/member'
+
 export const mockKakaoSignupRequiredResponse = {
   success: true,
   data: {
@@ -6,7 +8,7 @@ export const mockKakaoSignupRequiredResponse = {
     refreshToken: null,
     memberId: null,
     kakaoId: '1234567890',
-    kakaoNickname: '김OO',
+    kakaoNickname: PERSONA.nickname,
   },
   error: null,
 }

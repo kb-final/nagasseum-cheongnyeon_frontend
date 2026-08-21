@@ -12,7 +12,9 @@ import {
   mockGoalMarketTrend,
   mockGoalSummaryHome,
   mockActiveGoal,
+  mockGoalNotFoundResponse,
 } from '@/mocks/data/goal'
+import { isNoGoal } from '@/mocks/data/member'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
@@ -141,17 +143,28 @@ export const goalHandlers = [
   // 하단 탭바가 목표 탭 진입 시 상세/빈 화면을 가르는 데 쓴다. 아래 `/goals/:goalId`가
   // `active`도 goalId로 매칭해버리므로 반드시 그보다 먼저 등록해야 한다.
   http.get(`${API_BASE_URL}/api/v1/goals/active`, () => {
+    // 시연 챕터 ③(목표 없음)에서는 활성 목표가 없어야 목표 탭이 빈 화면으로 간다.
+    if (isNoGoal) {
+      return HttpResponse.json(mockGoalNotFoundResponse, { status: 404 })
+    }
     return HttpResponse.json({ success: true, data: mockActiveGoal, error: null })
   }),
 
   // 홈 화면 매물 시세 변화 카드. 아래 `/goals/:goalId`가 `market-trend`도 goalId로 매칭해버리므로
   // 반드시 그보다 먼저 등록해야 한다(MSW는 먼저 등록된 핸들러가 이긴다).
   http.get(`${API_BASE_URL}/api/v1/goals/market-trend`, () => {
+    if (isNoGoal) {
+      return HttpResponse.json(mockGoalNotFoundResponse, { status: 404 })
+    }
     return HttpResponse.json({ success: true, data: mockGoalMarketTrend, error: null })
   }),
 
   // 홈 화면 목표 달성 요약 카드. 마찬가지로 `/goals/:goalId`보다 먼저 등록해야 한다.
   http.get(`${API_BASE_URL}/api/v1/goals/summary`, () => {
+    // 홈 등반 카드가 'NEW QUEST · 아직 오를 정상이 없어요'로 바뀐다.
+    if (isNoGoal) {
+      return HttpResponse.json(mockGoalNotFoundResponse, { status: 404 })
+    }
     return HttpResponse.json({ success: true, data: mockGoalSummaryHome, error: null })
   }),
 

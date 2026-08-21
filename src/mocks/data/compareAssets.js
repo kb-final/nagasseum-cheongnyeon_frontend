@@ -1,35 +1,41 @@
+// 또래 비교 — 자산 탭.
+// 페르소나는 월 소득 210만원(8~9분위), 직업군 회사원, 월 저축 70만원.
+// 소득 구간과 직업군 분포에서 내 깃발이 꽂히는 위치가 화면의 포인트다.
 export const mockCompareAssetsSuccess = {
   success: true,
   data: {
-    snapshotYm: '202607',
+    snapshotYm: '202611',
     cohort: {
       assetRange: 10000000,
       ageRange: 2,
-      cohortSize: 247,
+      cohortSize: 183,
       appliedFilters: [],
       sufficient: true,
       minimumRequired: null,
     },
-    myMonthlyIncome: 3000000,
-    cohortAverageNetAssets: 45000000,
+    myMonthlyIncome: 2100000,
+    cohortAverageNetAssets: 31200000,
     saving: {
-      mine: 900000,
-      cohortMin: 500000,
-      cohortMax: 1200000,
+      mine: 700000,
+      cohortMin: 300000,
+      cohortMax: 1100000,
     },
     incomeBracketDistribution: [
-      { bracket: 'INCOME_DECILE_1', ratio: 9.4 },
-      { bracket: 'INCOME_DECILE_2_3', ratio: 18.1 },
-      { bracket: 'INCOME_DECILE_4_5', ratio: 22.6 },
-      { bracket: 'INCOME_DECILE_6_7', ratio: 20.9 },
-      { bracket: 'INCOME_DECILE_8_9', ratio: 17.5 },
-      { bracket: 'INCOME_DECILE_10', ratio: 8.2 },
-      { bracket: 'UNKNOWN', ratio: 3.3 },
+      { bracket: 'INCOME_DECILE_1', ratio: 6.6 },
+      { bracket: 'INCOME_DECILE_2_3', ratio: 21.3 },
+      { bracket: 'INCOME_DECILE_4_5', ratio: 24.6 },
+      { bracket: 'INCOME_DECILE_6_7', ratio: 19.7 },
+      // 페르소나가 속한 구간.
+      { bracket: 'INCOME_DECILE_8_9', ratio: 18.0 },
+      { bracket: 'INCOME_DECILE_10', ratio: 6.6 },
+      { bracket: 'UNKNOWN', ratio: 3.2 },
     ],
     occupationDistribution: [
-      { occupationType: '직장인', ratio: 62.3 },
-      { occupationType: '프리랜서', ratio: 18.5 },
-      { occupationType: '학생', ratio: 19.2 },
+      { occupationType: '회사원', ratio: 58.5 },
+      { occupationType: '취업 준비', ratio: 14.8 },
+      { occupationType: '프리랜서', ratio: 13.1 },
+      { occupationType: '공무원·공공기관', ratio: 8.2 },
+      { occupationType: '기타', ratio: 5.4 },
     ],
   },
   error: null,
@@ -43,8 +49,8 @@ export const mockCompareAssetsNoGoal = {
     ...mockCompareAssetsSuccess.data,
     saving: {
       mine: null,
-      cohortMin: 500000,
-      cohortMax: 1200000,
+      cohortMin: 300000,
+      cohortMax: 1100000,
     },
   },
   error: null,
@@ -53,7 +59,7 @@ export const mockCompareAssetsNoGoal = {
 export const mockCompareAssetsInsufficient = {
   success: true,
   data: {
-    snapshotYm: '202607',
+    snapshotYm: '202611',
     cohort: {
       assetRange: 10000000,
       ageRange: 2,
