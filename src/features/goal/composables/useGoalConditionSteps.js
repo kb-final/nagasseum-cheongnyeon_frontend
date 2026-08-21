@@ -208,6 +208,17 @@ export function useGoalConditionSteps() {
     if (prev) currentKey.value = prev.key
   }
 
+  /**
+   * 첫 단계로 되돌린다. 추천 실패 화면의 '조건 다시 고르기'용.
+   *
+   * <p>입력값과 answered는 건드리지 않는다. 조건을 처음부터 다시 훑어보게 하려는 것이지
+   * 답한 내용을 버리려는 것이 아니다 — 지우면 필수값(지역·월 저축액)까지 비어서 사용자가
+   * 같은 값을 처음부터 다시 넣어야 한다.
+   */
+  function goFirst() {
+    currentKey.value = steps.value[0].key
+  }
+
   function skip() {
     if (!canSkip.value) return false
 
@@ -304,6 +315,7 @@ export function useGoalConditionSteps() {
     canSkip,
     goNext,
     goPrev,
+    goFirst,
     skip,
     applyInitialValue,
     buildPayload,
