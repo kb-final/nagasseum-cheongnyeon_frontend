@@ -88,18 +88,22 @@ const rateDiffAbs = computed(() => Math.abs(rateDiff.value))
     </div>
 
     <!--
-      막대 아래 눈금. 각 칸의 시작값을 왼쪽에 붙여 축처럼 읽히게 한다.
-      막대와 같은 flexGrow·gap을 써야 눈금이 칸 시작점과 맞는다.
+      막대 아래 눈금. 칸 구성(flexGrow·gap)을 .hist와 똑같이 맞춰야 각 숫자가 그 칸의
+      시작 지점과 정확히 겹친다. 예전엔 끝에 "100" 칸을 하나 더 끼워 넣었는데, 그 칸이
+      폭을 나눠 가지면서 .hist보다 칸이 좁아져 뒤로 갈수록 숫자가 막대보다 왼쪽으로 밀렸다.
+      "100"은 칸 흐름에서 빼고 오른쪽 끝에 따로 붙인다.
     -->
-    <div class="hist__axis" aria-hidden="true">
-      <span
-        v-for="bucket in buckets"
-        :key="bucket.rangeMin"
-        class="hist__tick"
-        :style="{ flexGrow: bucketGrow(bucket) }"
-        >{{ bucket.rangeMin }}</span
-      >
-      <span class="hist__tick hist__tick--last">100</span>
+    <div class="hist__axis-wrap">
+      <div class="hist__axis" aria-hidden="true">
+        <span
+          v-for="bucket in buckets"
+          :key="bucket.rangeMin"
+          class="hist__tick"
+          :style="{ flexGrow: bucketGrow(bucket) }"
+          >{{ bucket.rangeMin }}</span
+        >
+      </div>
+      <span class="hist__tick hist__tick--last" aria-hidden="true">100</span>
     </div>
     <p class="hist__unit">단위: 달성률 %</p>
 
@@ -208,10 +212,14 @@ const rateDiffAbs = computed(() => Math.abs(rateDiff.value))
   transform: translateX(-50%);
 }
 
+.hist__axis-wrap {
+  position: relative;
+  margin-top: 6px;
+}
+
 .hist__axis {
   display: flex;
   gap: 6px;
-  margin-top: 6px;
 }
 
 .hist__tick {
@@ -221,9 +229,11 @@ const rateDiffAbs = computed(() => Math.abs(rateDiff.value))
   font-variant-numeric: tabular-nums;
 }
 
-/* 마지막 칸의 끝값. 칸 하나를 차지하지 않도록 폭을 글자만큼만 준다. */
+/* 마지막 칸의 끝값(100). 칸 흐름 밖에서 오른쪽 끝에 고정해 앞 칸들의 폭 계산에 끼어들지 않는다. */
 .hist__tick--last {
-  flex: none;
+  position: absolute;
+  top: 0;
+  right: 0;
 }
 
 .hist__unit {
