@@ -33,6 +33,18 @@ const goalStore = useGoalStore()
 
 const isEditMode = computed(() => props.goalId !== null)
 
+/*
+  진단 결과 화면의 '다시 진단하기'로 들어왔는지.
+
+  그 화면(GoalRecommendationsView)은 AppHeader의 뒤로가기를 감춰두고 MobileLayout의 하단 탭도
+  숨긴다. 그래서 첫 단계에서 router.back()으로 되돌려 보내면 '다시 진단하기' 말고는 빠져나갈
+  길이 없는 막다른 화면에 사용자를 가둔다. 이 경우에만 뒤로가기를 홈으로 보낸다.
+
+  history.state는 반응형이 아니라 마운트 시점에 한 번만 읽으면 된다. 라우트 쿼리 대신 state를
+  쓰는 이유는 주소창에 남지 않아서다 — 새로고침이나 공유된 /diagnosis 주소는 평소대로 동작한다.
+*/
+const cameFromDiagnosisResult = window.history.state?.fromDiagnosisResult === true
+
 const {
   form,
   currentStep,
@@ -44,6 +56,7 @@ const {
   canSkip,
   goNext,
   goPrev,
+  goFirst,
   skip,
   applyInitialValue,
   buildPayload,
@@ -90,11 +103,28 @@ function handleBack() {
     return
   }
   if (isFirstStep.value) {
-    router.back()
+    // 진단 결과에서 다시 시작한 흐름은 되돌아갈 곳이 막다른 화면이라 홈으로 내보낸다.
+    // replace라서 방금 떠난 조건 입력 화면이 히스토리에 남지 않는다.
+    if (cameFromDiagnosisResult) router.replace({ name: 'home' })
+    else router.back()
     return
   }
   transitionName.value = 'goal-step-backward'
   goPrev()
+}
+
+/*
+  추천 실패 화면의 '조건 다시 고르기'.
+
+  phase만 'steps'로 되돌리면 방금 제출을 눌렀던 마지막 단계(월 저축액)로 돌아간다. 문구가
+  약속하는 것은 조건을 처음부터 다시 고르는 것이므로 첫 단계로 옮긴다. 되돌아가는 움직임이라
+  전환 방향도 뒤로 맞춘다. (헤더의 뒤로가기는 지금처럼 마지막 입력 단계로 돌아간다 —
+  '방금 그 화면으로'가 뒤로가기의 뜻이다.)
+*/
+function restartSteps() {
+  transitionName.value = 'goal-step-backward'
+  goFirst()
+  phase.value = 'steps'
 }
 
 async function submit() {
@@ -111,7 +141,12 @@ async function submit() {
   goalStore.playResultIntro = true
 
   try {
-    await router.push({ name: RESULT_ROUTE_NAME })
+    /*
+      push가 아니라 replace다. 조건 입력 화면은 제출을 마치는 순간 되돌아올 곳이 아니고
+      (결과 화면에서 다시 시작하는 길은 '다시 진단하기'로 따로 있다), 히스토리에 남겨두면
+      결과 화면과 입력 화면이 번갈아 쌓여 브라우저 뒤로가기가 그 사이를 오가게 된다.
+    */
+    await router.replace({ name: RESULT_ROUTE_NAME })
   } catch {
     // 결과 화면 라우트가 아직 없으면 이동에 실패한다. 이때 가짜 결과를 대신 그리면
     // 나중에 지워야 할 화면이 하나 더 생기므로, 로딩 화면에 머문 채 개발자에게만 알린다.
@@ -231,7 +266,7 @@ function handleSkip() {
 
       <div class="goal-steps-view__footer">
         <BaseButton size="lg" @click="submit">다시 시도</BaseButton>
-        <button type="button" class="goal-steps-view__skip" @click="phase = 'steps'">
+        <button type="button" class="goal-steps-view__skip" @click="restartSteps">
           조건 다시 고르기
         </button>
       </div>

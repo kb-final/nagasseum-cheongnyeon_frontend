@@ -10,7 +10,7 @@ import {
   PolicyIcon as CompareIcon,
   MyIcon,
 } from '@/shared/components/atoms/navigation/BottomNav/icons'
-import { fetchGoalSummary } from '@/features/goal/api/goalApi'
+import { fetchActiveGoal } from '@/features/goal/api/goalApi'
 
 const route = useRoute()
 const router = useRouter()
@@ -43,11 +43,17 @@ const activeIndex = computed(() =>
 )
 const showNav = computed(() => route.path !== '/' && !HIDDEN_NAV_ROUTE_NAMES.includes(route.name))
 
-// 활성 목표가 있으면 목표 상세로, 없으면 목표 설정을 안내하는 화면으로 보낸다
+// 활성 목표가 있으면 목표 상세로, 없으면 목표 설정을 안내하는 화면으로 보낸다.
+// 활성 목표 없음은 API 명세상 오류가 아니라 data:null인 정상 응답이라, 인증 만료 등
+// 진짜 실패했을 때만 방어적으로 빈 화면을 보여준다.
 async function goToGoalTab() {
   try {
-    const summary = await fetchGoalSummary()
-    router.push({ name: 'goal-detail', params: { goalId: summary.goalId } })
+    const activeGoal = await fetchActiveGoal()
+    if (activeGoal) {
+      router.push({ name: 'goal-detail', params: { goalId: activeGoal.goalId } })
+    } else {
+      router.push({ name: 'goal-empty' })
+    }
   } catch {
     router.push({ name: 'goal-empty' })
   }

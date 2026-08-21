@@ -285,6 +285,15 @@ export const mockGoalMarketTrend = {
   reflectEta: '2027-03',
 }
 
+// GET /api/v1/goals/active 응답 mock ("활성 목표 조회" API 명세 기준)
+export const mockActiveGoal = {
+  goalId: mockGoal.goalId,
+  goalType: 'HOUSING',
+  status: 'ACTIVE',
+  targetAmount: mockGoal.targetAmount,
+  targetDate: mockGoal.targetDate,
+}
+
 // GET /api/v1/goals/summary 응답 mock (홈 화면 API 명세서 예시값 그대로)
 export const mockGoalSummaryHome = {
   goalId: 42,

@@ -3,6 +3,9 @@ import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 import AppHeader from '@/shared/components/molecules/AppHeader.vue'
+import BaseButton from '@/shared/components/atoms/base/button/BaseButton.vue'
+import BaseModal from '@/shared/components/atoms/feedback/Modal/BaseModal.vue'
+import BaseAlert from '@/shared/components/atoms/feedback/Alert/BaseAlert.vue'
 import BaseSkeleton from '@/shared/components/atoms/feedback/Skeleton/BaseSkeleton.vue'
 import { formatEok, formatManwon, formatYearMonthKo } from '@/shared/utils/formatter'
 import { HOUSING_TYPE_LABEL, DEAL_TYPE_LABEL } from '@/shared/constants/housing'
@@ -80,6 +83,18 @@ async function onSubmitMonthlySaving(monthlySaving) {
     position: 'top',
   })
 }
+
+const isDeleteModalOpen = ref(false)
+
+// 삭제 후에는 상세 화면에 더 보여줄 목표가 없으므로 목표 빈 화면으로 보낸다.
+async function confirmDeleteGoal() {
+  const deleted = await goalStore.removeGoal(props.goalId)
+  if (!deleted) return
+
+  isDeleteModalOpen.value = false
+  toast.show('목표를 삭제했어요.', { type: 'success', position: 'top' })
+  router.replace({ name: 'goal-empty' })
+}
 </script>
 
 <template>
@@ -124,6 +139,29 @@ async function onSubmitMonthlySaving(monthlySaving) {
         :is-submitting="goalStore.isUpdating"
         @submit="onSubmitMonthlySaving"
       />
+
+      <button type="button" class="goal-detail-view__delete-link" @click="isDeleteModalOpen = true">
+        목표 삭제하기
+      </button>
+
+      <BaseModal v-model="isDeleteModalOpen" title="목표를 삭제할까요?">
+        <p class="goal-detail-view__modal-desc">삭제하면 지금까지의 목표 정보가 사라져요</p>
+        <BaseAlert v-if="goalStore.deleteError" variant="error">
+          목표를 삭제하지 못했어요. 잠시 후 다시 시도해주세요.
+        </BaseAlert>
+        <template #footer>
+          <BaseButton
+            variant="secondary"
+            :disabled="goalStore.isDeleting"
+            @click="isDeleteModalOpen = false"
+          >
+            취소
+          </BaseButton>
+          <BaseButton variant="primary" :disabled="goalStore.isDeleting" @click="confirmDeleteGoal">
+            {{ goalStore.isDeleting ? '삭제 중...' : '삭제' }}
+          </BaseButton>
+        </template>
+      </BaseModal>
     </template>
 
     <div v-else-if="goalStore.isLoadingDetail" class="goal-detail-view__skeleton">
@@ -213,6 +251,26 @@ async function onSubmitMonthlySaving(monthlySaving) {
 .goal-detail-view__error {
   padding: 24px 0;
   color: var(--color-text-secondary, #9aa09a);
+  text-align: center;
+}
+
+.goal-detail-view__delete-link {
+  margin: 8px 0 24px;
+  padding: 12px 0;
+  border: none;
+  border-radius: 14px;
+  background: rgba(193, 68, 46, 0.12);
+  color: var(--color-point, #c1442e);
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+  cursor: pointer;
+}
+
+.goal-detail-view__modal-desc {
+  margin: 0;
+  color: #4a5a52;
+  font-size: 13px;
   text-align: center;
 }
 </style>
