@@ -25,7 +25,6 @@ const differenceLabel = computed(() => {
 <template>
   <BaseCard class="monthly-saving-card">
     <template v-if="!record.recorded">
-      <p class="monthly-saving-card__title">이번 달 저축 기록</p>
       <p class="monthly-saving-card__question">{{ monthLabel }}에는 얼마를 저축했나요?</p>
 
       <div class="monthly-saving-card__row">
@@ -60,13 +59,13 @@ const differenceLabel = computed(() => {
 
 .monthly-saving-card__title {
   margin: 0;
-  font-size: 16px;
-  font-weight: 900;
+  font-size: 13px;
+  font-weight: 700;
   color: var(--home-text-primary, #10130f);
 }
 
 .monthly-saving-card__question {
-  margin: 2px 0 8px;
+  margin: 0 0 8px;
   font-size: 13px;
   font-weight: 700;
   color: var(--color-text-secondary, #9aa09a);

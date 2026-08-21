@@ -103,14 +103,6 @@ async function onSubmitSaving(actualSaving) {
         :market-insight="homeStore.marketInsight"
       />
 
-      <!-- ACTIVE 목표가 있을 때만 노출한다 — 저축 기록은 목표의 월 저축 계획(targetSaving)을
-           기준으로 비교하므로 목표가 없으면 비교 대상 자체가 없다. -->
-      <MonthlySavingCard
-        v-if="homeStore.goal"
-        :record="homeStore.currentSavingRecord"
-        @open="openSavingModal"
-      />
-
       <TotalAssetCard
         v-if="homeStore.assetSummary"
         :asset-summary="homeStore.assetSummary"
@@ -123,6 +115,14 @@ async function onSubmitSaving(actualSaving) {
         v-else
         :error-message="assetStore.syncError?.message ?? ''"
         @link-asset="goToAssetLink"
+      />
+
+      <!-- ACTIVE 목표가 있을 때만 노출한다 — 저축 기록은 목표의 월 저축 계획(targetSaving)을
+           기준으로 비교하므로 목표가 없으면 비교 대상 자체가 없다. -->
+      <MonthlySavingCard
+        v-if="homeStore.goal"
+        :record="homeStore.currentSavingRecord"
+        @open="openSavingModal"
       />
     </template>
 
