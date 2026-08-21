@@ -354,6 +354,11 @@ function buildRecommendationCondition(payload, overrides = {}) {
       dealType === 'WOLSE'
         ? roundTo(((payload.monthlyRentMin ?? 0) + (payload.monthlyRentMax ?? 800000)) / 2, 10000)
         : 0,
+    // 목표 저장 요청이 이 세 값을 그대로 실어 보낸다(모두 백엔드에서 @NotNull이다).
+    // GET /goals/recommendation 응답에는 들어 있으므로, 조건 기반 응답에도 같이 둔다.
+    depositMin: overrides.depositMin ?? payload.depositMin ?? 0,
+    depositMax: overrides.depositMax ?? payload.depositMax ?? 100000000000,
+    marketMedianAmount: overrides.marketMedianAmount ?? null,
     sampleCount: overrides.sampleCount ?? 142,
   }
 }
@@ -436,6 +441,11 @@ export function buildMockRecommendations(payload) {
 //   buildMockRecommendationResultWithoutDateFixed 참고).
 // - recommendations[].type: PREFERENCE_SAVING_FIXED(월 저축 고정) / PREFERENCE_DATE_FIXED
 //   (목표 시점 고정, 없을 수 있음) / REALISTIC / HOLD_OUT 4종.
+// - condition.marketMedianAmount는 "현재" 실거래 중앙값이 아니라 loanX.targetDate 시점
+//   기준으로 예측한 미래 시세다. recommendation은 기본적으로
+//   marketMedianAmount(목표 시점 예상 시세) < loanX.targetAmount(대출 없이 준비 가능한
+//   예산)일 때만 성립하는 구조라(이 예산이면 이 조건을 살 수 있다는 뜻), 여기서도 두 값을
+//   같게 두지 않는다 — 화면 검증 시 두 필드의 의미가 섞이지 않았는지 확인할 수 있게 한다.
 // ─────────────────────────────────────────────────────────────────────────────
 export function buildMockRecommendationResult() {
   return {
@@ -472,13 +482,13 @@ export function buildMockRecommendationResult() {
           marketMedianAmount: 632104997,
         },
         loanX: {
-          targetAmount: 632104997,
+          targetAmount: 650000000,
           targetDate: '2051-08',
           monthlySaving: 500000,
         },
         loanO: {
           loanAmount: 80000000,
-          targetAmount: 552104997,
+          targetAmount: 570000000,
           targetDate: '2044-12',
           monthlySaving: 500000,
           shortenedMonths: 80,
@@ -500,13 +510,13 @@ export function buildMockRecommendationResult() {
           marketMedianAmount: 632104997,
         },
         loanX: {
-          targetAmount: 632104997,
+          targetAmount: 650000000,
           targetDate: '2031-08',
           monthlySaving: 5200000,
         },
         loanO: {
           loanAmount: 80000000,
-          targetAmount: 552104997,
+          targetAmount: 570000000,
           targetDate: '2031-08',
           monthlySaving: 3900000,
           shortenedMonths: 0,
@@ -528,13 +538,13 @@ export function buildMockRecommendationResult() {
           marketMedianAmount: 170000000,
         },
         loanX: {
-          targetAmount: 170000000,
+          targetAmount: 185000000,
           targetDate: '2028-08',
           monthlySaving: 0,
         },
         loanO: {
           loanAmount: 70000000,
-          targetAmount: 100000000,
+          targetAmount: 115000000,
           targetDate: '2027-02',
           monthlySaving: 0,
           shortenedMonths: 18,
@@ -556,13 +566,13 @@ export function buildMockRecommendationResult() {
           marketMedianAmount: 262500000,
         },
         loanX: {
-          targetAmount: 262500000,
+          targetAmount: 280000000,
           targetDate: '2030-08',
           monthlySaving: 500000,
         },
         loanO: {
           loanAmount: 80000000,
-          targetAmount: 182500000,
+          targetAmount: 200000000,
           targetDate: '2028-10',
           monthlySaving: 500000,
           shortenedMonths: 22,

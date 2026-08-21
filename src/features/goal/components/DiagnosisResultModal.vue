@@ -160,7 +160,6 @@ const conditionAdjustments = computed(() => {
         <BaseButton
           class="diagnosis-result__footer-btn"
           variant="secondary"
-          size="modal"
           @click="emit('update:modelValue', false)"
         >
           다시 진단하기
@@ -168,7 +167,6 @@ const conditionAdjustments = computed(() => {
         <BaseButton
           class="diagnosis-result__footer-btn"
           variant="primary"
-          size="modal"
           :disabled="isSaving"
           @click="emit('confirm')"
         >

@@ -41,6 +41,20 @@ export const useGoalStore = defineStore('goal', () => {
   const isSaving = ref(false)
   const saveError = ref(null)
 
+  // 목표 수정 화면이 폼을 채우는 데 쓰는 기존 목표 원본(GET /goals/{goalId} 응답).
+  // 상세 조회(goalDetail)와 달리 regionCode·평수·보증금 범위 등 입력값 그대로가 들어 있다.
+  const goalForEdit = ref(null)
+  const isLoadingGoal = ref(false)
+  const goalLoadError = ref(null)
+
+  /*
+    지금 수정 중인 목표의 id. 조건 입력 화면(GoalConditionStepsView)이 진입할 때 세우고,
+    저장을 실제로 하는 추천 상세 화면(RecommendationDetailView)이 읽어 POST/PUT을 가른다.
+    생성과 수정이 화면을 그대로 공유하기 때문에, 어느 쪽으로 들어왔는지를 화면 사이에
+    전달할 곳이 필요하다. 생성으로 들어오면 null로 되돌아간다.
+  */
+  const editingGoalId = ref(null)
+
   const goalDetail = ref(null) // 목표 상세 조회 결과 { housing, progress, savingStatus, forecasts, ... }
   const isLoadingDetail = ref(false)
   const detailError = ref(null)
@@ -126,17 +140,56 @@ export const useGoalStore = defineStore('goal', () => {
     }
   }
 
+  /*
+    추천 상세 화면의 "이 계획으로 목표 설정하기" 저장.
+
+    이 화면은 목표 생성과 수정 양쪽의 마지막 단계다. 둘은 요청 본문이 완전히 같고 엔드포인트만
+    POST/PUT으로 갈리므로, 호출부가 구분하지 않아도 되도록 여기서 가른다 — 어느 쪽으로 들어왔는지는
+    조건 입력 화면이 세워둔 editingGoalId가 알려준다.
+
+    수정을 생성으로 잘못 보내면 저장 자체가 실패한다(활성 목표가 이미 있으면 POST는
+    GOAL_003 "이미 활성 목표가 존재합니다"로 거부된다).
+  */
   async function saveGoal(payload) {
     isSaving.value = true
     saveError.value = null
 
     try {
-      return await postGoal(payload)
+      const goalId = editingGoalId.value
+      const saved = goalId ? await putGoal(goalId, payload) : await postGoal(payload)
+
+      // 저장이 끝나면 비운다. 남겨두면 다음에 만드는 새 목표가 조용히 수정으로 새어나간다.
+      editingGoalId.value = null
+      return saved
     } catch (e) {
       saveError.value = e.response?.data?.error ?? e
       return null
     } finally {
       isSaving.value = false
+    }
+  }
+
+  /*
+    목표 수정 화면이 폼을 기존 목표 값으로 채우기 위해 호출한다.
+    상세 조회(loadGoalDetail)는 화면 표시용으로 가공된 응답이라 지역이 이름으로만 들어 있어
+    폼을 되돌릴 수 없다. GET /goals/{goalId}는 저장 요청과 같은 평평한 구조 — 특히 regionCode를
+    그대로 내려주므로, 이 응답만 폼 초기값으로 쓸 수 있다.
+  */
+  async function loadGoal(goalId) {
+    isLoadingGoal.value = true
+    goalLoadError.value = null
+    // 이전에 열었던 목표가 남아 있으면 새 목표를 받아오기 전 한 프레임 동안 폼에 채워진다. 먼저 비운다.
+    goalForEdit.value = null
+
+    try {
+      goalForEdit.value = await fetchGoal(goalId)
+      return true
+    } catch (e) {
+      goalLoadError.value = e.response?.data?.error ?? e
+      goalForEdit.value = null
+      return false
+    } finally {
+      isLoadingGoal.value = false
     }
   }
 
@@ -268,6 +321,11 @@ export const useGoalStore = defineStore('goal', () => {
     isSaving,
     saveError,
     saveGoal,
+    goalForEdit,
+    isLoadingGoal,
+    goalLoadError,
+    editingGoalId,
+    loadGoal,
     updateGoal,
     goalDetail,
     isLoadingDetail,

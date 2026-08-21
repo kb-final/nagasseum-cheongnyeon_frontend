@@ -95,7 +95,7 @@ function goToDiagnosis() {
       'goal-recommendations-view--intro': hasAnyRecommendation && playIntro,
     }"
   >
-    <AppHeader title="진단 결과" @back="router.back()" />
+    <AppHeader title="진단 결과" :show-back="false" />
 
     <div
       class="goal-recommendations-view__intro"
@@ -105,6 +105,11 @@ function goToDiagnosis() {
       <p class="goal-recommendations-view__description">
         같은 희망 조건도 준비 방법에 따라
         <br />도달 시점과 필요한 저축액이 달라질 수 있어요.
+      </p>
+      <!-- 카드마다 예상 시세를 반복해서 보여주진 않지만, 추천 계산에 현재 시세가 아니라
+           도달 시점의 예상 시세가 쓰였다는 사실만은 짧게 알려준다. -->
+      <p class="goal-recommendations-view__notice">
+        주거 시세는 실거래 데이터를 바탕으로 도달 시점의 예상 가격을 반영했어요.
       </p>
     </div>
 
@@ -121,7 +126,14 @@ function goToDiagnosis() {
 
     <div v-else-if="!hasAnyRecommendation" class="goal-recommendations-view__state">
       <BaseEmptyState message="조건에 맞는 계획을 찾지 못했어요." />
-      <BaseButton size="lg" @click="goToDiagnosis">다시 진단하기</BaseButton>
+      <BaseButton
+        variant="secondary"
+        size="lg"
+        class="goal-recommendations-view__retry"
+        @click="goToDiagnosis"
+      >
+        다시 진단하기
+      </BaseButton>
     </div>
 
     <template v-else>
@@ -175,7 +187,7 @@ function goToDiagnosis() {
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  margin: 8px 0 4px;
+  margin: 1px 0 4px;
   text-align: center;
 }
 
@@ -193,6 +205,14 @@ function goToDiagnosis() {
   font-size: 13.2px;
   line-height: 1.6;
   color: var(--color-text-secondary, #9aa09a);
+}
+
+/* description보다 우선순위가 낮은 부가 안내라 한 단계 더 옅고 작게 둔다 */
+.goal-recommendations-view__notice {
+  margin: 2px 0 0;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--color-text-tertiary, #6f766d);
 }
 
 /*
@@ -230,15 +250,28 @@ function goToDiagnosis() {
   padding-top: 16px;
 }
 
-/* 이 화면의 주 행동은 카드를 선택해 상세를 보는 것이라, "다시 진단하기"는 그보다 낮은 위계의
-   secondary action이어야 한다. filled green(연한 --color-primary-soft)은 비활성 버튼처럼
-   보이거나 recommendation 선택 CTA와 위계가 헷갈릴 수 있어, BaseCard가 이미 쓰는 표면색
-   (--color-surface)에 얇은 테두리(--color-border)만 두르는 outline 스타일로 낮춘다. */
+/*
+  Primary(추천 카드 선택)보다 한 단계 낮은 Secondary CTA. 연한 초록 배경 + 진한 초록
+  텍스트로 클릭 가능함은 분명히 하되, border를 넣으면 outline 버튼처럼 딱딱해 보여서
+  아주 약한 shadow로만 배경과의 경계를 부드럽게 잡아준다.
+*/
 .goal-recommendations-view__retry {
   margin-top: 4px;
-  background: var(--color-surface, #161616);
-  border-color: var(--color-border, #262626);
-  color: var(--color-text-primary, #ffffff);
+  background: var(--color-primary-soft, #e8f4ea);
+  color: var(--color-primary, #1d6b3f);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition:
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+/* 텍스트 색은 그대로 두고 배경만 한 톤 진하게, shadow도 아주 살짝만 키운다.
+   터치 기기에서 탭 후에도 hover가 눌어붙지 않도록 실제 hover 가능한 입력에서만 적용한다. */
+@media (hover: hover) and (pointer: fine) {
+  .goal-recommendations-view__retry:hover {
+    background: var(--color-primary-soft-hover, #c2dec7);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+  }
 }
 
 /*

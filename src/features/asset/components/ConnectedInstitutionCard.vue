@@ -72,6 +72,7 @@ defineEmits(['delete'])
 }
 
 .connected-institution-card__delete {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -79,13 +80,20 @@ defineEmits(['delete'])
   width: 32px;
   height: 32px;
   border: none;
-  border-radius: 50%;
+  border-radius: 12px;
   background: none;
   color: var(--color-text-secondary);
   cursor: pointer;
   transition:
     color 0.18s ease,
     background-color 0.18s ease;
+}
+
+/* 보이는 크기(32px)는 유지하고 터치 영역만 40px까지 넓힌다 */
+.connected-institution-card__delete::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
 }
 
 @media (hover: hover) and (pointer: fine) {

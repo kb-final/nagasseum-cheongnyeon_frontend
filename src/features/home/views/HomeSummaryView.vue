@@ -72,6 +72,7 @@ function goToAssetLink() {
       <ActiveGoalCard
         v-if="homeStore.goal"
         :goal="homeStore.goal"
+        :monthly-saving="homeStore.assetSummary?.monthlySavings ?? null"
         :market-insight="homeStore.marketInsight"
       />
 

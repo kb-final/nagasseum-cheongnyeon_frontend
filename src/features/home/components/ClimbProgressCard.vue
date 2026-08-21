@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 
 import BaseCard from '@/shared/components/atoms/base/card/BaseCard.vue'
+import BaseButton from '@/shared/components/atoms/base/button/BaseButton.vue'
 import { formatManwon } from '@/shared/utils/formatter'
 
 import climbBackground from '@/assets/images/climb-bg.png'
@@ -157,9 +158,14 @@ const segments = computed(() =>
           <p class="climb-card__empty-desc">
             원하는 동네와 보증금을 입력하면 구간별 등반 계획을 만들어 드려요
           </p>
-          <button type="button" class="climb-card__empty-cta" @click="$emit('create-goal')">
+          <BaseButton
+            variant="quest"
+            size="md"
+            class="climb-card__empty-cta"
+            @click="$emit('create-goal')"
+          >
             + 목표 설정하러 가기
-          </button>
+          </BaseButton>
         </div>
       </template>
 
@@ -316,19 +322,12 @@ const segments = computed(() =>
 
 /*
   가로를 꽉 채운다. 이 화면에서 할 수 있는 일이 이것 하나뿐이라 작게 둘 이유가 없다.
+  색상·radius(pill)·높이는 BaseButton의 quest variant/md 사이즈가 정한다 — 여기서는
+  이 카드에서만 필요한 폭·여백만 덮어쓴다.
 */
 .climb-card__empty-cta {
   width: 100%;
   margin-top: 4px;
-  padding: 9px 0;
-  border: none;
-  border-radius: 999px;
-  background: var(--climb-card-cta-bg, #12281c);
-  color: var(--climb-card-cta-text, #ffd939);
-  font: inherit;
-  font-size: 13.5px;
-  font-weight: 900;
-  cursor: pointer;
 }
 
 /* ── 목표가 있을 때 ──────────────────────────────────────── */

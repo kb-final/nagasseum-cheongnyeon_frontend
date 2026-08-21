@@ -26,6 +26,9 @@ const navItems = [
 
 const HIDDEN_NAV_ROUTE_NAMES = [
   'diagnosis',
+  // 목표 수정도 진단과 같은 한 흐름(조건 입력 → 진단 결과 → 저장)이라, 중간에 탭으로
+  // 빠져나갈 수 있으면 입력하던 내용이 그대로 사라진다. 생성 쪽과 같이 탭을 숨긴다.
+  'goal-edit',
   'goal-recommendations',
   'goal-recommendation-detail',
   'edit-info',
@@ -91,8 +94,11 @@ function handleTabChange(index) {
   z-index: 10;
   bottom: 12px;
   left: 50%;
-  width: calc(100% - 32px);
-  max-width: 368px;
+  /* 콘텐츠 카드(좌우 16px 패딩)보다 좌우 각 8px씩 더 넓혀, 카드와 같은 폭으로 보이지
+     않고 화면을 조작하는 별도 레이어처럼 보이게 한다. 화면 끝까지는 붙지 않도록
+     8px의 최소 side margin은 남긴다. */
+  width: calc(100% - 16px);
+  max-width: 384px;
   transform: translateX(-50%);
 }
 </style>

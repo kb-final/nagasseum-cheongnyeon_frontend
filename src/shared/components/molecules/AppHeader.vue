@@ -50,7 +50,7 @@ defineEmits(['back'])
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
   width: 100%;
-  padding: 12px 0;
+  padding: 3px 0 12px;
   /* 스크롤해도 화면 위에 계속 떠 있게 한다. 배경을 페이지 배경과 같은 색으로 채워야
      아래 콘텐츠가 뒤로 비치지 않는다. 하단 탭(z-index: 10)보다는 아래에 둔다. */
   position: sticky;
@@ -61,6 +61,7 @@ defineEmits(['back'])
 }
 
 .app-header__back {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -72,6 +73,13 @@ defineEmits(['back'])
   background: none;
   color: var(--color-text-primary, #ffffff);
   cursor: pointer;
+}
+
+/* 헤더 높이/그리드는 그대로 두고, 보이지 않는 히트 영역만 40px까지 넓힌다 */
+.app-header__back::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
 }
 
 .app-header__title {
