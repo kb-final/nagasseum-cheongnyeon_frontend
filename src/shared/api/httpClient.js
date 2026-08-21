@@ -4,7 +4,7 @@ import { loadAuthSession } from '@/shared/utils/authSession'
 
 const httpClient = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
-  timeout: 30000,
+  timeout: 10000000, //30000,
 })
 
 httpClient.interceptors.request.use((config) => {
