@@ -29,7 +29,8 @@ const predictionTargetLabel = computed(
 
 // predictionChangeAmount 부호에 따라 헤더 뱃지 색/전망 변화 문구를 함께 결정한다.
 // null이면(최신 몬테카를로 예측을 만들 수 없는 경우) 카드 전체를 에러 처리하지 않고
-// 이 영역만 안내 문구로 대체한다.
+// 뱃지·변화 문구만 숨긴다. predictionTargetYm은 예측 결과가 아니라 목표 시점 정보라
+// 예측 실패 여부와 무관하게 항상 내려오므로 이 판단에 쓰지 않는다.
 const changeDirection = computed(() => {
   const amount = props.marketAlert.predictionChangeAmount
   if (amount === null || amount === undefined) return 'unknown'
@@ -82,7 +83,11 @@ const changeAmountText = computed(() => {
             formatEokManwon(marketAlert.initialMiddleAmount)
           }}</span>
         </div>
-        <span class="market-alert__compare-arrow">→</span>
+        <span
+          v-if="marketAlert.latestPredictedMarketAmount !== null"
+          class="market-alert__compare-arrow"
+          >→</span
+        >
         <div class="market-alert__compare-box">
           <span class="market-alert__compare-label">최신 전망</span>
           <span
@@ -91,18 +96,13 @@ const changeAmountText = computed(() => {
             >{{ formatEokManwon(marketAlert.latestPredictedMarketAmount) }}</span
           >
           <span v-else class="market-alert__compare-value market-alert__compare-value--muted"
-            >계산 불가</span
+            >계산할 수 없어요</span
           >
         </div>
       </div>
 
-      <p class="market-alert__change" :class="`market-alert__change--${changeDirection}`">
-        <template v-if="changeDirection === 'unknown'"
-          >현재 데이터로는 최신 전망을 제공하기 어려워요.</template
-        >
-        <template v-else-if="changeDirection === 'same'"
-          >진단 당시와 예상 시세가 동일해요.</template
-        >
+      <p v-if="changeDirection !== 'unknown'" class="market-alert__change">
+        <template v-if="changeDirection === 'same'">진단 당시와 예상 시세가 동일해요.</template>
         <template v-else
           >진단 당시보다 예상 시세가
           <span
@@ -259,10 +259,6 @@ const changeAmountText = computed(() => {
   font-size: 14px;
   font-weight: 500;
   color: var(--color-text-primary, #16281c);
-}
-
-.market-alert__change--unknown {
-  opacity: 0.7;
 }
 
 /* 비교 박스(1억원 → 1억 500만원)가 가장 중요한 정보로 보이도록, 문장 전체가 아니라

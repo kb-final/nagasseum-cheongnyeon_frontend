@@ -265,6 +265,9 @@ export function applyMockGoalUpdate({ monthlySavings }) {
 // initialMiddleAmount는 "설정 당시 중앙값"이 아니라 "진단 당시 몬테카를로로 예측한
 // predictionTargetYm 시점 시세(P50)"다. currentMiddleAmount(현재 실거래 중앙값)와는
 // 기준 시점이 다르므로 두 값을 직접 비교/차감하지 않는다.
+// predictionTargetYm은 목표(goal.targetDate) 시점 정보라 최신 예측 성공 여부와 무관하게
+// 항상 내려온다(null 아님). 최신 예측이 실패하면 latestPredictedMarketAmount /
+// predictionChangeAmount만 null이 된다.
 export const mockGoalMarketTrend = {
   regionName: '서울 강남구',
   housingType: 'OFFICETEL',
