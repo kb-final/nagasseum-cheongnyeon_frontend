@@ -95,7 +95,7 @@ function goToDiagnosis() {
       'goal-recommendations-view--intro': hasAnyRecommendation && playIntro,
     }"
   >
-    <AppHeader title="진단 결과" @back="router.back()" />
+    <AppHeader title="진단 결과" :show-back="false" />
 
     <div
       class="goal-recommendations-view__intro"
@@ -187,7 +187,7 @@ function goToDiagnosis() {
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  margin: 8px 0 4px;
+  margin: 1px 0 4px;
   text-align: center;
 }
 

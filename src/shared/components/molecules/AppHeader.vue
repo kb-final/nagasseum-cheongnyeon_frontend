@@ -50,7 +50,7 @@ defineEmits(['back'])
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
   width: 100%;
-  padding: 12px 0;
+  padding: 3px 0 12px;
   /* 스크롤해도 화면 위에 계속 떠 있게 한다. 배경을 페이지 배경과 같은 색으로 채워야
      아래 콘텐츠가 뒤로 비치지 않는다. 하단 탭(z-index: 10)보다는 아래에 둔다. */
   position: sticky;

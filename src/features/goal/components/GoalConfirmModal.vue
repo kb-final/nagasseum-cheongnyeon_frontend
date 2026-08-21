@@ -258,6 +258,9 @@ function confirm() {
 }
 
 .goal-confirm-modal__btn {
+  /* BaseButton lg 기본 높이(51px)보다 살짝 낮춰, 팝업 안에서 다른 행들과 비교해 버튼이
+     지나치게 커 보이지 않게 한다 — Compact 톤(46px)과 같은 값. */
+  height: 46px;
   flex: 1;
 }
 </style>
