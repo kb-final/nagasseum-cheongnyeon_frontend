@@ -92,10 +92,11 @@ export function monthsBetweenYm(fromYm, toYm) {
   return (toYear - fromYear) * 12 + (toMonth - fromMonth)
 }
 
-// 시세 변동액에 부호를 붙여 "▲ 500만 원" / "▼ 500만 원" / "500만 원"(변동 없음)으로 표기
+// 변동액에 부호를 붙여 "▲ 500만원" / "▼ 500만원" / "0원"(변동 없음)으로 표기
+// (비교 기준 문구는 호출부에서 조합해서 붙인다 — 화면마다 기준 시점 표현이 다를 수 있음)
 export function formatChangeAmount(amount) {
   const arrow = amount > 0 ? '▲ ' : amount < 0 ? '▼ ' : ''
-  return `${arrow} 설정 대비 ${formatManwon(Math.abs(amount))}`
+  return `${arrow}${formatManwon(Math.abs(amount))}`
 }
 
 // "300,000,000" -> "3억 원", "100,000,000" -> "1억 원", "70,000,000" -> "7,000만 원"
