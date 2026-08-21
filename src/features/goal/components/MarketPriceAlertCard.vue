@@ -8,9 +8,9 @@ import BaseHomeIcon from '@/shared/components/atoms/base/icon/BaseHomeIcon.vue'
 import BaseCalendarIcon from '@/shared/components/atoms/base/icon/BaseCalendarIcon.vue'
 import {
   formatEokManwon,
-  formatManwon,
   formatChangeAmount,
   formatYearMonth,
+  formatWon,
 } from '@/shared/utils/formatter'
 
 const props = defineProps({
@@ -40,7 +40,7 @@ const changeDirection = computed(() => {
 
 const changeAmountText = computed(() => {
   const amount = props.marketAlert.predictionChangeAmount
-  return amount === null || amount === undefined ? '' : formatManwon(Math.abs(amount))
+  return amount === null || amount === undefined ? '' : formatEokManwon(Math.abs(amount))
 })
 </script>
 
@@ -63,7 +63,7 @@ const changeAmountText = computed(() => {
         {{ currentPriceLabel }}
       </p>
       <p class="market-alert__current-amount">
-        {{ formatEokManwon(marketAlert.currentMiddleAmount) }}
+        {{ formatWon(marketAlert.currentMiddleAmount) }}
       </p>
     </section>
 
@@ -138,7 +138,7 @@ const changeAmountText = computed(() => {
   justify-content: space-between;
   /* 카드 전체 gap(12px)을 쓰면 제목과 본문 사이가 다른 섹션 간격보다 넓어 보여서,
      제목 바로 아래 간격만 좁힌다. */
-  margin-bottom: -12px;
+  margin-bottom: -16px;
 }
 
 .market-alert__title {
@@ -150,7 +150,7 @@ const changeAmountText = computed(() => {
 .market-alert__current {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 6px;
 }
 
 .market-alert__current-label {
