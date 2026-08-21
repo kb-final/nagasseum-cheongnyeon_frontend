@@ -257,7 +257,7 @@ onMounted(async () => {
                 v-if="showIncomeDistribution"
                 class="card--mint"
                 :brackets="activeComparison.incomeBracketDistribution"
-                :my-monthly-income="activeComparison.myMonthlyIncome"
+                :my-income-bracket="memberStore.profile?.incomeBracket ?? null"
               />
 
               <OccupationDistributionCard

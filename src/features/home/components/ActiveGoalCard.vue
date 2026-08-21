@@ -153,7 +153,7 @@ const etaLabel = computed(() => `${formatYearMonth(props.goal.targetDate)} ÎèÑÎã
 .active-goal-card__row-label {
   font-size: 13px;
   font-weight: 700;
-  color: var(--total-asset-label, #12281c);
+  color: var(--color-text-secondary, #9aa09a);
 }
 
 .active-goal-card__row-value {

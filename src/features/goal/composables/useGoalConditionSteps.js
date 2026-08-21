@@ -127,7 +127,7 @@ export function useGoalConditionSteps() {
         title: '집은 어느 정도\n넓이면 좋을까요?',
         description: '전용면적 기준이에요. 감이 잘 안 오면 건너뛰어도 됩니다.',
         field: 'size',
-        min: 0,
+        min: 1,
         max: 50,
         step: 1,
         formatValue: formatPyeong,

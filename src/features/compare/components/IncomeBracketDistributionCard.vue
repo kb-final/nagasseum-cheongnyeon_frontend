@@ -12,27 +12,12 @@ import flagImage from '@/features/compare/assets/flag.png'
 
 const MAX_SEGMENTS = 8
 
-const BRACKET_UPPER_BOUNDS = [
-  ['UNDER_1M', 1_000_000],
-  ['M1_TO_2M', 2_000_000],
-  ['M2_TO_3M', 3_000_000],
-  ['M3_TO_4M', 4_000_000],
-  ['M4_TO_5M', 5_000_000],
-]
-
-function bracketKeyForIncome(income) {
-  const bound = BRACKET_UPPER_BOUNDS.find(([, upper]) => income < upper)
-  return bound ? bound[0] : 'OVER_5M'
-}
-
 const props = defineProps({
   brackets: { type: Array, required: true },
-  myMonthlyIncome: { type: Number, default: null },
+  // 회원의 소득 분위(IncomeBracket enum, 예: INCOME_DECILE_2_3). 마이페이지에서 자기 신고로
+  // 등록하는 값이라 금액에서 역산할 수 없어 그대로 전달받는다.
+  myIncomeBracket: { type: String, default: null },
 })
-
-const myBracketKey = computed(() =>
-  props.myMonthlyIncome != null ? bracketKeyForIncome(props.myMonthlyIncome) : null,
-)
 
 const orderedBrackets = computed(() =>
   [...props.brackets].sort(
@@ -48,13 +33,13 @@ const barItems = computed(() =>
     label: INCOME_BRACKET_LABEL[item.bracket] ?? item.bracket,
     shortLabel: INCOME_BRACKET_SHORT_LABEL[item.bracket] ?? item.bracket,
     ratio: item.ratio,
-    highlighted: item.bracket === myBracketKey.value,
+    highlighted: item.bracket === props.myIncomeBracket,
     segmentCount: Math.max(1, Math.round((item.ratio / maxRatio.value) * MAX_SEGMENTS)),
   })),
 )
 
 const myBracket = computed(
-  () => props.brackets.find((item) => item.bracket === myBracketKey.value) ?? null,
+  () => props.brackets.find((item) => item.bracket === props.myIncomeBracket) ?? null,
 )
 
 /** 소득이 실제로 기록된 구간. UNKNOWN은 값이 아니라 빈칸이라 뺀다. */
@@ -67,7 +52,7 @@ const knownBrackets = computed(() => props.brackets.filter((item) => item.bracke
  * 내가 안 넣은 것과 또래가 안 넣은 것은 사용자가 할 수 있는 일이 다르다.
  */
 const missReason = computed(() => {
-  if (props.myMonthlyIncome == null) return 'ME'
+  if (props.myIncomeBracket == null) return 'ME'
   if (knownBrackets.value.length === 0) return 'COHORT'
   return 'EMPTY_BAND'
 })
@@ -91,17 +76,17 @@ const isHintOpen = ref(false)
       또래 10명 중 <b>{{ peopleOutOf10 }}명</b>은 나와 같은 <b>{{ myBandLabel }}</b> 구간에 있어요!
     </p>
     <div v-else-if="missReason === 'ME'" class="card__hint-row">
-      <span class="card__desc">내 위치를 보려면 월 소득 정보가 필요해요</span>
+      <span class="card__desc">내 위치를 보려면 소득 분위 정보가 필요해요</span>
       <button
         type="button"
         class="card__hint"
-        aria-label="월 소득 정보가 필요한 이유"
+        aria-label="소득 분위 정보가 필요한 이유"
         @click.stop="isHintOpen = !isHintOpen"
       >
         ?
       </button>
       <div v-if="isHintOpen" class="tooltip" role="tooltip">
-        마이페이지에서 월 소득 정보를 등록하면 내 구간에 깃발을 꽂아드려요.
+        마이페이지에서 소득 분위 정보를 등록하면 내 구간에 깃발을 꽂아드려요.
       </div>
     </div>
     <p v-else-if="missReason === 'COHORT'" class="card__desc">
@@ -234,6 +219,7 @@ const isHintOpen = ref(false)
   gap: 6px;
   height: calc(var(--max-count) * (var(--segment) + var(--segment-gap)) - var(--segment-gap));
   margin-top: 44px;
+  overflow-x: auto;
 }
 
 .chart__col {
@@ -242,6 +228,7 @@ const isHintOpen = ref(false)
   flex-direction: column;
   align-items: center;
   justify-content: flex-end;
+  min-width: 0;
   height: 100%;
 }
 
@@ -325,11 +312,14 @@ const isHintOpen = ref(false)
 }
 
 .chart__label {
+  overflow: hidden;
+  max-width: 100%;
   margin-top: 6px;
   font-size: 9.5px;
   color: var(--ink-muted);
   text-align: center;
   white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .chart__unit {

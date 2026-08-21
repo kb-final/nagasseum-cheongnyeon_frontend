@@ -99,6 +99,20 @@ export async function putGoal(goalId, payload) {
   return data.data
 }
 
+// 로그인 사용자의 활성 목표(status=ACTIVE) 조회. 활성 목표가 없어도 정상 상태(200)로
+// data:null을 내려주도록 명세되어 있다 — 하단 탭바가 목표 탭 진입 시 상세/빈 화면을
+// 가르는 데 사용한다.
+export async function fetchActiveGoal() {
+  const { data } = await httpClient.get('/api/v1/goals/active')
+  return data.data
+}
+
+// 목표 삭제. memberId는 인증 토큰(@LoginMember)에서 추출하므로 별도 전달 불필요
+export async function deleteGoal(goalId) {
+  const { data } = await httpClient.delete(`/api/v1/goals/${goalId}`)
+  return data.data
+}
+
 // 진단 결과 팝업에서 "이 목표로 설정" 선택 시 목표를 저장한다.
 // payload는 호출부(DiagnosisView.vue)에서 진단 응답 필드로 이미 백엔드 DTO 모양으로 만들어서 넘긴다.
 // memberId는 인증 토큰(@LoginMember)에서 추출하므로 별도 전달 불필요
