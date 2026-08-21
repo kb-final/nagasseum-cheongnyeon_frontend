@@ -4,6 +4,8 @@ import { computed } from 'vue'
 import BaseCard from '@/shared/components/atoms/base/card/BaseCard.vue'
 import BaseBadge from '@/shared/components/atoms/base/badge/BaseBadge.vue'
 import BaseDivider from '@/shared/components/atoms/base/divider/BaseDivider.vue'
+import BaseHomeIcon from '@/shared/components/atoms/base/icon/BaseHomeIcon.vue'
+import BaseCalendarIcon from '@/shared/components/atoms/base/icon/BaseCalendarIcon.vue'
 import {
   formatEokManwon,
   formatManwon,
@@ -55,7 +57,10 @@ const changeAmountText = computed(() => {
     </div>
 
     <section class="market-alert__current">
-      <p class="market-alert__current-label">{{ currentPriceLabel }}</p>
+      <p class="market-alert__current-label">
+        <BaseHomeIcon :size="12" class="market-alert__current-icon" />
+        {{ currentPriceLabel }}
+      </p>
       <p class="market-alert__current-amount">
         {{ formatEokManwon(marketAlert.currentMiddleAmount) }}
       </p>
@@ -65,7 +70,10 @@ const changeAmountText = computed(() => {
 
     <section class="market-alert__prediction">
       <p class="market-alert__prediction-title">목표 시점 예상 시세</p>
-      <p class="market-alert__prediction-sub">{{ predictionTargetLabel }}</p>
+      <p class="market-alert__prediction-sub">
+        <BaseCalendarIcon :size="12" class="market-alert__prediction-icon" />
+        {{ predictionTargetLabel }}
+      </p>
 
       <div class="market-alert__compare">
         <div class="market-alert__compare-box">
@@ -146,10 +154,17 @@ const changeAmountText = computed(() => {
 }
 
 .market-alert__current-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   margin: 0;
   font-size: 12px;
   color: var(--color-text-primary, #16281c);
   opacity: 0.7;
+}
+
+.market-alert__current-icon {
+  flex-shrink: 0;
 }
 
 .market-alert__current-amount {
@@ -178,10 +193,17 @@ const changeAmountText = computed(() => {
 
 .market-alert__prediction-sub {
   /* 제목과 한 쌍의 헤딩처럼 붙어 보이도록 섹션 gap(8px)보다 좁힌다. */
+  display: flex;
+  align-items: center;
+  gap: 4px;
   margin: -4px 0 0;
   font-size: 12px;
   color: var(--color-text-primary, #16281c);
   opacity: 0.7;
+}
+
+.market-alert__prediction-icon {
+  flex-shrink: 0;
 }
 
 .market-alert__compare {
