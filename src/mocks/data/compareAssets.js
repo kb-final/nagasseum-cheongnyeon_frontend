@@ -18,10 +18,13 @@ export const mockCompareAssetsSuccess = {
       cohortMax: 1200000,
     },
     incomeBracketDistribution: [
-      { bracket: '200만원 미만', ratio: 12.5 },
-      { bracket: '200~300만원', ratio: 35.2 },
-      { bracket: '300~400만원', ratio: 28.7 },
-      { bracket: '400만원 이상', ratio: 23.6 },
+      { bracket: 'INCOME_DECILE_1', ratio: 9.4 },
+      { bracket: 'INCOME_DECILE_2_3', ratio: 18.1 },
+      { bracket: 'INCOME_DECILE_4_5', ratio: 22.6 },
+      { bracket: 'INCOME_DECILE_6_7', ratio: 20.9 },
+      { bracket: 'INCOME_DECILE_8_9', ratio: 17.5 },
+      { bracket: 'INCOME_DECILE_10', ratio: 8.2 },
+      { bracket: 'UNKNOWN', ratio: 3.3 },
     ],
     occupationDistribution: [
       { occupationType: '직장인', ratio: 62.3 },

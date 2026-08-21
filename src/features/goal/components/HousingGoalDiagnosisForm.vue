@@ -97,7 +97,7 @@ async function onSubmit() {
     <BaseDualRangeSlider
       v-model="form.area"
       label="희망 평수 (범위)"
-      :min="0"
+      :min="1"
       :max="50"
       :step="1"
       :format-value="formatPyeong"

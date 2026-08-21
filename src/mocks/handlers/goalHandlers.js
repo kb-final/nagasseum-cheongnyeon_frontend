@@ -11,6 +11,7 @@ import {
   mockSavingSimulations,
   mockGoalMarketTrend,
   mockGoalSummaryHome,
+  mockActiveGoal,
 } from '@/mocks/data/goal'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
@@ -137,6 +138,12 @@ export const goalHandlers = [
     })
   }),
 
+  // 하단 탭바가 목표 탭 진입 시 상세/빈 화면을 가르는 데 쓴다. 아래 `/goals/:goalId`가
+  // `active`도 goalId로 매칭해버리므로 반드시 그보다 먼저 등록해야 한다.
+  http.get(`${API_BASE_URL}/api/v1/goals/active`, () => {
+    return HttpResponse.json({ success: true, data: mockActiveGoal, error: null })
+  }),
+
   // 홈 화면 매물 시세 변화 카드. 아래 `/goals/:goalId`가 `market-trend`도 goalId로 매칭해버리므로
   // 반드시 그보다 먼저 등록해야 한다(MSW는 먼저 등록된 핸들러가 이긴다).
   http.get(`${API_BASE_URL}/api/v1/goals/market-trend`, () => {
@@ -175,6 +182,15 @@ export const goalHandlers = [
     return HttpResponse.json({
       success: true,
       data: { ...mockGoalDetail, goalId: Number(params.goalId) },
+      error: null,
+    })
+  }),
+
+  http.delete(`${API_BASE_URL}/api/v1/goals/:goalId`, ({ params }) => {
+    return HttpResponse.json({
+      success: true,
+      data: { goalId: Number(params.goalId) },
+      message: '목표 삭제 성공',
       error: null,
     })
   }),

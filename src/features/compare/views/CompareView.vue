@@ -182,7 +182,7 @@ onMounted(async () => {
     <div class="compare-view__subheader">
       <p class="compare-view__desc">비슷한 자산의 또래와 목표·자산을 비교해보세요.</p>
       <span v-if="isSnapshotStale" class="compare-view__stale">
-        {{ snapshotLabel }} 기준 · 2주 이상 지난 집계
+        {{ snapshotLabel }} 기준 · 2주 이전 데이터 집계
       </span>
     </div>
 
@@ -257,7 +257,7 @@ onMounted(async () => {
                 v-if="showIncomeDistribution"
                 class="card--mint"
                 :brackets="activeComparison.incomeBracketDistribution"
-                :my-monthly-income="activeComparison.myMonthlyIncome"
+                :my-income-bracket="memberStore.profile?.incomeBracket ?? null"
               />
 
               <OccupationDistributionCard
@@ -324,26 +324,9 @@ onMounted(async () => {
             </template>
 
             <div class="disclaimer">
-              <p class="disclaimer__title">
-                <svg
-                  class="disclaimer__icon"
-                  viewBox="0 0 11 11"
-                  fill="currentColor"
-                  aria-hidden="true"
-                >
-                  <rect x="3" y="0" width="5" height="1" />
-                  <rect x="2" y="1" width="1" height="3" />
-                  <rect x="8" y="1" width="1" height="3" />
-                  <rect x="1" y="4" width="9" height="1" />
-                  <rect x="1" y="5" width="1" height="5" />
-                  <rect x="9" y="5" width="1" height="5" />
-                  <rect x="5" y="6" width="1" height="3" />
-                  <rect x="1" y="10" width="9" height="1" />
-                </svg>
-                개인 정보 보호 안내
-              </p>
+              <p class="disclaimer__title">🔒 개인정보 보호</p>
               <p class="disclaimer__body">
-                개인별 목표·자산은 절대 노출되지 않으며,<br />집계 통계만 사용됩니다.
+                개별 목표·자산은 노출되지 않으며 집계 데이터만 사용돼요.
               </p>
             </div>
           </template>
@@ -384,11 +367,6 @@ onMounted(async () => {
   --c-ink-faint: #7f8a7d;
   --c-accent: #9fd8ab;
   --c-accent-mid: #4f7a5c;
-  /*
-    막대에서 "채워진 칸" 색. 초록은 내 항목·1위에만 쓰고 나머지는 회색으로 둔다.
-    전부 초록이면 채워진 건 보이는데 어느 게 내 것인지가 안 보인다.
-  */
-  --c-bar-on: #5a6b5c;
   --c-accent-soft: #263029;
   --c-track: #263029;
   --c-box: #171b16;
@@ -468,11 +446,6 @@ onMounted(async () => {
     여기서 필요한 건 보조 막대·띠에 쓰는 중간 톤 초록이라 뜻이 달라서 값을 직접 쓴다.
   */
   --c-accent-mid: #a9c9b0;
-  /*
-    채워진 칸과 빈 칸(#eff1eb)의 대비. #aab3a6은 1.9:1이라 차 있는지가 안 보였다.
-    #7f8c7c면 3.1:1이 되고, 강조색(진초록)과는 채도로 갈린다.
-  */
-  --c-bar-on: #7f8c7c;
   --c-accent-soft: #e8f4ea;
   --c-track: #eff1eb;
   --c-box: #e8ebe4;
@@ -633,46 +606,26 @@ onMounted(async () => {
   --body: var(--c-disclaimer-body);
 
   margin: 4px 0;
-  padding: 12px 14px;
+  padding: 9px 14px;
   border-radius: 12px;
   background: var(--surface);
   border: none;
   text-align: center;
-  font-size: 12px;
-  line-height: 1.55;
+  font-size: 11px;
+  line-height: 1.5;
   color: var(--body);
   animation: card-rise 0.35s ease-out both;
   animation-delay: 0.3s;
 }
 
 .disclaimer__title {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
   margin: 0;
   font-weight: 700;
   color: var(--c-disclaimer-ink);
 }
 
-/*
-  자물쇠는 그림 파일이 아니라 SVG로 그린다. 원본 11×11 격자를 사각형 여덟 개로 옮겼다.
-
-  PNG는 화면 배율이 정수배가 아닐 때(윈도우 125%·150%, 브라우저 확대 등) 11칸이
-  고르게 나뉘지 않아 어떤 줄은 굵고 어떤 줄은 사라진다. SVG는 도형이라 배율이
-  얼마든 같은 비율로 그려진다.
-
-  fill이 currentColor라 제목 글씨색(--c-disclaimer-ink)을 그대로 따라간다.
-  테마가 바뀌면 자물쇠도 같이 뒤집혀서 파일을 두 벌 둘 필요가 없다.
-*/
-.disclaimer__icon {
-  flex: none;
-  width: 11px;
-  height: 11px;
-}
-
 .disclaimer__body {
-  margin: 4px 0 0;
+  margin: 3px 0 0;
 }
 
 .state-card__cta {
