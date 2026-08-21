@@ -25,19 +25,18 @@ export function toMarketAlertViewModel(marketTrend) {
 // { prefix, emphasis }로 나눠 돌려주는 이유는 문장 전체가 아니라 실제로 바뀌는 값(emphasis)만
 // 강조색으로 보여주기 위함이다 — 호출부가 prefix는 기본 톤, emphasis만 강조색으로 렌더링한다.
 //
-// initialMiddleAmount는 목표 설정(진단) 당시 실거래 중앙값이고 currentMiddleAmount는 현재
-// 실거래 중앙값이라, 예측(latestPredictedMarketAmount/predictionChangeAmount)과 달리 둘 다
-// 이미 확정된 실제 값이다 — "반영하면 ~해요"라는 가정이 아니라 이미 일어난 시세 변화를 그대로
-// 보여줄 수 있다.
+// predictionChangeAmount = latestPredictedMarketAmount - initialMiddleAmount를 백엔드가 이미
+// 계산해서 내려준다(목표 상세 화면의 MarketPriceAlertCard와 같은 값). 최신 몬테카를로 예측을
+// 만들 수 없으면(latestPredictedMarketAmount 계산 실패) null로 내려오고, 그 경우 이 줄을 숨긴다.
 export function toHomeMarketPriceChangeLabel(marketAlert) {
   if (!marketAlert) return null
 
-  const { initialMiddleAmount, currentMiddleAmount } = marketAlert
-  if (initialMiddleAmount == null || currentMiddleAmount == null) return null
+  const { predictionChangeAmount } = marketAlert
+  if (predictionChangeAmount == null || predictionChangeAmount === 0) return null
 
-  const diff = currentMiddleAmount - initialMiddleAmount
-  if (diff === 0) return null
-
-  const emphasis = `${formatEokManwon(Math.abs(diff))} ${diff > 0 ? '늘어났어요' : '줄었어요'}`
-  return { prefix: '진단 당시보다 시세가 ', emphasis }
+  const isUp = predictionChangeAmount > 0
+  const emphasis = `${formatEokManwon(Math.abs(predictionChangeAmount))} ${isUp ? '늘어났어요' : '줄었어요'}`
+  // 매물 시세 변화 카드(MarketPriceAlertCard)와 같은 색 규칙: 오르면(매수자에게 불리) 빨강,
+  // 내리면(매수자에게 유리) 초록으로 강조한다.
+  return { prefix: '진단 당시보다 예측 시세가 ', emphasis, direction: isUp ? 'up' : 'down' }
 }

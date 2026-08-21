@@ -63,12 +63,18 @@ const etaLabel = computed(() => `${formatYearMonth(props.goal.targetDate)} 도�
         }}</strong>
       </div>
 
-      <BaseDivider class="active-goal-card__divider" />
+      <template v-if="marketInsight">
+        <BaseDivider class="active-goal-card__divider" />
 
-      <p v-if="marketInsight" class="active-goal-card__insight">
-        {{ marketInsight.prefix
-        }}<strong class="active-goal-card__insight-emphasis">{{ marketInsight.emphasis }}</strong>
-      </p>
+        <p class="active-goal-card__insight">
+          {{ marketInsight.prefix
+          }}<strong
+            class="active-goal-card__insight-emphasis"
+            :class="`active-goal-card__insight-emphasis--${marketInsight.direction}`"
+            >{{ marketInsight.emphasis }}</strong
+          >
+        </p>
+      </template>
     </BaseCard>
   </RouterLink>
 </template>
@@ -153,8 +159,8 @@ const etaLabel = computed(() => `${formatYearMonth(props.goal.targetDate)} 도�
   font-variant-numeric: tabular-nums;
 }
 
-/* 문장 전체를 초록으로 강조하면 "초록색 긴 문장"처럼 읽혀서, 기본 문장은 secondary 톤으로
-   낮추고 실제로 바뀌는 값(.insight-emphasis)만 primary green으로 강조한다. */
+/* 문장 전체를 강조색으로 하면 "긴 강조 문장"처럼 읽혀서, 기본 문장은 secondary 톤으로
+   낮추고 실제로 바뀌는 값(.insight-emphasis)만 방향에 따라 색을 강조한다. */
 .active-goal-card__insight {
   display: block;
   margin-top: 0;
@@ -166,6 +172,15 @@ const etaLabel = computed(() => `${formatYearMonth(props.goal.targetDate)} 도�
 
 .active-goal-card__insight-emphasis {
   font-weight: 700;
+}
+
+/* 매물 시세 변화 카드(MarketPriceAlertCard)와 같은 색 규칙: 시세가 오르면(매수자에게 불리) 빨강,
+   내리면(매수자에게 유리) 초록으로 강조한다. */
+.active-goal-card__insight-emphasis--up {
+  color: var(--color-point, #c1442e);
+}
+
+.active-goal-card__insight-emphasis--down {
   color: var(--color-primary, #1d6b3f);
 }
 </style>
