@@ -83,7 +83,19 @@ async function goToDetail(recommendation) {
 }
 
 function goToDiagnosis() {
-  router.push({ name: 'diagnosis' })
+  /*
+    이 화면은 뒤로가기 버튼(show-back=false)도 하단 탭(HIDDEN_NAV_ROUTE_NAMES)도 없다.
+    push로 쌓으면 조건 입력 첫 화면에서 뒤로 갔을 때 여기로 되돌아와 사용자가 갇힌다.
+
+    replace라서 이 결과 화면이 히스토리에서 빠지고, 그 자리를 조건 입력 화면이 대신한다.
+    앱 헤더의 뒤로가기뿐 아니라 브라우저·OS의 뒤로가기도 결과 화면을 건너뛰고 홈으로 간다
+    (헤더 버튼만 고치면 브라우저 뒤로가기로는 여전히 갇힌다).
+
+    state의 fromDiagnosisResult는 헤더 뒤로가기를 홈으로 명시해 보내기 위한 표시다. 히스토리
+    모양에 기대지 않고 목적지를 코드로 정해두려는 것이고, 주소창에는 남지 않아서 /diagnosis를
+    직접 열거나 새로고침한 경우의 동작은 그대로다.
+  */
+  router.replace({ name: 'diagnosis', state: { fromDiagnosisResult: true } })
 }
 </script>
 
