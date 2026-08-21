@@ -5,6 +5,8 @@ import flagImage from '@/features/compare/assets/flag.png'
 
 /** 가장 높은 막대의 칸 수. 나머지 막대는 이 값에 비례해 칸 수를 정한다. */
 const MAX_SEGMENTS = 8
+/** .hist의 실제 CSS gap과 같아야 한다. 위치 계산이 이 값을 그대로 재사용한다. */
+const COLUMN_GAP_PX = 6
 
 const props = defineProps({
   myRate: { type: Number, required: true },
@@ -21,6 +23,39 @@ function segmentCount(bucket) {
 function bucketGrow(bucket) {
   return (bucket.rangeMax - bucket.rangeMin) / 10
 }
+
+/**
+ * 막대 칸은 flex-grow 비율로 폭을 나눠 갖지만, 칸 사이 gap(6px)은 비율과 무관한 고정폭이다.
+ * 그래서 "값 %"를 그대로 left로 꽂으면 뒤쪽 칸일수록 gap만큼씩 실제 칸 위치보다 왼쪽으로 밀린다
+ * (예: 52%가 50~60 칸 안쪽 20% 지점이 아니라 칸 경계에 거의 붙어버린다).
+ * 여기서 flex 계산을 그대로 재현해 칸 안에서의 정확한 위치를 구한다.
+ */
+function positionStyle(rate) {
+  const lastIndex = props.buckets.length - 1
+  const totalGrow = props.buckets.reduce((sum, bucket) => sum + bucketGrow(bucket), 0)
+
+  let index = props.buckets.findIndex((bucket, i) => {
+    const isLast = i === lastIndex
+    return rate >= bucket.rangeMin && (isLast ? rate <= bucket.rangeMax : rate < bucket.rangeMax)
+  })
+  if (index === -1) index = rate < props.buckets[0].rangeMin ? 0 : lastIndex
+
+  const bucket = props.buckets[index]
+  const growBefore = props.buckets.slice(0, index).reduce((sum, b) => sum + bucketGrow(b), 0)
+  const span = bucket.rangeMax - bucket.rangeMin
+  const fractionInBucket = span > 0 ? (rate - bucket.rangeMin) / span : 0
+  const fraction =
+    totalGrow > 0 ? (growBefore + fractionInBucket * bucketGrow(bucket)) / totalGrow : 0
+
+  const gapsBefore = index
+  const totalGaps = lastIndex
+  return {
+    left: `calc((100% - ${totalGaps * COLUMN_GAP_PX}px) * ${fraction} + ${gapsBefore * COLUMN_GAP_PX}px)`,
+  }
+}
+
+const myMarkerStyle = computed(() => positionStyle(props.myRate))
+const avgLineStyle = computed(() => positionStyle(props.cohortAverageRate))
 </script>
 
 <template>
@@ -31,21 +66,19 @@ function bucketGrow(bucket) {
       <b>{{ myRate }}%</b>)
     </p>
 
-    <div class="hist" :style="{ '--max-count': MAX_SEGMENTS }">
-      <div
-        v-for="bucket in buckets"
-        :key="bucket.rangeMin"
-        class="hist__col"
-        :style="{ flexGrow: bucketGrow(bucket) }"
-      >
+    <div class="hist-wrap">
+      <div class="hist" :style="{ '--max-count': MAX_SEGMENTS }">
         <div
-          class="hist__bar"
-          :class="{ 'hist__bar--mine': bucket.isMine }"
-          :style="{ '--count': segmentCount(bucket) }"
+          v-for="bucket in buckets"
+          :key="bucket.rangeMin"
+          class="hist__col"
+          :style="{ flexGrow: bucketGrow(bucket) }"
         >
-          <img v-if="bucket.isMine" class="hist__marker" :src="flagImage" alt="" />
+          <div class="hist__bar" :style="{ '--count': segmentCount(bucket) }"></div>
         </div>
       </div>
+      <span class="hist__avg-line" :style="avgLineStyle" aria-hidden="true"></span>
+      <img class="hist__marker" :src="flagImage" :style="myMarkerStyle" alt="내 달성률 위치" />
     </div>
 
     <!--
@@ -65,9 +98,7 @@ function bucketGrow(bucket) {
     <p class="hist__unit">단위: 달성률 %</p>
 
     <p class="hist__legend">
-      <span class="hist__legend-dot"></span>나 ({{ myRate }}%) — 코호트 평균 ({{
-        cohortAverageRate
-      }}%)
+      <span class="hist__legend-dot"></span>나 {{ myRate }}% · 또래 평균 {{ cohortAverageRate }}%
     </p>
   </div>
 </template>
@@ -82,8 +113,6 @@ function bucketGrow(bucket) {
   /* 막대는 칸이 쌓인 모양이다. 칸 사이 선을 카드 배경색으로 둬야 칸이 나뉘어 보인다. */
   --bar-body: var(--c-box);
   --bar-line: var(--c-card);
-  --bar-body-mine: var(--c-accent);
-  --bar-line-mine: var(--c-accent-mid);
 
   border: 1px solid var(--c-line);
   border-radius: 14px;
@@ -114,6 +143,11 @@ function bucketGrow(bucket) {
   color: var(--forest);
 }
 
+.hist-wrap {
+  position: relative;
+  margin-top: 48px;
+}
+
 .hist {
   --segment: 8px;
   --segment-gap: 2px;
@@ -122,7 +156,6 @@ function bucketGrow(bucket) {
   align-items: flex-end;
   gap: 6px;
   height: calc(var(--max-count) * (var(--segment) + var(--segment-gap)) - var(--segment-gap));
-  margin-top: 48px;
 }
 
 .hist__col {
@@ -144,23 +177,30 @@ function bucketGrow(bucket) {
   );
 }
 
-.hist__bar--mine {
-  background: repeating-linear-gradient(
-    to top,
-    var(--bar-body-mine) 0 var(--segment),
-    var(--bar-line-mine) var(--segment) calc(var(--segment) + var(--segment-gap))
-  );
-}
-
-/* 원본이 8×8 도트라 8의 배수(16px)로 그려야 픽셀이 고르게 나온다. */
+/*
+  positionStyle()이 flex-grow·gap을 그대로 계산해 넘겨준 left를 그대로 쓴다.
+  원본이 8×8 도트라 8의 배수(16px)로 그려야 픽셀이 고르게 나온다.
+*/
 .hist__marker {
   position: absolute;
   bottom: calc(100% + 4px);
-  left: 50%;
   width: 16px;
   height: 16px;
   transform: translateX(-50%);
   image-rendering: pixelated;
+}
+
+/*
+  또래 평균 위치를 표시하는 얇은 기준선. 옅은 초록(--c-accent-mid)은 빈 막대 배경과
+  거의 구분되지 않아, 텍스트와 같은 톤인 --ink-muted로 대비를 확보한다.
+*/
+.hist__avg-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-left: 1px dashed var(--ink-muted);
+  opacity: 0.7;
+  transform: translateX(-50%);
 }
 
 .hist__axis {
@@ -201,6 +241,6 @@ function bucketGrow(bucket) {
   flex: none;
   width: 8px;
   height: 8px;
-  background: currentColor;
+  background: var(--forest);
 }
 </style>

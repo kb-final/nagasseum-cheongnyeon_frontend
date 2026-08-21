@@ -107,7 +107,9 @@ const isHintOpen = ref(false)
     <p v-else-if="missReason === 'COHORT'" class="card__desc">
       아직 또래의 소득 정보가 모이지 않았어요
     </p>
-    <p v-else class="card__desc">내 소득 구간에는 아직 또래가 없어요</p>
+    <p v-else class="card__desc">
+      내 소득 구간에는 아직 또래가 없어요.<br />전체 또래의 소득 분포를 보여드릴게요.
+    </p>
 
     <div class="chart" :style="{ '--max-count': MAX_SEGMENTS }">
       <div

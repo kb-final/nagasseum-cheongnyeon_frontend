@@ -92,6 +92,7 @@ const filledCount = (ratio) => Math.round((ratio / 100) * SEGMENT_COUNT)
   justify-content: center;
   width: 24px;
   height: 24px;
+  border-radius: 7px;
   color: var(--rank-ink);
   font-size: 12px;
   font-weight: 700;

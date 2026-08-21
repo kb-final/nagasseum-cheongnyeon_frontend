@@ -102,8 +102,8 @@ const topLabel = computed(() =>
       아직 또래의 직업군 정보가 모이지 않았어요
     </p>
     <p v-else class="card__desc">
-      나와 같은 직업군인 또래는 아직 없어요. 또래는
-      <b>{{ topLabel }}({{ topItem.ratio }}%)</b>이 가장 많습니다
+      나와 같은 직업군의 또래는 아직 없어요.<br />
+      전체 또래 중에서는 <b>{{ topLabel }}({{ topItem.ratio }}%)</b>이 가장 많아요.
     </p>
 
     <SegmentBarList :items="barItems" fill-mode="max" />
@@ -116,7 +116,7 @@ const topLabel = computed(() =>
   --ink-muted: var(--c-ink-muted);
   --mint: var(--c-accent);
   --segment: var(--c-track);
-  --segment-on: var(--c-bar-on);
+  --segment-on: var(--c-accent-mid);
   --segment-on-highlight: var(--mint);
   --badge: var(--c-badge-bg);
 
