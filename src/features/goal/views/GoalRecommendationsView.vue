@@ -95,7 +95,7 @@ function goToDiagnosis() {
       'goal-recommendations-view--intro': hasAnyRecommendation && playIntro,
     }"
   >
-    <AppHeader title="진단 결과" @back="router.back()" />
+    <AppHeader title="진단 결과" :show-back="false" />
 
     <div
       class="goal-recommendations-view__intro"
@@ -105,6 +105,11 @@ function goToDiagnosis() {
       <p class="goal-recommendations-view__description">
         같은 희망 조건도 준비 방법에 따라
         <br />도달 시점과 필요한 저축액이 달라질 수 있어요.
+      </p>
+      <!-- 카드마다 예상 시세를 반복해서 보여주진 않지만, 추천 계산에 현재 시세가 아니라
+           도달 시점의 예상 시세가 쓰였다는 사실만은 짧게 알려준다. -->
+      <p class="goal-recommendations-view__notice">
+        주거 시세는 실거래 데이터를 바탕으로 도달 시점의 예상 가격을 반영했어요.
       </p>
     </div>
 
@@ -182,7 +187,7 @@ function goToDiagnosis() {
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  margin: 8px 0 4px;
+  margin: 1px 0 4px;
   text-align: center;
 }
 
@@ -200,6 +205,14 @@ function goToDiagnosis() {
   font-size: 13.2px;
   line-height: 1.6;
   color: var(--color-text-secondary, #9aa09a);
+}
+
+/* description보다 우선순위가 낮은 부가 안내라 한 단계 더 옅고 작게 둔다 */
+.goal-recommendations-view__notice {
+  margin: 2px 0 0;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--color-text-tertiary, #6f766d);
 }
 
 /*
