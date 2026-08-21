@@ -9,6 +9,7 @@ import {
   fetchGoalDetail,
   fetchGoal,
   putGoal,
+  deleteGoal,
   fetchMonthlySavingSimulation,
   fetchGoalMarketTrend,
   fetchGoalSummary,
@@ -70,6 +71,9 @@ export const useGoalStore = defineStore('goal', () => {
 
   const isUpdating = ref(false)
   const updateError = ref(null)
+
+  const isDeleting = ref(false)
+  const deleteError = ref(null)
 
   // 직접 입력한 월 저축액의 예상 달성 시점. 상세 조회 forecasts[] 항목과 같은 형태다.
   const savingSimulation = ref(null)
@@ -306,6 +310,23 @@ export const useGoalStore = defineStore('goal', () => {
     }
   }
 
+  // 목표 상세 화면 맨 아래 삭제 버튼. 삭제 후엔 상세 화면에 더 보여줄 목표가 없으므로 비운다.
+  async function removeGoal(goalId) {
+    isDeleting.value = true
+    deleteError.value = null
+
+    try {
+      await deleteGoal(goalId)
+      goalDetail.value = null
+      return true
+    } catch (e) {
+      deleteError.value = e.response?.data?.error ?? e
+      return false
+    } finally {
+      isDeleting.value = false
+    }
+  }
+
   return {
     diagnosisResult,
     isSubmitting,
@@ -338,6 +359,9 @@ export const useGoalStore = defineStore('goal', () => {
     isUpdating,
     updateError,
     updateMonthlySaving,
+    isDeleting,
+    deleteError,
+    removeGoal,
     savingSimulation,
     isSimulating,
     simulationError,
