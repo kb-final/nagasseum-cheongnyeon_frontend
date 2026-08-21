@@ -12,6 +12,8 @@ import {
   mockGoalMarketTrend,
   mockGoalSummaryHome,
   mockActiveGoal,
+  mockCurrentSavingRecord,
+  applyMockCurrentSaving,
 } from '@/mocks/data/goal'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
@@ -153,6 +155,22 @@ export const goalHandlers = [
   // 홈 화면 목표 달성 요약 카드. 마찬가지로 `/goals/:goalId`보다 먼저 등록해야 한다.
   http.get(`${API_BASE_URL}/api/v1/goals/summary`, () => {
     return HttpResponse.json({ success: true, data: mockGoalSummaryHome, error: null })
+  }),
+
+  // 홈 화면 이번 달 저축 기록 카드. 이번 달에 아직 입력하지 않았어도 오류가 아니라
+  // success:true, data.recorded:false로 정상 응답한다.
+  http.get(`${API_BASE_URL}/api/v1/goals/savings/current`, () => {
+    return HttpResponse.json({ success: true, data: mockCurrentSavingRecord, error: null })
+  }),
+
+  // 이번 달 실제 저축액 입력/수정(upsert). 최초 입력과 수정 모두 이 핸들러가 처리한다.
+  http.put(`${API_BASE_URL}/api/v1/goals/savings/current`, async ({ request }) => {
+    const { actualSaving } = await request.json()
+    return HttpResponse.json({
+      success: true,
+      data: applyMockCurrentSaving(actualSaving),
+      error: null,
+    })
   }),
 
   // 주의: 아래 `/goals/:goalId`는 세그먼트 하나짜리 경로는 모두 goalId로 매칭하므로,

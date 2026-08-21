@@ -3,6 +3,8 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 import BaseSkeleton from '@/shared/components/atoms/feedback/Skeleton/BaseSkeleton.vue'
+import { useToast } from '@/shared/composables/useToast'
+import { formatWon } from '@/shared/utils/formatter'
 
 import { useHomeStore } from '@/features/home/store/homeStore'
 import { useMemberStore } from '@/features/member/store/memberStore'
@@ -10,6 +12,8 @@ import { useAssetStore, FLOW_CONTEXT } from '@/features/asset'
 import GreetingHeader from '@/features/home/components/GreetingHeader.vue'
 import ClimbProgressCard from '@/features/home/components/ClimbProgressCard.vue'
 import ActiveGoalCard from '@/features/home/components/ActiveGoalCard.vue'
+import MonthlySavingCard from '@/features/home/components/MonthlySavingCard.vue'
+import MonthlySavingModal from '@/features/home/components/MonthlySavingModal.vue'
 import TotalAssetCard from '@/features/home/components/TotalAssetCard.vue'
 import SyncingAssetCard from '@/features/home/components/SyncingAssetCard.vue'
 import EmptyAssetCard from '@/features/home/components/EmptyAssetCard.vue'
@@ -18,6 +22,7 @@ const homeStore = useHomeStore()
 const memberStore = useMemberStore()
 const assetStore = useAssetStore()
 const router = useRouter()
+const toast = useToast()
 
 const member = computed(() => ({
   ...homeStore.member,
@@ -51,6 +56,29 @@ function goToAssetLink() {
   assetStore.setFlowContext(FLOW_CONTEXT.ADDITIONAL)
   router.push({ name: 'asset-link' })
 }
+
+const isSavingModalOpen = ref(false)
+
+// 입력하기/수정 버튼 모두 같은 시트를 연다 — 시트 안에서 homeStore.currentSavingRecord.recorded로
+// 최초 입력인지 수정인지 판단해 문구만 바꾼다.
+function openSavingModal() {
+  isSavingModalOpen.value = true
+}
+
+// PUT 응답으로 store가 이미 갱신되므로 홈 데이터를 다시 조회하지 않고 시트만 닫는다.
+async function onSubmitSaving(actualSaving) {
+  const saved = await homeStore.saveCurrentSaving(actualSaving)
+  if (!saved) {
+    toast.show('저축액 저장에 실패했어요. 다시 시도해주세요.', { type: 'error', position: 'top' })
+    return
+  }
+
+  isSavingModalOpen.value = false
+  toast.show(`이번 달 저축액을 ${formatWon(actualSaving)}으로 저장했어요.`, {
+    type: 'success',
+    position: 'top',
+  })
+}
 </script>
 
 <template>
@@ -76,6 +104,14 @@ function goToAssetLink() {
         :market-insight="homeStore.marketInsight"
       />
 
+      <!-- ACTIVE 목표가 있을 때만 노출한다 — 저축 기록은 목표의 월 저축 계획(targetSaving)을
+           기준으로 비교하므로 목표가 없으면 비교 대상 자체가 없다. -->
+      <MonthlySavingCard
+        v-if="homeStore.goal"
+        :record="homeStore.currentSavingRecord"
+        @open="openSavingModal"
+      />
+
       <TotalAssetCard
         v-if="homeStore.assetSummary"
         :asset-summary="homeStore.assetSummary"
@@ -96,6 +132,13 @@ function goToAssetLink() {
       <BaseSkeleton height="120px" radius="16px" />
       <BaseSkeleton height="80px" radius="16px" />
     </div>
+
+    <MonthlySavingModal
+      v-model="isSavingModalOpen"
+      :record="homeStore.currentSavingRecord"
+      :is-submitting="homeStore.isSavingCurrentSaving"
+      @submit="onSubmitSaving"
+    />
   </div>
 </template>
 
