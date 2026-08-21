@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 import AppHeader from '@/shared/components/molecules/AppHeader.vue'
@@ -10,6 +10,7 @@ import BaseEmptyState from '@/shared/components/atoms/feedback/EmptyState/BaseEm
 import RecommendationHousingCard from '@/features/goal/components/RecommendationHousingCard.vue'
 import RecommendationCompareCard from '@/features/goal/components/RecommendationCompareCard.vue'
 import RecommendationFundingCard from '@/features/goal/components/RecommendationFundingCard.vue'
+import GoalConfirmModal from '@/features/goal/components/GoalConfirmModal.vue'
 import { useGoalStore } from '@/features/goal/store/goalStore'
 import {
   RECOMMENDATION_TITLE_MAP,
@@ -26,6 +27,7 @@ const props = defineProps({
 
 const router = useRouter()
 const goalStore = useGoalStore()
+const isConfirmOpen = ref(false)
 
 // 목록 화면에서 방금 눌러 들어온 정상 흐름이면 store에 이미 있어 바로 렌더링된다.
 // 새로고침/직접 진입이라 store가 비어 있으면 onMounted에서 다시 불러온다.
@@ -47,9 +49,17 @@ onMounted(() => {
   if (!recommendation.value) goalStore.loadRecommendationResult()
 })
 
-async function handleSetAsGoal() {
-  const saved = await goalStore.saveGoal(toGoalCreationPayload(recommendation.value))
+// 실제 저장은 여기서 바로 하지 않고, 어떤 값이 저장되는지 확인 + 대출 없이/활용 최종
+// 선택을 하는 팝업을 먼저 연다. 저장 자체는 팝업의 "목표 설정하기"에서 호출한다.
+function handleSetAsGoal() {
+  isConfirmOpen.value = true
+}
+
+async function confirmAndSaveGoal(planKey) {
+  const plan = recommendation.value[planKey]
+  const saved = await goalStore.saveGoal(toGoalCreationPayload(recommendation.value, plan))
   if (!saved) return
+  isConfirmOpen.value = false
   router.push({ name: 'home' })
 }
 
@@ -105,14 +115,8 @@ function goToRecommendations() {
         />
       </div>
 
-      <p v-if="goalStore.saveError" class="recommendation-detail-view__error">
-        {{ goalStore.saveError?.message ?? '목표 저장에 실패했어요.' }}
-      </p>
-
       <div class="recommendation-detail-view__footer">
-        <BaseButton size="lg" :disabled="goalStore.isSaving" @click="handleSetAsGoal">
-          이 계획으로 목표 설정하기
-        </BaseButton>
+        <BaseButton size="lg" @click="handleSetAsGoal"> 이 계획으로 목표 설정하기 </BaseButton>
         <button
           type="button"
           class="recommendation-detail-view__compare"
@@ -121,6 +125,14 @@ function goToRecommendations() {
           다른 계획 비교하기
         </button>
       </div>
+
+      <GoalConfirmModal
+        v-model="isConfirmOpen"
+        :recommendation="recommendation"
+        :is-saving="goalStore.isSaving"
+        :save-error="goalStore.saveError"
+        @confirm="confirmAndSaveGoal"
+      />
     </template>
   </div>
 </template>
@@ -176,12 +188,6 @@ function goToRecommendations() {
   display: flex;
   flex-direction: column;
   gap: 16px;
-}
-
-.recommendation-detail-view__error {
-  margin: 0;
-  color: var(--color-point, #c1442e);
-  text-align: center;
 }
 
 /*

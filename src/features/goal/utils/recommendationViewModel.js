@@ -70,7 +70,7 @@ export function groupRecommendationsForResult(recommendations) {
 // 상세 화면(toHousingViewModel)처럼 지역/조건/면적을 줄바꿈해서 나누지 않고 하나로 합친다.
 // "전용" 접두어는 붙이지 않고 면적(평)을 그대로 이어붙인다.
 // "서울 마포구 · 아파트 · 전세 · 10~20평" (월세면서 실제 월세액이 있으면 "· 월 60만 원"을 이어붙인다)
-function toConditionSummary(condition) {
+export function toConditionSummary(condition) {
   const summary = [
     condition.regionName,
     HOUSING_TYPE_LABEL[condition.housingType] ?? condition.housingType,
@@ -450,10 +450,13 @@ export function toFundingViewModel({ type, loanX, loanO }) {
 // - depositMin/depositMax: recommendation에 없는 값이라 "조건 미지정" 컨벤션대로 null
 // - monthlyRentMin/monthlyRentMax: 범위가 아니라 단일값(monthlyRent)이라 WOLSE면 그 값을
 //   min=max로 두는 점(point) 근사, JEONSE면 null
-// - targetDate/targetAmount: 대출 미가정 기준(loanX)으로 통일
+// - targetDate/targetAmount/monthlySavings: plan(목표 설정 확인 팝업에서 최종 선택한
+//   loanX 또는 loanO)에서 가져온다 — 대출 여부는 POST /goals 요청 스키마에 별도 필드가
+//   없어(CLAUDE.md 2번 API 목록 기준) 저장하지 않고, 선택한 plan의 금액/시점/저축액만
+//   반영한다. 인자를 생략하면 기존처럼 loanX(대출 없이) 기준으로 동작한다.
 // - targetRentMiddleAmount: recommendation에 시세 중앙값 필드 자체가 없어 지어내지 않고 null
-export function toGoalCreationPayload(recommendation) {
-  const { condition, loanX } = recommendation
+export function toGoalCreationPayload(recommendation, plan = recommendation.loanX) {
+  const { condition } = recommendation
   const isWolse = condition.dealType === 'WOLSE' && condition.monthlyRent > 0
 
   return {
@@ -466,9 +469,9 @@ export function toGoalCreationPayload(recommendation) {
     depositMax: null,
     monthlyRentMin: isWolse ? condition.monthlyRent : null,
     monthlyRentMax: isWolse ? condition.monthlyRent : null,
-    targetDate: loanX.targetDate,
-    targetAmount: loanX.targetAmount,
+    targetDate: plan.targetDate,
+    targetAmount: plan.targetAmount,
     targetRentMiddleAmount: null,
-    monthlySavings: loanX.monthlySaving,
+    monthlySavings: plan.monthlySaving,
   }
 }
