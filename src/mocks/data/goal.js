@@ -315,6 +315,28 @@ export const mockGoalSummaryHome = {
   },
 }
 
+// GET/PUT /api/v1/goals/savings/current 응답 mock.
+// 기본값은 "이번 달 아직 입력하지 않음"이다 — 카드가 recorded:false로 먼저 보이고,
+// 입력하기를 누르면 아래 applyMockCurrentSaving이 이 객체를 실제로 갱신해
+// recorded:true로 바뀐 카드를 확인할 수 있다. 브라우저를 새로고침하면 초기값으로 돌아온다.
+export const mockCurrentSavingRecord = {
+  recordYm: currentYm().replace('-', ''),
+  // 홈 요약 카드가 보여주는 목표(mockGoal)와 같은 월 저축 계획 금액으로 맞춘다.
+  targetSaving: 500000,
+  actualSaving: null,
+  recorded: false,
+  differenceAmount: null,
+}
+
+// PUT은 upsert라 target_saving은 최초 입력 시점 값으로 고정하고(백엔드 규칙과 동일),
+// 이후 수정에서는 actualSaving/differenceAmount만 갱신한다.
+export function applyMockCurrentSaving(actualSaving) {
+  mockCurrentSavingRecord.actualSaving = actualSaving
+  mockCurrentSavingRecord.recorded = true
+  mockCurrentSavingRecord.differenceAmount = actualSaving - mockCurrentSavingRecord.targetSaving
+  return mockCurrentSavingRecord
+}
+
 // 활성 목표가 없을 때(GOAL_001) 흐름 확인용
 export const mockGoalNotFoundResponse = {
   success: false,

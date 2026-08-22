@@ -132,3 +132,16 @@ export async function fetchGoalSummary() {
   const { data } = await httpClient.get('/api/v1/goals/summary')
   return data.data
 }
+
+// 홈 화면 이번 달 저축 기록 카드용 데이터. 이번 달에 아직 입력하지 않았어도 오류가 아니라
+// success:true, data.recorded:false로 정상 응답한다 — 호출부는 recorded로 입력 여부를 분기해야 한다.
+export async function fetchCurrentSaving() {
+  const { data } = await httpClient.get('/api/v1/goals/savings/current')
+  return data.data
+}
+
+// 이번 달 실제 저축액 입력/수정. 최초 입력과 수정 모두 같은 PUT API를 사용한다(upsert).
+export async function putCurrentSaving(actualSaving) {
+  const { data } = await httpClient.put('/api/v1/goals/savings/current', { actualSaving })
+  return data.data
+}

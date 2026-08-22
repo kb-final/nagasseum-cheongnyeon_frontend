@@ -92,6 +92,12 @@ export function monthsBetweenYm(fromYm, toYm) {
   return (toYear - fromYear) * 12 + (toMonth - fromMonth)
 }
 
+// "202608" -> "8월" (YYYYMM 연월 문자열에서 월만 필요한 이번 달 저축 기록 카드 등에 사용)
+export function formatRecordMonth(recordYm) {
+  if (!recordYm) return ''
+  return `${Number(recordYm.slice(4, 6))}월`
+}
+
 // 변동액에 부호를 붙여 "▲ 500만원" / "▼ 500만원" / "0원"(변동 없음)으로 표기
 // (비교 기준 문구는 호출부에서 조합해서 붙인다 — 화면마다 기준 시점 표현이 다를 수 있음)
 export function formatChangeAmount(amount) {
