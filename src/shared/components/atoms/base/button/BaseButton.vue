@@ -1,11 +1,11 @@
 <script setup>
 defineProps({
   type: { type: String, default: 'button' },
-  // primary/secondary/highlight/dark: 기존 색상 그대로. quest: 게이미피케이션 CTA(홈 등반
-  // 카드의 "+ 목표 설정하러 가기")용 pill. text: 배경 없는 이동/보조 액션("자세히 ›" 등)용.
+  // primary/secondary/highlight/dark: 기존 색상 그대로.
+  // text: 배경 없는 이동/보조 액션("자세히 ›" 등)용.
   variant: { type: String, default: 'primary' },
   // lg(Default, 50~52px/16~18px radius): 화면 하단 Primary/Secondary CTA.
-  // md(Compact, 44~48px): Quest CTA, 카드 내부 action.
+  // md(Compact, 44~48px): 카드 내부 action.
   size: { type: String, default: 'lg' },
   disabled: { type: Boolean, default: false },
 })
@@ -79,18 +79,6 @@ defineEmits(['click'])
 .base-button--dark {
   background: var(--color-mint-deep, #16281c);
   color: var(--color-card-highlight, #f7ffd1);
-}
-
-/*
-  게이미피케이션 성격이 뚜렷한 CTA 전용(예: 홈 등반 카드의 "+ 목표 설정하러 가기").
-  일반 서비스 CTA(lg/md 기본 radius)와 구분되도록 이 variant만 pill로 강제한다 —
-  size 규칙(위 --lg/--md)보다 뒤에 있어야 radius가 확실히 이긴다.
-*/
-.base-button--quest {
-  border-radius: 999px;
-  background: var(--climb-card-cta-bg, #12281c);
-  color: var(--climb-card-cta-text, #ffd939);
-  font-weight: 700;
 }
 
 /*
